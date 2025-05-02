@@ -1,0 +1,1 @@
+# TripMind_Thailand_2025
