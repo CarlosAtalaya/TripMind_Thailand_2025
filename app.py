@@ -9,6 +9,7 @@ import pytz
 from services import format_date
 from models import db, User
 from auth import auth
+from files import files
 
 app = Flask(__name__)
 
@@ -16,6 +17,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_for_mvp')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tripboard.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAX_CONTENT_LENGTH'] = 2048 * 1024 * 1024  # 2 GB max
 
 # Inicializar extensiones
 db.init_app(app)
@@ -36,6 +38,7 @@ app.jinja_env.globals['now'] = get_now
 
 # Registrar blueprint de autenticación
 app.register_blueprint(auth, url_prefix='/auth')
+app.register_blueprint(files, url_prefix='/files')
 
 @login_manager.user_loader
 def load_user(user_id):

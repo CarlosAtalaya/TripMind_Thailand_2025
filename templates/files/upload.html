@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Subir Archivos - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">Subir Archivos</h1>
+    <a href="{{ url_for('files.index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i> Volver
+    </a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Subir nuevos archivos</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <div class="mb-3">
+                <label for="file" class="form-label">Selecciona archivos</label>
+                <input type="file" class="form-control" id="file" name="file" multiple required>
+                <div class="form-text">Puedes seleccionar varios archivos a la vez</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Descripción (opcional)</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                <div class="form-text">Una breve descripción de los archivos que estás subiendo</div>
+            </div>
+            
+            <div class="progress mb-3" style="display: none;" id="uploadProgress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary" id="uploadButton">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Subir Archivos
+                </button>
+                <a href="{{ url_for('files.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadButton = document.getElementById('uploadButton');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressBar = uploadProgress.querySelector('.progress-bar');
+        
+        uploadForm.addEventListener('submit', function(e) {
+            // Verificar si hay archivos seleccionados
+            const fileInput = document.getElementById('file');
+            if (fileInput.files.length === 0) {
+                e.preventDefault();
+                alert('Por favor, selecciona al menos un archivo');
+                return;
+            }
+            
+            // Deshabilitar el botón y mostrar barra de progreso
+            uploadButton.disabled = true;
+            uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Subiendo...';
+            uploadProgress.style.display = 'block';
+            
+            // Simular progreso (en una aplicación real, usaríamos XMLHttpRequest o Fetch API con progress event)
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 5;
+                progressBar.style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 200);
+        });
+    });
+</script>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Consejos</h5>
+    </div>
+    <div class="card-body">
+        <p>Algunos consejos para compartir archivos:</p>
+        
+        <ul>
+            <li>Las imágenes y videos se organizan automáticamente por fecha</li>
+            <li>Puedes añadir una descripción para ayudar a identificar el contenido</li>
+            <li>Los archivos muy grandes pueden tardar más en subirse</li>
+            <li>Solo tú y los administradores pueden eliminar tus archivos</li>
+        </ul>
+        
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Importante:</strong> Todos los viajeros pueden ver los archivos que subas.
+        </div>
+    </div>
+</div>
+{% endblock %}

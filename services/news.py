@@ -132,7 +132,6 @@ def get_filtered_news(itinerary_name='thailand_2025.yaml', max_items=20):
     """
     # Obtener regiones y palabras clave del itinerario
     regions_keywords = get_itinerary_regions(itinerary_name)
-    print(f"Buscando noticias para: {regions_keywords}")
     
     all_results = []
     

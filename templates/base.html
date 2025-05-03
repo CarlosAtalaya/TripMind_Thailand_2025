@@ -29,6 +29,24 @@
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="sectionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bars me-1"></i> Secciones
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="sectionDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('index') }}">
+                                        <i class="fas fa-globe me-2"></i> Itinerario
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('files.index') }}">
+                                        <i class="fas fa-share-alt me-2"></i> Compartir Archivos
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        
                         <li class="nav-item">
                             <a class="nav-link" href="/#overview">Resumen</a>
                         </li>
@@ -49,6 +67,16 @@
                                     <i class="fas fa-user me-1"></i> {{ current_user.name }}
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('index') }}">
+                                            <i class="fas fa-globe me-2"></i> Itinerario
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('files.index') }}">
+                                            <i class="fas fa-share-alt me-2"></i> Compartir Archivos
+                                        </a>
+                                    </li>
                                     {% if current_user.is_admin %}
                                         <li>
                                             <a class="dropdown-item" href="{{ url_for('auth.admin_panel') }}">
