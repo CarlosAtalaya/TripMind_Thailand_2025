@@ -1,0 +1,114 @@
+{% macro region_card(region, is_current=False) %}
+<div id="region-{{ region.id }}" class="region-card card mb-5 {% if is_current %}current-region{% endif %}">
+    <div class="region-header" style="background-image: url('https://source.unsplash.com/600x150/?{{ region.name }},travel')">
+        <div class="region-overlay">
+            <h3 class="mb-0">{{ region.name }}</h3>
+            <small>{{ region.start_date.strftime('%d/%m/%Y') }} - {{ region.end_date.strftime('%d/%m/%Y') }}</small>
+            {% if is_current %}
+                <span class="badge bg-success ms-2">Actual</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-7">
+                <h4><i class="fas fa-tasks me-2"></i>Actividades</h4>
+                <ul class="list-group mb-4">
+                    {% for activity in region.activities %}
+                        <li class="list-group-item">
+                            <span class="date-badge text-muted">{{ activity.date }}</span>
+                            <span class="activity-time ms-2">{{ activity.time }}</span>
+                            <div>{{ activity.name }} <small class="text-muted">@ {{ activity.location }}</small></div>
+                            {% if activity.notes %}
+                                <small class="text-muted"><i class="fas fa-info-circle me-1"></i>{{ activity.notes }}</small>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+                
+                {% if region.accommodations %}
+                    <h4><i class="fas fa-bed me-2"></i>Alojamiento</h4>
+                    <ul class="list-group mb-4">
+                        {% for accommodation in region.accommodations %}
+                            <li class="list-group-item">
+                                <div>{{ accommodation.name }}</div>
+                                <small class="text-muted">{{ accommodation.address }}</small>
+                                <div class="mt-1">
+                                    <span class="badge bg-primary">Check-in: {{ accommodation.check_in }}</span>
+                                    <span class="badge bg-danger">Check-out: {{ accommodation.check_out }}</span>
+                                </div>
+                                {% if accommodation.booking_ref %}
+                                    <small class="d-block mt-1"><strong>Ref:</strong> {{ accommodation.booking_ref }}</small>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                
+                {% if region.transport %}
+                    <h4><i class="fas fa-plane me-2"></i>Transporte</h4>
+                    <ul class="list-group mb-4">
+                        {% for transport in region.transport %}
+                            <li class="list-group-item">
+                                <div>
+                                    {% if transport.type == 'flight' %}
+                                        <i class="fas fa-plane me-1"></i>
+                                    {% elif transport.type == 'train' %}
+                                        <i class="fas fa-train me-1"></i>
+                                    {% elif transport.type == 'bus' %}
+                                        <i class="fas fa-bus me-1"></i>
+                                    {% else %}
+                                        <i class="fas fa-car me-1"></i>
+                                    {% endif %}
+                                    {{ transport.from }} → {{ transport.to }}
+                                </div>
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        Salida: {{ transport.departure|replace('T', ' ') }}
+                                        <br>
+                                        Llegada: {{ transport.arrival|replace('T', ' ') }}
+                                    </small>
+                                </div>
+                                {% if transport.booking_ref %}
+                                    <small class="d-block mt-1"><strong>Ref:</strong> {{ transport.booking_ref }}</small>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-5">
+                <div class="weather-container mb-4" id="weather-{{ region.id }}">
+                    <h4><i class="fas fa-cloud-sun me-2"></i>Clima</h4>
+                    <div class="card">
+                        <div class="card-body p-2">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Cargando datos del clima...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="news-container" id="news-{{ region.id }}">
+                    <h4><i class="fas fa-newspaper me-2"></i>Noticias</h4>
+                    <div class="card">
+                        <div class="card-body p-2">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Cargando noticias...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

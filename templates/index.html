@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{{ itinerary.title }} - TravelBoard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .region-card {
+        margin-bottom: 3rem;
+        scroll-margin-top: 5rem;
+    }
+    .weather-icon {
+        font-size: 2rem;
+    }
+    .date-badge {
+        font-size: 0.8rem;
+    }
+    .activity-time {
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    .region-header {
+        position: relative;
+        overflow: hidden;
+        height: 150px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 0.375rem 0.375rem 0 0;
+    }
+    .region-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+    }
+    .current-region {
+        border: 2px solid #0d6efd;
+        box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.3);
+    }
+    .news-item {
+        border-left: 3px solid #0d6efd;
+        padding-left: 10px;
+        margin-bottom: 10px;
+    }
+    .news-source {
+        font-size: 0.75rem;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="overview" class="mb-5">
+    <h1 class="display-5">{{ itinerary.title }}</h1>
+    <p class="lead">{{ itinerary.description }}</p>
+    
+    <div class="row mb-4 mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Fechas del Viaje</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">
+                        <strong>Inicio:</strong> {{ itinerary.start_date.strftime('%d/%m/%Y') }}<br>
+                        <strong>Fin:</strong> {{ itinerary.end_date.strftime('%d/%m/%Y') }}<br>
+                        <strong>Duración:</strong> {{ (itinerary.end_date - itinerary.start_date).days + 1 }} días
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Viajeros</h5>
+                </div>
+                <div class="card-body">
+                    {% if itinerary.travelers %}
+                        <ul class="list-unstyled mb-0">
+                            {% for traveler in itinerary.travelers %}
+                                <li><i class="fas fa-user me-2"></i>{{ traveler.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="mb-0">No hay viajeros registrados.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="progress position-relative mb-5">
+        {% set total_days = (itinerary.end_date - itinerary.start_date).days + 1 %}
+        {% set days_passed = (current_date - itinerary.start_date).days %}
+        {% set progress = (days_passed / total_days * 100)|int if days_passed > 0 else 0 %}
+        {% set progress = 100 if progress > 100 else progress %}
+        
+        <div class="progress-bar" role="progressbar" style="width: {{ progress }}%"></div>
+        <small class="justify-content-center d-flex position-absolute w-100">
+            {{ progress }}% del viaje completado
+        </small>
+    </div>
+</div>
+
+<h2 class="display-6 mb-4"><i class="fas fa-map-marked-alt me-2"></i>Itinerario por Regiones</h2>
+
+{% from "components/region_card.html" import region_card %}
+{% for region in itinerary.regions %}
+    {{ region_card(region, current_region and current_region.id == region.id) }}
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/weather.js') }}"></script>
+<script src="{{ url_for('static', filename='js/news.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar servicios
+        const weatherService = new WeatherService();
+        const newsService = new NewsService();
+        
+        // Cargar datos para cada región
+        {% for region in itinerary.regions %}
+            // Cargar datos del clima
+            weatherService.renderLoadingState(`weather-{{ region.id }}`);
+            weatherService.getWeatherForRegion('{{ region.id }}')
+                .then(data => {
+                    weatherService.renderWeatherData(`weather-{{ region.id }}`, data);
+                })
+                .catch(error => {
+                    weatherService.renderErrorState(`weather-{{ region.id }}`, 'No se pudo cargar el clima');
+                    console.error('Error al cargar clima:', error);
+                });
+                
+            // Cargar noticias
+            newsService.renderLoadingState(`news-{{ region.id }}`);
+            newsService.getNewsForRegion('{{ region.id }}')
+                .then(data => {
+                    newsService.renderNewsData(`news-{{ region.id }}`, data);
+                })
+                .catch(error => {
+                    newsService.renderErrorState(`news-{{ region.id }}`, 'No se pudieron cargar las noticias');
+                    console.error('Error al cargar noticias:', error);
+                });
+        {% endfor %}
+    });
+</script>
+{% endblock %}

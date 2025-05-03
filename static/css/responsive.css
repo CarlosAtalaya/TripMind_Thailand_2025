@@ -1,0 +1,132 @@
+/* Estilos para dispositivos pequeños (móviles) */
+@media (max-width: 576px) {
+    body {
+        padding-top: 56px;
+    }
+    
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    h1.display-5 {
+        font-size: 1.8rem;
+    }
+    
+    h2.display-6 {
+        font-size: 1.5rem;
+    }
+    
+    .region-header {
+        height: 120px;
+    }
+    
+    .region-overlay h3 {
+        font-size: 1.25rem;
+    }
+    
+    .region-card {
+        margin-bottom: 2rem;
+    }
+    
+    .date-badge, .activity-time {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .weather-icon {
+        font-size: 1.5rem;
+    }
+}
+
+/* Estilos para dispositivos medianos (tablets) */
+@media (min-width: 577px) and (max-width: 991px) {
+    .region-header {
+        height: 130px;
+    }
+    
+    .region-overlay h3 {
+        font-size: 1.3rem;
+    }
+}
+
+/* Ajustes para la visualización del clima en todos los dispositivos */
+@media (max-width: 767px) {
+    /* Mostrar pronóstico del clima en formato vertical */
+    .weather-container .row {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .weather-container .col {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .weather-container .col:last-child {
+        border-bottom: none;
+    }
+    
+    /* Reorganizar el diseño para mostrar clima y noticias */
+    .weather-container, .news-container {
+        margin-bottom: 2rem;
+    }
+}
+
+/* Ajustes para modo oscuro si el sistema lo prefiere */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #f5f7fa;
+    }
+    
+    .card {
+        background-color: #2a2a2a;
+        border-color: #333;
+    }
+    
+    .list-group-item {
+        background-color: #2a2a2a;
+        border-color: #333;
+    }
+    
+    .bg-light {
+        background-color: #2a2a2a !important;
+        color: #f5f7fa;
+    }
+    
+    .text-muted {
+        color: #adb5bd !important;
+    }
+    
+    .loading-placeholder {
+        background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
+    }
+}
+
+/* Correcciones para Safari en iOS */
+@supports (-webkit-touch-callout: none) {
+    .card:hover {
+        transform: none;
+    }
+    
+    .list-group-item {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Soporte para pantallas grandes */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+}
+
+/* Ajustes para pantallas de alta densidad de píxeles */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .region-header {
+        background-size: cover;
+    }
+}
