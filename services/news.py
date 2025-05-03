@@ -12,7 +12,8 @@ from services.itinerary import load_itinerary
 alert_keywords = [
     'alert', 'security', 'protest', 'emergency', 'evacuation', 'earthquake',
     'storm', 'rain', 'flood', 'travel warning', 'demonstration', 'danger',
-    'violence', 'outbreak', 'covid', 'hurricane', 'tsunami', 'closure', 'strike'
+    'violence', 'outbreak', 'covid', 'hurricane', 'tsunami', 'closure', 'strike',
+    'tourist', 'ladyboy', 'tourism', 'hospital', 'spanish group'
 ]
 
 # Fuentes RSS de noticias tailandesas e internacionales
