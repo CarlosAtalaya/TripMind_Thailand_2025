@@ -172,4 +172,4 @@ def create_tables():
 if __name__ == '__main__':
     # Crear tablas antes de iniciar la aplicación
     create_tables()
-    app.run(debug=True)
+    app.run(host='192.168.1.230', port=5000, debug=True)
