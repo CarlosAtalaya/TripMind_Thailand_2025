@@ -7,9 +7,11 @@ from services.news import get_filtered_news
 from datetime import datetime
 import pytz
 from services import format_date
+from votes import initialize_categories
 from models import db, User
 from auth import auth
 from files import files
+from votes import votes
 
 app = Flask(__name__)
 
@@ -39,6 +41,7 @@ app.jinja_env.globals['now'] = get_now
 # Registrar blueprint de autenticación
 app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(files, url_prefix='/files')
+app.register_blueprint(votes, url_prefix='/votes')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -168,6 +171,9 @@ def create_tables():
     with app.app_context():
         db.create_all()
         print("Tablas de la base de datos creadas.")
+        
+        initialize_categories()
+        print("Categorías de votación inicializadas.")
 
 if __name__ == '__main__':
     # Crear tablas antes de iniciar la aplicación

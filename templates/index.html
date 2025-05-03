@@ -78,11 +78,45 @@
                 </div>
                 <div class="card-body">
                     {% if itinerary.travelers %}
-                        <ul class="list-unstyled mb-0">
-                            {% for traveler in itinerary.travelers %}
-                                <li><i class="fas fa-user me-2"></i>{{ traveler.name }}</li>
-                            {% endfor %}
+                        <ul class="nav nav-tabs" id="travelersTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="travelers-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#travelers-content" type="button" role="tab" 
+                                        aria-controls="travelers-content" aria-selected="true">
+                                    Lista
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="rankings-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#rankings-content" type="button" role="tab" 
+                                        aria-controls="rankings-content" aria-selected="false">
+                                    Rankings
+                                </button>
+                            </li>
                         </ul>
+                        
+                        <div class="tab-content" id="travelersTabsContent">
+                            <div class="tab-pane fade show active p-3" id="travelers-content" role="tabpanel" aria-labelledby="travelers-tab">
+                                <ul class="list-unstyled mb-0">
+                                    {% for traveler in itinerary.travelers %}
+                                        <li><i class="fas fa-user me-2"></i>{{ traveler.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="tab-pane fade p-3" id="rankings-content" role="tabpanel" aria-labelledby="rankings-tab">
+                                <div class="mb-3">
+                                    <select class="form-select" id="category-select">
+                                        <option value="">Selecciona una categoría...</option>
+                                        <!-- Las categorías se cargarán dinámicamente -->
+                                    </select>
+                                </div>
+                                <div id="rankings-container">
+                                    <div class="text-center py-3">
+                                        <p class="text-muted">Selecciona una categoría para ver el ranking</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     {% else %}
                         <p class="mb-0">No hay viajeros registrados.</p>
                     {% endif %}
@@ -122,11 +156,13 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/weather.js') }}"></script>
 <script src="{{ url_for('static', filename='js/news.js') }}"></script>
+<script src="{{ url_for('static', filename='js/votes.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar servicios
         const weatherService = new WeatherService();
         const newsService = new NewsService();
+        const votesService = new VotesService();
         
         // Cargar datos para cada región
         {% if itinerary and itinerary.regions %}
@@ -154,9 +190,104 @@
                     });
             {% endfor %}
         {% endif %}
+        
+        // Función para cargar las categorías de votación
+        function loadVoteCategories() {
+            const categorySelect = document.getElementById('category-select');
+            if (!categorySelect) return;
+            
+            fetch('/votes/api/rankings')
+                .then(response => response.json())
+                .then(data => {
+                    // Limpiar opciones actuales
+                    categorySelect.innerHTML = '<option value="">Selecciona una categoría...</option>';
+                    
+                    // Añadir categorías
+                    for (const categoryName in data) {
+                        const option = document.createElement('option');
+                        option.value = categoryName;
+                        option.textContent = categoryName;
+                        categorySelect.appendChild(option);
+                    }
+                    
+                    // Configurar evento de cambio
+                    categorySelect.addEventListener('change', function() {
+                        const selectedCategory = this.value;
+                        if (selectedCategory) {
+                            displayRanking(data[selectedCategory], selectedCategory);
+                        } else {
+                            document.getElementById('rankings-container').innerHTML = `
+                                <div class="text-center py-3">
+                                    <p class="text-muted">Selecciona una categoría para ver el ranking</p>
+                                </div>
+                            `;
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar categorías:', error);
+                    categorySelect.innerHTML = '<option value="">Error al cargar categorías</option>';
+                });
+        }
+        
+        // Función para mostrar el ranking de una categoría
+        function displayRanking(ranking, categoryName) {
+            const container = document.getElementById('rankings-container');
+            if (!container) return;
+            
+            // Ordenar por puntos
+            const sortedRanking = [...ranking].sort((a, b) => b.points - a.points);
+            
+            if (sortedRanking.length === 0 || sortedRanking[0].points === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No hay votos aún para la categoría "${categoryName}".
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear el HTML del ranking
+            let html = '<div class="list-group">';
+            
+            sortedRanking.forEach((traveler, index) => {
+                // Definir clase para el podio
+                let badgeClass = 'bg-secondary';
+                let icon = '';
+                
+                if (index === 0) {
+                    badgeClass = 'bg-warning text-dark'; // Oro
+                    icon = '<i class="fas fa-trophy text-warning me-2"></i>';
+                } else if (index === 1) {
+                    badgeClass = 'bg-light text-dark'; // Plata
+                    icon = '<i class="fas fa-medal text-secondary me-2"></i>';
+                } else if (index === 2) {
+                    badgeClass = 'bg-danger'; // Bronce
+                    icon = '<i class="fas fa-award text-danger me-2"></i>';
+                }
+                
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${icon}${traveler.name}</span>
+                        <span class="badge ${badgeClass} rounded-pill">${traveler.points} pts</span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Inicializar ranking de votaciones
+        loadVoteCategories();
+        
+        // Actualizar rankings cada 5 minutos
+        setInterval(loadVoteCategories, 300000);
     });
 </script>
 {% endblock %}
+
 {% block sidebar %}
     {% from "components/news_sidebar.html" import news_sidebar %}
     {{ news_sidebar() }}

@@ -44,6 +44,11 @@
                                         <i class="fas fa-share-alt me-2"></i> Compartir Archivos
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('votes.index') }}">
+                                        <i class="fas fa-trophy me-2"></i> Votaciones
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                         
@@ -75,6 +80,11 @@
                                     <li>
                                         <a class="dropdown-item" href="{{ url_for('files.index') }}">
                                             <i class="fas fa-share-alt me-2"></i> Compartir Archivos
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('votes.index') }}">
+                                            <i class="fas fa-trophy me-2"></i> Votaciones
                                         </a>
                                     </li>
                                     {% if current_user.is_admin %}

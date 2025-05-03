@@ -39,3 +39,33 @@ class SharedFile(db.Model):
     
     def __repr__(self):
         return f'<SharedFile {self.original_filename}>'
+    
+# Añadir a models.py
+class VoteCategory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text, nullable=True)
+    
+    def __repr__(self):
+        return f'<VoteCategory {self.name}>'
+
+class Vote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('vote_category.id'), nullable=False)
+    voter_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    traveler_name = db.Column(db.String(100), nullable=False)
+    position = db.Column(db.Integer, nullable=False)  # 1-5 para la posición
+    date = db.Column(db.Date, default=datetime.now().date)
+    
+    # Relaciones
+    category = db.relationship('VoteCategory', backref=db.backref('votes', lazy=True))
+    voter = db.relationship('User', backref=db.backref('votes_cast', lazy=True))
+    
+    def __repr__(self):
+        return f'<Vote {self.category.name} - {self.traveler_name} - Pos:{self.position}>'
+    
+    @property
+    def points(self):
+        """Calcular puntos basados en la posición"""
+        points_map = {1: 5, 2: 4, 3: 3, 4: 2, 5: 1}
+        return points_map.get(self.position, 0)
