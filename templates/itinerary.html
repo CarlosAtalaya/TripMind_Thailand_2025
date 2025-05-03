@@ -124,11 +124,11 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
                         <span>Regiones:</span>
-                        <strong>{{ itinerary.regions|length }}</strong>
+                        <strong>{{ itinerary.regions|length if itinerary and itinerary.regions else 0 }}</strong>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
                         <span>Viajeros:</span>
-                        <strong>{{ itinerary.travelers|length if itinerary.travelers else 0 }}</strong>
+                        <strong>{{ itinerary.travelers|length if itinerary and itinerary.travelers else 0 }}</strong>
                     </li>
                 </ul>
                 
@@ -151,43 +151,50 @@
 <h2 class="display-6 mb-4">Línea de Tiempo</h2>
 
 <div class="timeline mb-5">
-    {% for region in itinerary.regions %}
-        <div class="timeline-item">
-            <div class="timeline-date">
-                {{ region.start_date.strftime('%d/%m/%Y') }} - {{ region.end_date.strftime('%d/%m/%Y') }}
-                {% if current_region and current_region.id == region.id %}
-                    <span class="badge bg-success ms-2">Actual</span>
-                {% endif %}
-            </div>
-            <div class="timeline-content">
-                <h5>{{ region.name }}, {{ region.country }}</h5>
-                <div class="small text-muted mb-2">
-                    <i class="fas fa-calendar-alt me-1"></i> {{ (region.end_date - region.start_date).days + 1 }} días
-                    {% if region.accommodations %}
-                        <span class="ms-2"><i class="fas fa-bed me-1"></i> {{ region.accommodations[0].name }}</span>
+    {% if itinerary and itinerary.regions %}
+        {% for region in itinerary.regions %}
+            <div class="timeline-item">
+                <div class="timeline-date">
+                    {{ region.start_date.strftime('%d/%m/%Y') }} - {{ region.end_date.strftime('%d/%m/%Y') }}
+                    {% if current_region and current_region.id == region.id %}
+                        <span class="badge bg-success ms-2">Actual</span>
                     {% endif %}
                 </div>
-                
-                {% if region.activities and region.activities|length > 0 %}
-                    <div class="mt-2">
-                        <strong>Actividades destacadas:</strong>
-                        <ul class="mb-0">
-                            {% for activity in region.activities[:3] %}
-                                <li>{{ activity.name }}</li>
-                            {% endfor %}
-                            {% if region.activities|length > 3 %}
-                                <li class="text-muted">... y {{ region.activities|length - 3 }} más</li>
-                            {% endif %}
-                        </ul>
+                <div class="timeline-content">
+                    <h5>{{ region.name }}, {{ region.country }}</h5>
+                    <div class="small text-muted mb-2">
+                        <i class="fas fa-calendar-alt me-1"></i> {{ (region.end_date - region.start_date).days + 1 }} días
+                        {% if region.accommodations %}
+                            <span class="ms-2"><i class="fas fa-bed me-1"></i> {{ region.accommodations[0].name }}</span>
+                        {% endif %}
                     </div>
-                {% endif %}
-                
-                <a href="#region-{{ region.id }}" class="btn btn-sm btn-outline-primary mt-2">
-                    <i class="fas fa-eye me-1"></i> Ver detalles
-                </a>
+                    
+                    {% if region.activities and region.activities|length > 0 %}
+                        <div class="mt-2">
+                            <strong>Actividades destacadas:</strong>
+                            <ul class="mb-0">
+                                {% for activity in region.activities[:3] %}
+                                    <li>{{ activity.name }}</li>
+                                {% endfor %}
+                                {% if region.activities|length > 3 %}
+                                    <li class="text-muted">... y {{ region.activities|length - 3 }} más</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <a href="#region-{{ region.id }}" class="btn btn-sm btn-outline-primary mt-2">
+                        <i class="fas fa-eye me-1"></i> Ver detalles
+                    </a>
+                </div>
             </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No hay regiones definidas en este itinerario o los datos no están disponibles.
         </div>
-    {% endfor %}
+    {% endif %}
 </div>
 
 <h2 class="display-6 mb-4"><i class="fas fa-map-marked-alt me-2"></i>Detalles por Región</h2>
@@ -196,9 +203,16 @@
 {% from "components/weather_widget.html" import weather_widget %}
 {% from "components/news_widget.html" import news_widget %}
 
-{% for region in itinerary.regions %}
-    {{ region_card(region, current_region and current_region.id == region.id) }}
-{% endfor %}
+{% if itinerary and itinerary.regions %}
+    {% for region in itinerary.regions %}
+        {{ region_card(region, current_region and current_region.id == region.id) }}
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        No hay regiones definidas en este itinerario o los datos no están disponibles.
+    </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -211,29 +225,31 @@
         const newsService = new NewsService();
         
         // Cargar datos para cada región
-        {% for region in itinerary.regions %}
-            // Cargar datos del clima
-            weatherService.renderLoadingState(`weather-{{ region.id }}`);
-            weatherService.getWeatherForRegion('{{ region.id }}')
-                .then(data => {
-                    weatherService.renderWeatherData(`weather-{{ region.id }}`, data);
-                })
-                .catch(error => {
-                    weatherService.renderErrorState(`weather-{{ region.id }}`, 'No se pudo cargar el clima');
-                    console.error('Error al cargar clima:', error);
-                });
-                
-            // Cargar noticias
-            newsService.renderLoadingState(`news-{{ region.id }}`);
-            newsService.getNewsForRegion('{{ region.id }}')
-                .then(data => {
-                    newsService.renderNewsData(`news-{{ region.id }}`, data);
-                })
-                .catch(error => {
-                    newsService.renderErrorState(`news-{{ region.id }}`, 'No se pudieron cargar las noticias');
-                    console.error('Error al cargar noticias:', error);
-                });
-        {% endfor %}
+        {% if itinerary and itinerary.regions %}
+            {% for region in itinerary.regions %}
+                // Cargar datos del clima
+                weatherService.renderLoadingState(`weather-{{ region.id }}`);
+                weatherService.getWeatherForRegion('{{ region.id }}')
+                    .then(data => {
+                        weatherService.renderWeatherData(`weather-{{ region.id }}`, data);
+                    })
+                    .catch(error => {
+                        weatherService.renderErrorState(`weather-{{ region.id }}`, 'No se pudo cargar el clima');
+                        console.error('Error al cargar clima:', error);
+                    });
+                    
+                // Cargar noticias
+                newsService.renderLoadingState(`news-{{ region.id }}`);
+                newsService.getNewsForRegion('{{ region.id }}')
+                    .then(data => {
+                        newsService.renderNewsData(`news-{{ region.id }}`, data);
+                    })
+                    .catch(error => {
+                        newsService.renderErrorState(`news-{{ region.id }}`, 'No se pudieron cargar las noticias');
+                        console.error('Error al cargar noticias:', error);
+                    });
+            {% endfor %}
+        {% endif %}
     });
 </script>
 {% endblock %}

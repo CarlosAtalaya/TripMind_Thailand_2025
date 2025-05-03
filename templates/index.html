@@ -107,9 +107,16 @@
 <h2 class="display-6 mb-4"><i class="fas fa-map-marked-alt me-2"></i>Itinerario por Regiones</h2>
 
 {% from "components/region_card.html" import region_card %}
-{% for region in itinerary.regions %}
-    {{ region_card(region, current_region and current_region.id == region.id) }}
-{% endfor %}
+{% if itinerary and itinerary.regions %}
+    {% for region in itinerary.regions %}
+        {{ region_card(region, current_region and current_region.id == region.id) }}
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        No hay regiones definidas en este itinerario o los datos no están disponibles.
+    </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -122,29 +129,31 @@
         const newsService = new NewsService();
         
         // Cargar datos para cada región
-        {% for region in itinerary.regions %}
-            // Cargar datos del clima
-            weatherService.renderLoadingState(`weather-{{ region.id }}`);
-            weatherService.getWeatherForRegion('{{ region.id }}')
-                .then(data => {
-                    weatherService.renderWeatherData(`weather-{{ region.id }}`, data);
-                })
-                .catch(error => {
-                    weatherService.renderErrorState(`weather-{{ region.id }}`, 'No se pudo cargar el clima');
-                    console.error('Error al cargar clima:', error);
-                });
-                
-            // Cargar noticias
-            newsService.renderLoadingState(`news-{{ region.id }}`);
-            newsService.getNewsForRegion('{{ region.id }}')
-                .then(data => {
-                    newsService.renderNewsData(`news-{{ region.id }}`, data);
-                })
-                .catch(error => {
-                    newsService.renderErrorState(`news-{{ region.id }}`, 'No se pudieron cargar las noticias');
-                    console.error('Error al cargar noticias:', error);
-                });
-        {% endfor %}
+        {% if itinerary and itinerary.regions %}
+            {% for region in itinerary.regions %}
+                // Cargar datos del clima
+                weatherService.renderLoadingState(`weather-{{ region.id }}`);
+                weatherService.getWeatherForRegion('{{ region.id }}')
+                    .then(data => {
+                        weatherService.renderWeatherData(`weather-{{ region.id }}`, data);
+                    })
+                    .catch(error => {
+                        weatherService.renderErrorState(`weather-{{ region.id }}`, 'No se pudo cargar el clima');
+                        console.error('Error al cargar clima:', error);
+                    });
+                    
+                // Cargar noticias
+                newsService.renderLoadingState(`news-{{ region.id }}`);
+                newsService.getNewsForRegion('{{ region.id }}')
+                    .then(data => {
+                        newsService.renderNewsData(`news-{{ region.id }}`, data);
+                    })
+                    .catch(error => {
+                        newsService.renderErrorState(`news-{{ region.id }}`, 'No se pudieron cargar las noticias');
+                        console.error('Error al cargar noticias:', error);
+                    });
+            {% endfor %}
+        {% endif %}
     });
 </script>
 {% endblock %}

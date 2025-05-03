@@ -20,6 +20,10 @@ def index():
     """Página principal que muestra el resumen del itinerario"""
     # Por ahora cargamos un itinerario por defecto
     itinerary = load_itinerary('thailand_2025.yaml')
+
+    # Verificar que itinerary tiene la propiedad regions y que no es None
+    if 'regions' not in itinerary or itinerary['regions'] is None:
+        itinerary['regions'] = []
     
     # Determinar la región actual basada en la fecha
     current_date = datetime.now(pytz.UTC)

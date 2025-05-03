@@ -18,7 +18,18 @@ def load_itinerary(filename):
         with open(file_path, 'r', encoding='utf-8') as file:
             itinerary = yaml.safe_load(file)
             
-        # Convertir fechas de string a objetos datetime
+        # Convertir fechas principales del itinerario
+        if 'start_date' in itinerary:
+            itinerary['start_date'] = datetime.strptime(
+                itinerary['start_date'], '%Y-%m-%d'
+            ).replace(tzinfo=pytz.UTC)
+        
+        if 'end_date' in itinerary:
+            itinerary['end_date'] = datetime.strptime(
+                itinerary['end_date'], '%Y-%m-%d'
+            ).replace(tzinfo=pytz.UTC)
+            
+        # Convertir fechas de string a objetos datetime para cada región
         for region in itinerary.get('regions', []):
             if 'start_date' in region:
                 region['start_date'] = datetime.strptime(
@@ -35,7 +46,9 @@ def load_itinerary(filename):
         # Devolver un itinerario por defecto o vacío en caso de error
         return {
             'title': 'Itinerario no disponible',
-            'regions': []
+            'regions': [],
+            'start_date': datetime.now(pytz.UTC),
+            'end_date': datetime.now(pytz.UTC)
         }
 
 def get_current_region(itinerary, current_date):
