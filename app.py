@@ -2,7 +2,7 @@ import os
 from flask import Flask, render_template, jsonify, request
 from services.itinerary import load_itinerary, get_current_region
 from services.weather import get_weather_for_region
-from services.news import get_news_for_region
+from services.news import get_filtered_news
 from datetime import datetime
 import pytz
 from services import format_date
@@ -72,21 +72,19 @@ def get_weather(region_id):
     weather_data = get_weather_for_region(region, days)
     return jsonify(weather_data)
 
-@app.route('/api/news/<region_id>')
-def get_news(region_id):
-    """API para obtener noticias de una región específica"""
-    max_items = request.args.get('max', 5, type=int)
-    itinerary = load_itinerary('thailand_2025.yaml')
+# Añadir esta nueva ruta en app.py
+@app.route('/api/news/all')
+def get_all_news():
+    """API para obtener todas las noticias relevantes para el viaje"""
+    max_items = request.args.get('max', 20, type=int)
+    itinerary_name = request.args.get('itinerary', 'thailand_2025.yaml')
     
-    # Encontrar la región en el itinerario
-    region = next((r for r in itinerary['regions'] if r['id'] == region_id), None)
+    # Obtener noticias relevantes
+    news_data = get_filtered_news(itinerary_name, max_items)
     
-    if not region:
-        return jsonify({'error': 'Región no encontrada'}), 404
-    
-    # Obtener noticias relevantes para la región
-    news_data = get_news_for_region(region, max_items)
-    return jsonify(news_data)
+    return jsonify({
+        'articles': news_data
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)

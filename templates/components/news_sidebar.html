@@ -1,0 +1,24 @@
+{% macro news_sidebar() %}
+<div class="sticky-top" style="top: 80px;">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-newspaper me-2"></i>Noticias de Viaje</h5>
+        </div>
+        <div class="card-body p-0">
+            <div id="global-news-container">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2 mb-0">Buscando noticias relevantes para tu viaje...</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <small class="text-muted">
+                <i class="fas fa-sync-alt me-1"></i><span id="news-last-updated">Actualizando...</span>
+            </small>
+        </div>
+    </div>
+</div>
+{% endmacro %}

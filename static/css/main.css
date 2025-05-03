@@ -177,3 +177,56 @@ html {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+
+/* Estilos para la barra lateral de noticias */
+.news-list {
+    max-height: 700px; /* Aumentar de 600px a 700px para mostrar más noticias */
+    overflow-y: auto;
+}
+
+/* Ajustar el padding de los items de noticia */
+.news-item {
+    padding: 1rem !important; /* Aumentar el padding para más espacio */
+}
+
+.news-item h6 {
+    font-size: 1rem; /* Aumentar el tamaño de la fuente de los títulos */
+    line-height: 1.4;
+}
+
+/* Dar más espacio al contenido de las noticias */
+.news-item p {
+    margin-bottom: 0.75rem !important;
+}
+
+.news-item:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.news-item.border-danger {
+    border-left: 3px solid var(--danger-color) !important;
+}
+
+.news-item.border-warning {
+    border-left: 3px solid var(--warning-color) !important;
+}
+
+.news-item:last-child {
+    border-bottom: none !important;
+}
+
+.sticky-top {
+    z-index: 99;
+}
+
+/* Estilos responsivos para la barra lateral */
+@media (max-width: 991px) {
+    .sticky-top {
+        position: relative !important;
+        top: 0 !important;
+    }
+    
+    .news-list {
+        max-height: 400px;
+    }
+}

@@ -46,7 +46,14 @@
     </header>
 
     <main class="container mt-5 pt-5">
-        {% block content %}{% endblock %}
+        <div class="row">
+            <div class="col-lg-8">
+                {% block content %}{% endblock %}
+            </div>
+            <div class="col-lg-4">
+                {% block sidebar %}{% endblock %}
+            </div>
+        </div>
     </main>
 
     <footer class="mt-5 py-3 bg-light">
@@ -60,6 +67,8 @@
     
     <!-- Scripts personalizados -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/global_news.js') }}"></script>
     {% block extra_js %}{% endblock %}
+    <div id="itinerary-data" data-name="{{ request.args.get('name', 'thailand_2025.yaml') }}" style="display: none;"></div>
 </body>
 </html>

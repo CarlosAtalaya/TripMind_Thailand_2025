@@ -157,3 +157,7 @@
     });
 </script>
 {% endblock %}
+{% block sidebar %}
+    {% from "components/news_sidebar.html" import news_sidebar %}
+    {{ news_sidebar() }}
+{% endblock %}
