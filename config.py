@@ -8,7 +8,7 @@ OPENMETEO_API_URL = "https://api.open-meteo.com/v1/forecast"
 DEFAULT_ITINERARY = 'thailand_2025.yaml'
 
 # Configuración de cache
-CACHE_TIMEOUT = 3600  # 1 hora en segundos
+CACHE_TIMEOUT = 1800  # 0.5 hora en segundos
 
 # Configuración de actualización automática
-AUTO_UPDATE_INTERVAL = 3600  # 1 hora en segundos
+AUTO_UPDATE_INTERVAL = 1800  # 0.5 hora en segundos
