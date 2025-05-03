@@ -1,19 +1,65 @@
 import os
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask_login import LoginManager, current_user
 from services.itinerary import load_itinerary, get_current_region
 from services.weather import get_weather_for_region
 from services.news import get_filtered_news
 from datetime import datetime
 import pytz
 from services import format_date
+from models import db, User
+from auth import auth
 
 app = Flask(__name__)
 
 # Configuración básica
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_for_mvp')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tripboard.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Inicializar extensiones
+db.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Por favor inicia sesión para acceder a esta página'
+login_manager.login_message_category = 'info'
+
+# Función ahora para plantillas
+@app.template_filter('now')
+def get_now():
+    return datetime.now()
 
 # Registrar filtros personalizados
 app.jinja_env.filters['format_date'] = format_date
+app.jinja_env.globals['now'] = get_now
+
+# Registrar blueprint de autenticación
+app.register_blueprint(auth, url_prefix='/auth')
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Middleware para verificar configuración inicial
+@app.before_request
+def check_initial_setup():
+    # Rutas que siempre deben estar accesibles
+    public_endpoints = ['static', 'setup', 'auth.login', 'auth.logout']
+    
+    # Si estamos en una ruta pública, permitir acceso
+    if request.endpoint in public_endpoints:
+        return None
+        
+    # Verificar si hay usuarios en la base de datos
+    user_count = User.query.count()
+    if user_count == 0 and request.endpoint != 'setup':
+        # Si no hay usuarios y no estamos en setup, redirigir a setup
+        return redirect(url_for('setup'))
+        
+    # Verificar si el usuario está autenticado para rutas protegidas
+    if not current_user.is_authenticated and request.endpoint not in public_endpoints:
+        return redirect(url_for('auth.login'))
 
 @app.route('/')
 def index():
@@ -72,7 +118,6 @@ def get_weather(region_id):
     weather_data = get_weather_for_region(region, days)
     return jsonify(weather_data)
 
-# Añadir esta nueva ruta en app.py
 @app.route('/api/news/all')
 def get_all_news():
     """API para obtener todas las noticias relevantes para el viaje"""
@@ -86,5 +131,42 @@ def get_all_news():
         'articles': news_data
     })
 
+@app.route('/setup', methods=['GET', 'POST'])
+def setup():
+    """Página de configuración inicial para crear el primer usuario admin"""
+    # Comprobar si ya existen usuarios
+    user_count = User.query.count()
+    
+    if user_count > 0:
+        return redirect(url_for('index'))
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        
+        # Crear usuario administrador
+        admin = User(username=username, name=name, phone=phone, is_admin=True)
+        admin.set_password(password)
+        
+        db.session.add(admin)
+        db.session.commit()
+        
+        print(f"Usuario administrador creado: {username}")
+        return redirect(url_for('auth.login'))
+        
+    current_date = datetime.now(pytz.UTC)
+    return render_template('setup.html', current_date=current_date)
+
+# Crear tablas de la base de datos
+def create_tables():
+    """Crear tablas de la base de datos"""
+    with app.app_context():
+        db.create_all()
+        print("Tablas de la base de datos creadas.")
+
 if __name__ == '__main__':
+    # Crear tablas antes de iniciar la aplicación
+    create_tables()
     app.run(debug=True)

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración inicial - TravelBoard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    
+    <style>
+        body {
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 0;
+        }
+        .setup-card {
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .setup-header {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .setup-logo {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-card card">
+        <div class="setup-header bg-primary text-white">
+            <div class="setup-logo">
+                <i class="fas fa-globe-americas"></i>
+            </div>
+            <h2>TravelBoard</h2>
+            <p class="mb-0">Configuración inicial</p>
+        </div>
+        <div class="card-body p-4">
+            <h3 class="text-center mb-4">Crear usuario administrador</h3>
+            <p class="text-center mb-4">Crea un usuario administrador para gestionar el acceso a TravelBoard</p>
+            
+            <form method="POST" action="{{ url_for('setup') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Nombre de usuario</label>
+                    <input type="text" class="form-control" id="username" name="username" required autofocus>
+                    <div class="form-text">Elige un nombre de usuario único para iniciar sesión</div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <div class="form-text">Usa una contraseña segura</div>
+                </div>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nombre completo</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Teléfono</label>
+                    <input type="text" class="form-control" id="phone" name="phone">
+                    <div class="form-text">Opcional: ingresa tu número de teléfono</div>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Crear usuario administrador</button>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer text-center">
+            <p class="text-muted mb-0">Esta pantalla solo aparece durante la configuración inicial</p>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

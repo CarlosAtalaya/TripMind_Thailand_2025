@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if action == 'add' %}
+        Añadir Usuario - TravelBoard
+    {% else %}
+        Editar Usuario - TravelBoard
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="display-5">
+                {% if action == 'add' %}
+                    Añadir Usuario
+                {% else %}
+                    Editar Usuario
+                {% endif %}
+            </h1>
+            <a href="{{ url_for('auth.admin_panel') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Volver al Panel
+            </a>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>
+                    {% if action == 'add' %}
+                        Nuevo Usuario
+                    {% else %}
+                        Editar Usuario: {{ user.username }}
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nombre de usuario</label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               value="{{ user.username if user else '' }}" required>
+                        <div class="form-text">El nombre de usuario debe ser único</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            {% if action == 'add' %}
+                                Contraseña
+                            {% else %}
+                                Nueva contraseña (dejar en blanco para mantener la actual)
+                            {% endif %}
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               {% if action == 'add' %}required{% endif %}>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre completo</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ user.name if user else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="phone" name="phone" 
+                               value="{{ user.phone if user else '' }}">
+                        <div class="form-text">Opcional</div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_admin" name="is_admin" 
+                               {% if user and user.is_admin %}checked{% endif %}>
+                        <label class="form-check-label" for="is_admin">Privilegios de administrador</label>
+                        <div class="form-text">Los administradores pueden gestionar usuarios</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            {% if action == 'add' %}
+                                <i class="fas fa-plus me-2"></i> Crear Usuario
+                            {% else %}
+                                <i class="fas fa-save me-2"></i> Guardar Cambios
+                            {% endif %}
+                        </button>
+                        <a href="{{ url_for('auth.admin_panel') }}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
