@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if entry %}
+        Editar Entrada - TravelBoard
+    {% else %}
+        Nueva Entrada - TravelBoard
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">
+        {% if entry %}
+            Editar Entrada
+        {% else %}
+            Nueva Entrada
+        {% endif %}
+    </h1>
+    <a href="{{ url_for('diary.index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i> Volver al Diario
+    </a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-pen me-2"></i>
+            {% if entry %}
+                Editar entrada del {{ entry.date.strftime('%d/%m/%Y') }}
+            {% else %}
+                Escribir en el diario
+            {% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="content" class="form-label">¿Qué quieres recordar de hoy?</label>
+                <textarea class="form-control" id="content" name="content" rows="8" required>{{ entry.content if entry else '' }}</textarea>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    {% if entry %}
+                        <i class="fas fa-save me-2"></i> Guardar Cambios
+                    {% else %}
+                        <i class="fas fa-save me-2"></i> Guardar Entrada
+                    {% endif %}
+                </button>
+                <a href="{{ url_for('diary.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Inspiración</h5>
+    </div>
+    <div class="card-body">
+        <p>Ideas para escribir en tu diario:</p>
+        
+        <ul>
+            <li>¿Qué ha sido lo mejor de hoy?</li>
+            <li>¿Has descubierto algo nuevo?</li>
+            <li>¿Qué comida has probado?</li>
+            <li>¿Has hecho alguna foto que te encante?</li>
+            <li>¿Alguna anécdota divertida con tus compañeros?</li>
+            <li>¿Cómo te has sentido hoy?</li>
+        </ul>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-lock me-2"></i>
+            <strong>Recuerda:</strong> Solo tú podrás ver lo que escribas aquí.
+        </div>
+    </div>
+</div>
+{% endblock %}

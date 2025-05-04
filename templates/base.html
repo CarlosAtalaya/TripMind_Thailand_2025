@@ -49,6 +49,11 @@
                                         <i class="fas fa-trophy me-2"></i> Votaciones
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('diary.index') }}">
+                                        <i class="fas fa-book me-2"></i> Mi Diario
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                         
@@ -72,21 +77,6 @@
                                     <i class="fas fa-user me-1"></i> {{ current_user.name }}
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li>
-                                        <a class="dropdown-item" href="{{ url_for('index') }}">
-                                            <i class="fas fa-globe me-2"></i> Itinerario
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ url_for('files.index') }}">
-                                            <i class="fas fa-share-alt me-2"></i> Compartir Archivos
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ url_for('votes.index') }}">
-                                            <i class="fas fa-trophy me-2"></i> Votaciones
-                                        </a>
-                                    </li>
                                     {% if current_user.is_admin %}
                                         <li>
                                             <a class="dropdown-item" href="{{ url_for('auth.admin_panel') }}">

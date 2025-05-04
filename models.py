@@ -69,3 +69,15 @@ class Vote(db.Model):
         """Calcular puntos basados en la posición"""
         points_map = {1: 5, 2: 4, 3: 3, 4: 2, 5: 1}
         return points_map.get(self.position, 0)
+    
+class DiaryEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.now)
+    content = db.Column(db.Text, nullable=False)
+    
+    # Relación con el usuario
+    user = db.relationship('User', backref=db.backref('diary_entries', lazy=True))
+    
+    def __repr__(self):
+        return f'<DiaryEntry {self.user.name} - {self.date.strftime("%Y-%m-%d")}>'

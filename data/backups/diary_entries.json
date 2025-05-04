@@ -1,0 +1,23 @@
+[
+    {
+        "user_id": 2,
+        "username": "Diego_Vanidoso",
+        "name": "Dieguito El Vanidoso",
+        "date": "2025-05-04 12:28:59",
+        "content": "Hoy creo que me he agado encima, espero que nadie se haya dado cuenta"
+    },
+    {
+        "user_id": 2,
+        "username": "Diego_Vanidoso",
+        "name": "Dieguito El Vanidoso",
+        "date": "2025-05-04 12:33:41",
+        "content": "Creo que no puedo mas con este viaje, mañana me cojo el primer vuelo de vuelta"
+    },
+    {
+        "user_id": 4,
+        "username": "Marta_Boxing",
+        "name": "Marta Boxeadora",
+        "date": "2025-05-04 12:36:01",
+        "content": "Hoooola grupo!!"
+    }
+]

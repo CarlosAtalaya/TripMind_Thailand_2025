@@ -12,6 +12,7 @@ from models import db, User
 from auth import auth
 from files import files
 from votes import votes
+from diary import diary
 
 app = Flask(__name__)
 
@@ -42,6 +43,7 @@ app.jinja_env.globals['now'] = get_now
 app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(files, url_prefix='/files')
 app.register_blueprint(votes, url_prefix='/votes')
+app.register_blueprint(diary, url_prefix='/diary')
 
 @login_manager.user_loader
 def load_user(user_id):
