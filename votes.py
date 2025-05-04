@@ -92,27 +92,25 @@ def vote_category(category_id):
             flash('Ya has votado en esta categoría hoy', 'warning')
             return redirect(url_for('votes.index'))
         
-        # Procesar los votos
-        positions = [1, 2, 3, 4, 5]
-        for position in positions:
-            traveler_name = request.form.get(f'position-{position}')
-            if traveler_name:
-                vote = Vote(
-                    category_id=category_id,
-                    voter_id=current_user.id,
-                    traveler_name=traveler_name,
-                    position=position,
-                    date=today
-                )
-                db.session.add(vote)
+        # Procesar el voto (ahora solo uno)
+        traveler_name = request.form.get('traveler')
+        if traveler_name:
+            vote = Vote(
+                category_id=category_id,
+                voter_id=current_user.id,
+                traveler_name=traveler_name,
+                position=1,  # Siempre posición 1 ya que solo hay un voto
+                date=today
+            )
+            db.session.add(vote)
         
         try:
             db.session.commit()
-            flash('¡Votos registrados con éxito!', 'success')
+            flash('¡Voto registrado con éxito!', 'success')
             return redirect(url_for('votes.index'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error al registrar votos: {e}', 'danger')
+            flash(f'Error al registrar voto: {e}', 'danger')
     
     return render_template('votes/vote_form.html',
                           category=category,
@@ -128,7 +126,10 @@ def get_rankings():
     
     # Definir el período para los rankings (últimos 7 días por defecto)
     days = request.args.get('days', 7, type=int)
-    start_date = datetime.now().date() - timedelta(days=days)
+    if days == 0:  # Si es 0, mostrar de todo el tiempo
+        start_date = datetime(1900, 1, 1).date()
+    else:
+        start_date = datetime.now().date() - timedelta(days=days)
     
     rankings = {}
     
@@ -139,23 +140,23 @@ def get_rankings():
             Vote.date >= start_date
         ).all()
         
-        # Calcular puntos por viajero
-        traveler_points = {name: 0 for name in traveler_names}
+        # Calcular votos por viajero (ahora es simplemente contar votos)
+        traveler_votes = {name: 0 for name in traveler_names}
         for vote in votes:
-            if vote.traveler_name in traveler_points:
-                traveler_points[vote.traveler_name] += vote.points
+            if vote.traveler_name in traveler_votes:
+                traveler_votes[vote.traveler_name] += 1
         
-        # Ordenar por puntos
+        # Ordenar por cantidad de votos
         sorted_travelers = sorted(
-            traveler_points.items(),
+            traveler_votes.items(),
             key=lambda x: x[1],
             reverse=True
         )
         
         # Guardar el ranking
         rankings[category.name] = [
-            {"name": name, "points": points}
-            for name, points in sorted_travelers
+            {"name": name, "points": votes}
+            for name, votes in sorted_travelers
         ]
     
     return jsonify(rankings)

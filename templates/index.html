@@ -235,7 +235,7 @@
             const container = document.getElementById('rankings-container');
             if (!container) return;
             
-            // Ordenar por puntos
+            // Ordenar por puntos (ahora son votos)
             const sortedRanking = [...ranking].sort((a, b) => b.points - a.points);
             
             if (sortedRanking.length === 0 || sortedRanking[0].points === 0) {
@@ -248,29 +248,32 @@
                 return;
             }
             
-            // Crear el HTML del ranking
+            // Crear el HTML del ranking (solo los 3 primeros)
             let html = '<div class="list-group">';
             
-            sortedRanking.forEach((traveler, index) => {
-                // Definir clase para el podio
-                let badgeClass = 'bg-secondary';
+            // Tomar solo los primeros 3 o menos si no hay suficientes
+            const topThree = sortedRanking.slice(0, Math.min(3, sortedRanking.length));
+            
+            topThree.forEach((traveler, index) => {
+                // Definir clase e icono según posición
+                let badgeClass = '';
                 let icon = '';
                 
                 if (index === 0) {
                     badgeClass = 'bg-warning text-dark'; // Oro
-                    icon = '<i class="fas fa-trophy text-warning me-2"></i>';
+                    icon = '<i class="fas fa-medal text-warning me-2"></i>';
                 } else if (index === 1) {
-                    badgeClass = 'bg-light text-dark'; // Plata
+                    badgeClass = 'bg-secondary text-white'; // Plata
                     icon = '<i class="fas fa-medal text-secondary me-2"></i>';
                 } else if (index === 2) {
-                    badgeClass = 'bg-danger'; // Bronce
-                    icon = '<i class="fas fa-award text-danger me-2"></i>';
+                    badgeClass = 'bg-danger text-white'; // Bronce
+                    icon = '<i class="fas fa-medal text-danger me-2"></i>';
                 }
                 
                 html += `
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <span>${icon}${traveler.name}</span>
-                        <span class="badge ${badgeClass} rounded-pill">${traveler.points} pts</span>
+                        <span class="badge ${badgeClass} rounded-pill">${traveler.points} votos</span>
                     </div>
                 `;
             });

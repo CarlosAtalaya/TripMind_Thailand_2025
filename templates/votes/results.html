@@ -106,17 +106,42 @@
                                 </div>
                             `;
                         } else {
+                            // Tomar solo los primeros 3 o menos si no hay suficientes
+                            const topThree = sortedRanking.slice(0, Math.min(3, sortedRanking.length));
+                            
                             rankingHTML = `
-                                <ol class="list-group list-group-numbered">
-                                    ${sortedRanking.slice(0, 5).map(traveler => `
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div class="ms-2 me-auto">
-                                                <div class="fw-bold">${traveler.name}</div>
-                                            </div>
-                                            <span class="badge bg-primary rounded-pill">${traveler.points} pts</span>
-                                        </li>
-                                    `).join('')}
-                                </ol>
+                                <div class="list-group">
+                            `;
+                            
+                            topThree.forEach((traveler, index) => {
+                                // Definir iconos según posición
+                                let icon = '';
+                                let badgeClass = '';
+                                
+                                if (index === 0) {
+                                    icon = '<i class="fas fa-medal text-warning me-2"></i>'; // Oro
+                                    badgeClass = 'bg-warning text-dark';
+                                } else if (index === 1) {
+                                    icon = '<i class="fas fa-medal text-secondary me-2"></i>'; // Plata
+                                    badgeClass = 'bg-secondary text-white';
+                                } else if (index === 2) {
+                                    icon = '<i class="fas fa-medal text-danger me-2"></i>'; // Bronce
+                                    badgeClass = 'bg-danger text-white';
+                                }
+                                
+                                rankingHTML += `
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            ${icon}
+                                            <div class="ms-2">${traveler.name}</div>
+                                        </div>
+                                        <span class="badge ${badgeClass} rounded-pill">${traveler.points} votos</span>
+                                    </div>
+                                `;
+                            });
+                            
+                            rankingHTML += `
+                                </div>
                             `;
                         }
                         
@@ -158,13 +183,11 @@
     <div class="card-body">
         <p>Esta página muestra los resultados de las votaciones para todas las categorías.</p>
         
-        <h6 class="mt-3">Sistema de puntuación:</h6>
+        <h6 class="mt-3">Leyenda de medallas:</h6>
         <ul>
-            <li>1er puesto: 5 puntos</li>
-            <li>2do puesto: 4 puntos</li>
-            <li>3er puesto: 3 puntos</li>
-            <li>4to puesto: 2 puntos</li>
-            <li>5to puesto: 1 punto</li>
+            <li><i class="fas fa-medal text-warning me-2"></i> Oro - Primer lugar</li>
+            <li><i class="fas fa-medal text-secondary me-2"></i> Plata - Segundo lugar</li>
+            <li><i class="fas fa-medal text-danger me-2"></i> Bronce - Tercer lugar</li>
         </ul>
         
         <div class="alert alert-info mt-3">

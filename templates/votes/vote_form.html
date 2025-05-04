@@ -15,52 +15,31 @@
 {% if existing_votes %}
     <div class="alert alert-info">
         <i class="fas fa-info-circle me-2"></i>
-        Ya has votado en esta categoría hoy. Puedes votar nuevamente mañana.
+        Ya has votado en esta categoría hoy. Has elegido a: <strong>{{ existing_votes[0].traveler_name }}</strong>
     </div>
-    <ul class="list-group mb-4">
-        {% for vote in existing_votes|sort(attribute='position') %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Posición #{{ vote.position }}</span>
-                <span class="badge bg-primary rounded-pill">{{ vote.traveler_name }}</span>
-            </li>
-        {% endfor %}
-    </ul>
     <a href="{{ url_for('votes.index') }}" class="btn btn-primary">Volver a las categorías</a>
 {% else %}
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-vote-yea me-2"></i>Elige a 5 viajeros en orden</h5>
+            <h5 class="mb-0"><i class="fas fa-vote-yea me-2"></i>Elige a un viajero</h5>
         </div>
         <div class="card-body">
             <form method="POST" id="voteForm">
-                {% for position in range(1, 6) %}
-                    <div class="mb-3">
-                        <label for="position-{{ position }}" class="form-label">
-                            <strong>Posición #{{ position }}</strong> 
-                            {% if position == 1 %}
-                                (5 puntos)
-                            {% elif position == 2 %}
-                                (4 puntos)
-                            {% elif position == 3 %}
-                                (3 puntos)
-                            {% elif position == 4 %}
-                                (2 puntos)
-                            {% elif position == 5 %}
-                                (1 punto)
-                            {% endif %}
-                        </label>
-                        <select class="form-select traveler-select" id="position-{{ position }}" name="position-{{ position }}" required>
-                            <option value="">Selecciona un viajero...</option>
-                            {% for traveler in travelers %}
-                                <option value="{{ traveler.name }}">{{ traveler.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                {% endfor %}
+                <div class="mb-3">
+                    <label for="traveler" class="form-label">
+                        <strong>¿Quién merece ganar en la categoría "{{ category.name }}"?</strong>
+                    </label>
+                    <select class="form-select traveler-select" id="traveler" name="traveler" required>
+                        <option value="">Selecciona un viajero...</option>
+                        {% for traveler in travelers %}
+                            <option value="{{ traveler.name }}">{{ traveler.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-check me-2"></i> Enviar Votos
+                        <i class="fas fa-check me-2"></i> Enviar Voto
                     </button>
                     <a href="{{ url_for('votes.index') }}" class="btn btn-outline-secondary">Cancelar</a>
                 </div>
@@ -130,17 +109,8 @@
         <p>Para votar en la categoría <strong>{{ category.name }}</strong>, sigue estos pasos:</p>
         
         <ol>
-            <li>Selecciona un viajero para cada una de las 5 posiciones</li>
-            <li>Cada viajero solo puede ser votado una vez</li>
-            <li>La puntuación se asigna de la siguiente manera:
-                <ul>
-                    <li>1er puesto: 5 puntos</li>
-                    <li>2do puesto: 4 puntos</li>
-                    <li>3er puesto: 3 puntos</li>
-                    <li>4to puesto: 2 puntos</li>
-                    <li>5to puesto: 1 punto</li>
-                </ul>
-            </li>
+            <li>Selecciona el viajero que crees que merece ganar en esta categoría</li>
+            <li>Haz clic en "Enviar Voto" para registrar tu elección</li>
         </ol>
         
         <div class="alert alert-warning mt-3">
