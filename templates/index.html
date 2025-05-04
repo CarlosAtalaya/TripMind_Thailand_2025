@@ -99,7 +99,15 @@
                             <div class="tab-pane fade show active p-3" id="travelers-content" role="tabpanel" aria-labelledby="travelers-tab">
                                 <ul class="list-unstyled mb-0">
                                     {% for traveler in itinerary.travelers %}
-                                        <li><i class="fas fa-user me-2"></i>{{ traveler.name }}</li>
+                                        <li class="d-flex justify-content-between align-items-center mb-2" data-traveler-name="{{ traveler.name }}">
+                                            <div>
+                                                <i class="fas fa-user me-2"></i>{{ traveler.name }}
+                                            </div>
+                                            <span class="badge bg-warning text-dark">
+                                                <span style="font-size: 1rem;">💩</span>
+                                                <span class="poop-count">0</span>
+                                            </span>
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             </div>
@@ -235,7 +243,7 @@
             const container = document.getElementById('rankings-container');
             if (!container) return;
             
-            // Ordenar por puntos (ahora son votos)
+            // Ordenar por puntos
             const sortedRanking = [...ranking].sort((a, b) => b.points - a.points);
             
             if (sortedRanking.length === 0 || sortedRanking[0].points === 0) {
@@ -248,10 +256,10 @@
                 return;
             }
             
-            // Crear el HTML del ranking (solo los 3 primeros)
+            // Crear el HTML del ranking (máximo 3)
             let html = '<div class="list-group">';
             
-            // Tomar solo los primeros 3 o menos si no hay suficientes
+            // Tomar solo los 3 primeros o menos si no hay suficientes
             const topThree = sortedRanking.slice(0, Math.min(3, sortedRanking.length));
             
             topThree.forEach((traveler, index) => {
@@ -287,6 +295,67 @@
         
         // Actualizar rankings cada 5 minutos
         setInterval(loadVoteCategories, 300000);
+        
+        // Script específico para los contadores de caca en la sección de viajeros
+        function updatePoopCounters() {
+            console.log('Actualizando contadores de viajeros en index.html');
+            
+            // Verificar si estamos en la página principal con la sección de viajeros
+            const travelersSection = document.getElementById('travelers-content');
+            if (!travelersSection) {
+                console.warn('No se encontró la sección de viajeros');
+                return; // No estamos en la página correcta
+            }
+            
+            // Obtener todos los elementos de viajeros
+            const travelers = travelersSection.querySelectorAll('[data-traveler-name]');
+            if (travelers.length === 0) {
+                console.warn('No se encontraron elementos de viajeros');
+                return;
+            }
+            
+            console.log('Encontrados', travelers.length, 'elementos de viajeros');
+            
+            // Obtener contadores actuales desde el servidor
+            fetch('/api/poop/counts')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && Array.isArray(data.counts)) {
+                        console.log('Datos de contadores recibidos:', data.counts);
+                        
+                        // Actualizar cada contador
+                        travelers.forEach(travelerEl => {
+                            const name = travelerEl.dataset.travelerName;
+                            const countEl = travelerEl.querySelector('.poop-count');
+                            
+                            if (countEl) {
+                                // Buscar el contador para este viajero
+                                const travelerData = data.counts.find(c => c.user_name === name);
+                                if (travelerData) {
+                                    console.log('Actualizando contador para', name, 'a', travelerData.count);
+                                    countEl.textContent = travelerData.count;
+                                } else {
+                                    console.log('No se encontraron datos para', name, ', dejando en 0');
+                                    countEl.textContent = '0';
+                                }
+                            } else {
+                                console.warn('No se encontró el elemento contador para', name);
+                            }
+                        });
+                    } else {
+                        console.error('Formato de datos incorrecto:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar contadores:', error);
+                });
+        }
+        
+        // Actualizar contadores inmediatamente
+        updatePoopCounters();
+        
+        // Actualizar contadores cada 5 segundos
+        setInterval(updatePoopCounters, 5000);
     });
 </script>
 {% endblock %}

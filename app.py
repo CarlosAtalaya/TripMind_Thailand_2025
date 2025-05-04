@@ -13,6 +13,7 @@ from auth import auth
 from files import files
 from votes import votes
 from diary import diary
+from poop_counter import poop_counter
 
 app = Flask(__name__)
 
@@ -44,6 +45,7 @@ app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(files, url_prefix='/files')
 app.register_blueprint(votes, url_prefix='/votes')
 app.register_blueprint(diary, url_prefix='/diary')
+app.register_blueprint(poop_counter)
 
 @login_manager.user_loader
 def load_user(user_id):

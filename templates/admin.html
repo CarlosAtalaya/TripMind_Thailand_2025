@@ -104,6 +104,64 @@
         </div>
     </div>
 </div>
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-poop me-2"></i>Contadores de Cacas</h5>
+    </div>
+    <div class="card-body">
+        <p>Como administrador, puedes resetear los contadores de cacas de todos los usuarios.</p>
+        <button id="resetPoopCounters" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i> Resetear Todos los Contadores
+        </button>
+        <div id="resetResult" class="mt-3"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const resetButton = document.getElementById('resetPoopCounters');
+        const resultDiv = document.getElementById('resetResult');
+        
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que quieres resetear todos los contadores de cacas? Esta acción no se puede deshacer.')) {
+                    fetch('/api/poop/reset', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            resultDiv.innerHTML = `
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    ${data.message}
+                                </div>
+                            `;
+                        } else {
+                            resultDiv.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    Error: ${data.error}
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        resultDiv.innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                Error: ${error.message}
+                            </div>
+                        `;
+                    });
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
 
 {% block sidebar %}

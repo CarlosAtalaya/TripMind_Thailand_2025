@@ -81,3 +81,15 @@ class DiaryEntry(db.Model):
     
     def __repr__(self):
         return f'<DiaryEntry {self.user.name} - {self.date.strftime("%Y-%m-%d")}>'
+    
+class PoopCounter(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    count = db.Column(db.Integer, default=0)
+    last_updated = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relación con el usuario
+    user = db.relationship('User', backref=db.backref('poop_counter', uselist=False, lazy=True))
+    
+    def __repr__(self):
+        return f'<PoopCounter {self.user.name}: {self.count}>'
