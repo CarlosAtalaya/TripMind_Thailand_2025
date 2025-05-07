@@ -5,6 +5,7 @@
  */
 
 // Función principal al cargar el documento
+// Función principal al cargar el documento
 document.addEventListener('DOMContentLoaded', function() {
     // Activar tooltips de Bootstrap
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -12,15 +13,57 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Hacer que el navbar se contraiga al hacer clic en un enlace (en móviles)
-    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-    const menuToggle = document.getElementById('mainNav');
-    const bsCollapse = menuToggle ? new bootstrap.Collapse(menuToggle, {toggle: false}) : null;
+    // NUEVO: Manejar el cierre del menú en móvil
+    const navbarCollapse = document.querySelector('#mainNav');
+    const navLinks = document.querySelectorAll('#mainNav .nav-link:not(.dropdown-toggle)');
+    const dropdownItems = document.querySelectorAll('#mainNav .dropdown-item');
     
+    // Cerrar menú al hacer clic en un enlace normal
     navLinks.forEach(function(link) {
-        link.addEventListener('click', function() {
-            if (window.innerWidth < 992 && bsCollapse && menuToggle.classList.contains('show')) {
-                bsCollapse.toggle();
+        link.addEventListener('click', function(e) {
+            // Solo cerrar si estamos en móvil y el navbar está expandido
+            if (window.innerWidth < 992) {
+                const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                if (bsCollapse && navbarCollapse.classList.contains('show')) {
+                    bsCollapse.hide();
+                }
+            }
+        });
+    });
+    
+    // Cerrar menú al hacer clic en un item del dropdown
+    dropdownItems.forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            if (window.innerWidth < 992) {
+                // Permitir que el enlace funcione antes de cerrar
+                setTimeout(function() {
+                    const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                    if (bsCollapse && navbarCollapse.classList.contains('show')) {
+                        bsCollapse.hide();
+                    }
+                }, 100);
+            }
+        });
+    });
+    
+    // NUEVO: Prevenir el cierre automático del dropdown en móvil
+    const dropdowns = document.querySelectorAll('.dropdown');
+    dropdowns.forEach(function(dropdown) {
+        dropdown.addEventListener('hide.bs.dropdown', function(e) {
+            // Si estamos en móvil, evitar que se cierre automáticamente
+            if (window.innerWidth < 992 && e.clickEvent) {
+                e.preventDefault();
+                
+                // Si se hizo clic en un enlace del dropdown, permitir la navegación
+                if (e.clickEvent.target.closest('.dropdown-item')) {
+                    const link = e.clickEvent.target.closest('.dropdown-item');
+                    if (link.href) {
+                        // Dar tiempo para que se ejecute la navegación
+                        setTimeout(function() {
+                            window.location.href = link.href;
+                        }, 100);
+                    }
+                }
             }
         });
     });
@@ -58,8 +101,8 @@ document.addEventListener('DOMContentLoaded', function() {
         navLinks.forEach(function(link) {
             link.classList.remove('active');
             
-            const href = link.getAttribute('href').substring(1); // Eliminar el #
-            if (href === sectionId) {
+            const href = link.getAttribute('href');
+            if (href && href.substring(1) === sectionId) {
                 link.classList.add('active');
             }
         });
