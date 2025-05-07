@@ -17,7 +17,7 @@ class GlobalNewsService {
      * @param {string} itineraryName - Nombre del archivo del itinerario
      * @returns {Promise} - Promesa con las noticias
      */
-    async getAllNews(maxItems = 20, itineraryName = 'thailand_2025.yaml') {
+    async getAllNews(maxItems = 50, itineraryName = 'thailand_2025.yaml') {
         // Verificar si tenemos datos en caché y si son válidos
         if (this.cache && (Date.now() - this.cacheTimestamp < this.cacheExpiration)) {
             console.log('Usando noticias en caché');
@@ -90,24 +90,88 @@ class GlobalNewsService {
      */
     getAlertClass(article) {
         const highAlertKeywords = [
-            'emergency', 'alert', 'warning', 'evacuation', 'danger',
-            'terrorist', 'attack', 'earthquake', 'tsunami', 'hurricane'
+            // Emergencias extremas
+            'emergency', 'evacuation', 'danger', 'terrorist', 'attack', 
+            'earthquake', 'tsunami', 'explosion', 'shooting', 'bomb', 
+            'violence', 'crisis', 'death', 'killed', 'fatality', 
+            'critical', 'severe', 'disaster', 'catastrophe', 'collapse',
+            
+            // COVID y pandemias
+            'outbreak', 'pandemic', 'quarantine', 'lockdown',
+            
+            // Situaciones muy graves
+            'hostage', 'kidnapping', 'murder', 'fire',
+            'volcano', 'eruption', 'destroyed',
+            
+            // Cierres críticos
+            'airport closed', 'border closed', 'travel ban', 'do not travel',
+            'tourist killed', 'tourist arrested', 'tourist missing'
         ];
         
         const mediumAlertKeywords = [
-            'protest', 'demonstration', 'strike', 'flood', 'storm',
-            'weather', 'canceled', 'delay', 'closure', 'health'
+            // Seguridad y orden público  
+            'alert', 'security', 'protest', 'demonstration', 'strike',
+            'police', 'military', 'curfew', 'incident', 'accident',
+            'crash', 'theft', 'robbery', 'pickpocket', 'scam',
+            'arrest', 'jail', 'detained', 'fine', 'penalty',
+            
+            // Salud
+            'covid', 'virus', 'disease', 'infection', 'hospital',
+            'medical', 'health', 'dengue', 'malaria', 'fever',
+            'vaccination', 'sick', 'doctor', 'clinic',
+            'food poisoning', 'stomach', 'diarrhea',
+            
+            // Clima y condiciones
+            'storm', 'rain', 'flood', 'weather', 'monsoon',
+            'typhoon', 'cyclone', 'landslide', 'drought', 'heatwave',
+            'temperature', 'humidity', 'forecast', 'season', 'tropical storm',
+            
+            // Transporte
+            'flight', 'canceled', 'cancelled', 'delayed', 'closure',
+            'traffic', 'road closure', 'transport', 'ferry', 'train', 'bus',
+            'airport', 'disruption', 'breakdown',
+            
+            // Turismo y viajes
+            'tourist', 'tourism', 'visa', 'immigration', 'embassy', 
+            'consulate', 'passport', 'backpacker', 'hotel', 'hostel',
+            'overstay', 'deportation', 'entry denied',
+            
+            // Cultura y entretenimiento
+            'ladyboy', 'kathoey', 'nightlife', 'red light', 'ping pong show',
+            'full moon party', 'massage parlor', 'happy ending', 'tuk tuk',
+            'tourist trap', 'bar girl', 'go go bar', 'soapy massage',
+            'karaoke', 'walking street', 'party', 'fiesta', 'alcohol',
+            'drunk', 'drugs', 'marijuana', 'cannabis', 'mushrooms',
+            'police raid', 'bar', 'club',
+            
+            // Términos específicos
+            'spanish tourist', 'spanish group', 'español', 'españoles',
+            'turista español', 'group tour', 'money', 'atm', 'credit card',
+            'temple', 'buddha', 'monk', 'festival', 'celebration', 'holiday',
+            'beach', 'island', 'diving', 'snorkeling', 'boat', 'speedboat',
+            
+            // Términos graciosos/informales
+            'guiri', 'borracho', 'borrachera', 'resaca', 'juerga',
+            'cagalera', 'cagar', 'vomitar', 'ligar', 'prostituta', 'burdel'
         ];
         
         const content = (article.title + ' ' + article.description).toLowerCase();
         
-        if (highAlertKeywords.some(keyword => content.includes(keyword))) {
-            return 'border-danger';
-        } else if (mediumAlertKeywords.some(keyword => content.includes(keyword))) {
-            return 'border-warning';
+        // Verificar alertas altas primero
+        for (const keyword of highAlertKeywords) {
+            if (content.includes(keyword.toLowerCase())) {
+                return 'border-danger';
+            }
         }
         
-        return '';
+        // Luego verificar alertas medias
+        for (const keyword of mediumAlertKeywords) {
+            if (content.includes(keyword.toLowerCase())) {
+                return 'border-warning';
+            }
+        }
+        
+        return '';  // Borde azul por defecto
     }
 
     /**
@@ -189,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const itineraryName = itineraryElement ? itineraryElement.dataset.name : 'thailand_2025.yaml';
     
     // Cargar noticias para el contenedor principal
-    globalNewsService.getAllNews(20, itineraryName)
+    globalNewsService.getAllNews(50, itineraryName)
         .then(data => {
             // Renderizar en el contenedor principal (sidebar)
             globalNewsService.renderNewsData(data);

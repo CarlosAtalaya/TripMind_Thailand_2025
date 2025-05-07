@@ -10,10 +10,41 @@ from services.itinerary import load_itinerary
 
 # Palabras clave que indican noticias potencialmente relevantes
 alert_keywords = [
+    # Seguridad y emergencias
     'alert', 'security', 'protest', 'emergency', 'evacuation', 'earthquake',
     'storm', 'rain', 'flood', 'travel warning', 'demonstration', 'danger',
     'violence', 'outbreak', 'covid', 'hurricane', 'tsunami', 'closure', 'strike',
-    'tourist', 'ladyboy', 'tourism', 'hospital', 'spanish group'
+    'terrorist', 'attack', 'police', 'military', 'curfew', 'lockdown',
+    'accident', 'crash', 'fire', 'explosion', 'incident', 'crisis',
+    
+    # Salud y enfermedades
+    'disease', 'virus', 'infection', 'outbreak', 'hospital', 'medical', 'health',
+    'dengue', 'malaria', 'fever', 'vaccination', 'quarantine', 'pandemic',
+    
+    # Transporte y turismo
+    'tourist', 'tourism', 'airport', 'flight', 'canceled', 'delayed', 'transport',
+    'road closure', 'traffic', 'visa', 'immigration', 'embassy', 'consulate',
+    'backpacker', 'hotel', 'hostel', 'ferry', 'train', 'bus',
+    
+    # Clima y desastres naturales
+    'weather', 'monsoon', 'typhoon', 'landslide', 'drought', 'heatwave',
+    'temperature', 'humidity', 'forecast', 'season', 'tropical storm',
+    
+    # Cultura y entretenimiento (incluyendo términos graciosos)
+    'ladyboy', 'kathoey', 'nightlife', 'red light', 'ping pong show', 'full moon party',
+    'massage parlor', 'happy ending', 'tuk tuk', 'scam', 'tourist trap',
+    'bar girl', 'go go bar', 'soapy massage', 'karaoke', 'walking street',
+    
+    # Términos específicos de viajeros españoles
+    'spanish tourist', 'spanish group', 'español', 'españoles', 'turista español',
+    'group tour', 'party', 'fiesta', 'alcohol', 'drunk', 'arrest', 'jail',
+    
+    # Otros términos relevantes
+    'drugs', 'marijuana', 'cannabis', 'mushrooms', 'police raid', 'fine', 'penalty',
+    'money', 'atm', 'credit card', 'theft', 'robbery', 'pickpocket',
+    'food poisoning', 'stomach', 'diarrhea', 'doctor', 'clinic',
+    'temple', 'buddha', 'monk', 'festival', 'celebration', 'holiday',
+    'beach', 'island', 'diving', 'snorkeling', 'boat', 'speedboat'
 ]
 
 # Fuentes RSS de noticias tailandesas e internacionales
@@ -120,7 +151,7 @@ def fetch_rss(feed_url, regions_keywords):
         print(f"Error fetching RSS {feed_url}: {str(e)}")
         return []
 
-def get_filtered_news(itinerary_name='thailand_2025.yaml', max_items=20):
+def get_filtered_news(itinerary_name='thailand_2025.yaml', max_items=50):
     """
     Obtiene noticias filtradas de todas las fuentes RSS
     

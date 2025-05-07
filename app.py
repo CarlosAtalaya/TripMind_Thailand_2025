@@ -131,7 +131,7 @@ def get_weather(region_id):
 @app.route('/api/news/all')
 def get_all_news():
     """API para obtener todas las noticias relevantes para el viaje"""
-    max_items = request.args.get('max', 20, type=int)
+    max_items = request.args.get('max', 50, type=int)
     itinerary_name = request.args.get('itinerary', 'thailand_2025.yaml')
     
     # Obtener noticias relevantes
