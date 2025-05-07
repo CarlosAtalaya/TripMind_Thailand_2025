@@ -24,6 +24,9 @@ Una aplicación web personalizada para gestionar y documentar un viaje grupal a 
 - Sistema para subir y compartir fotos/videos del viaje
 - Organización automática por fecha
 - Soporte para múltiples formatos (JPG, PNG, MP4, PDF, etc.)
+- Límite de subida: 6 GB por vez
+- Límite total de almacenamiento: 400 GB
+- Visualización del espacio utilizado
 
 ### 🏆 Sistema de Votaciones
 - Categorías divertidas para votar entre compañeros

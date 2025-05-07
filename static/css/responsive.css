@@ -364,3 +364,22 @@
     /* Aquí puedes agregar estilos para modo oscuro */
 }
 
+/* Solucionar problemas de modales en móvil */
+@media (max-width: 768px) {
+    .modal {
+        position: fixed !important;
+    }
+    
+    .modal.show {
+        overflow-y: auto !important;
+    }
+    
+    .modal-backdrop {
+        position: fixed !important;
+    }
+    
+    /* Evitar que el formulario de eliminación cause problemas */
+    form[action*="/compartir/eliminar/"] {
+        margin: 0;
+    }
+}

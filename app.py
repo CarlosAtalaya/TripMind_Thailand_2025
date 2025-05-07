@@ -14,6 +14,9 @@ from files import files
 from votes import votes
 from diary import diary
 from poop_counter import poop_counter
+import logging
+from logging.handlers import RotatingFileHandler
+from config import MAX_UPLOAD_SIZE
 
 app = Flask(__name__)
 
@@ -21,8 +24,20 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_for_mvp')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tripboard.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['MAX_CONTENT_LENGTH'] = 2048 * 1024 * 1024  # 2 GB max
+app.config['MAX_CONTENT_LENGTH'] = MAX_UPLOAD_SIZE  # Usar el límite configurado
 
+# Configuración de logging
+if not app.debug:
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    file_handler = RotatingFileHandler('logs/tripboard.log', maxBytes=10240, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+
+app.logger.setLevel(logging.INFO)
+app.logger.info('TripBoard startup')
 # Inicializar extensiones
 db.init_app(app)
 login_manager = LoginManager()

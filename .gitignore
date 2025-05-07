@@ -104,7 +104,7 @@ secrets.json
 # Media files (if stored locally)
 uploads/
 media/
-/home/carlos/Documentos/Multimedia_Tailandia2025/
+Multimedia_Tailandia2025/
 
 # Backup files
 *.bak

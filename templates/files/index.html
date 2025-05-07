@@ -10,6 +10,25 @@
     </a>
 </div>
 
+<!-- Barra de almacenamiento -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h6 class="mb-2">Almacenamiento usado</h6>
+        <div class="progress" style="height: 30px;">
+            <div class="progress-bar" role="progressbar" 
+                 style="width: {{ storage_percentage }}%;" 
+                 aria-valuenow="{{ storage_percentage }}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100">
+                {{ current_storage }} / {{ max_storage }}
+            </div>
+        </div>
+        <small class="text-muted">
+            {{ "%.1f"|format(storage_percentage) }}% usado
+        </small>
+    </div>
+</div>
+
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
@@ -44,7 +63,11 @@
                             <tr>
                                 <td class="text-center" style="width: 80px;">
                                     {% if file.mimetype.startswith('image/') %}
-                                        <img src="{{ url_for('files.download', file_id=file.id) }}" class="img-thumbnail" style="max-height: 60px;">
+                                        <!-- CAMBIO: Usar la nueva ruta preview para las imágenes -->
+                                        <img src="{{ url_for('files.preview', file_id=file.id) }}" 
+                                             class="img-thumbnail" 
+                                             style="max-height: 60px;"
+                                             alt="{{ file.original_filename }}">
                                     {% elif file.mimetype.startswith('video/') %}
                                         <i class="fas fa-film fa-2x text-primary"></i>
                                     {% elif file.mimetype.startswith('application/pdf') %}
@@ -71,12 +94,12 @@
                                         </a>
                                         {% if current_user.id == file.user_id or current_user.is_admin %}
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ file.id }}">
+                                                    data-bs-toggle="modal" data-bs-target="#deleteModalTable{{ file.id }}">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                             
                                             <!-- Modal de confirmación para eliminar -->
-                                            <div class="modal fade" id="deleteModal{{ file.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal fade" id="deleteModalTable{{ file.id }}" tabindex="-1" aria-hidden="true">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
@@ -118,7 +141,10 @@
                     {% if file.mimetype.startswith('image/') %}
                         <div class="col">
                             <div class="card h-100">
-                                <img src="{{ url_for('files.download', file_id=file.id) }}" class="card-img-top" alt="{{ file.original_filename }}">
+                                <!-- CAMBIO: Usar la nueva ruta preview para las imágenes -->
+                                <img src="{{ url_for('files.preview', file_id=file.id) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ file.original_filename }}">
                                 <div class="card-body">
                                     <h6 class="card-title">{{ file.original_filename }}</h6>
                                     <p class="card-text small">
@@ -259,4 +285,46 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prevenir envíos múltiples del formulario
+    const deleteForms = document.querySelectorAll('form[action*="/compartir/eliminar/"]');
+    
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            // Deshabilitar el botón de envío para evitar múltiples clicks
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Eliminando...';
+            }
+            
+            // Añadir un pequeño delay para evitar problemas en móvil
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                setTimeout(() => {
+                    form.submit();
+                }, 100);
+            }
+        });
+    });
+    
+    // Cerrar modales automáticamente en móvil después de confirmar
+    if (window.innerWidth <= 768) {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', function() {
+                // Limpiar cualquier backdrop que quede
+                document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                    backdrop.remove();
+                });
+                // Restaurar el scroll del body
+                document.body.style.overflow = '';
+            });
+        });
+    }
+});
+</script>
 {% endblock %}
