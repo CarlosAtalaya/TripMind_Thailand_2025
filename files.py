@@ -197,8 +197,11 @@ def delete(file_id):
     
     # Verificar si el usuario actual es el propietario o un administrador
     if shared_file.user_id != current_user.id and not current_user.is_admin:
-        flash('No tienes permisos para eliminar este archivo', 'danger')
-        return redirect(url_for('files.index'))
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': 'No tienes permisos para eliminar este archivo'}), 403
+        else:
+            flash('No tienes permisos para eliminar este archivo', 'danger')
+            return redirect(url_for('files.index'))
     
     try:
         # Eliminar el archivo físico
@@ -210,12 +213,18 @@ def delete(file_id):
         db.session.delete(shared_file)
         db.session.commit()
         
-        flash('Archivo eliminado correctamente', 'success')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': 'Archivo eliminado correctamente'})
+        else:
+            flash('Archivo eliminado correctamente', 'success')
+            return redirect(url_for('files.index'))
     except Exception as e:
         db.session.rollback()
-        flash(f'Error al eliminar el archivo: {str(e)}', 'danger')
-    
-    return redirect(url_for('files.index'))
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': str(e)}), 500
+        else:
+            flash(f'Error al eliminar el archivo: {str(e)}', 'danger')
+            return redirect(url_for('files.index'))
 
 @files.route('/compartir/preview/<int:file_id>')
 @login_required

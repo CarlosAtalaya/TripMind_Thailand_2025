@@ -29,131 +29,109 @@
     </div>
 </div>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-
-{% if shared_files %}
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-images me-2"></i>Multimedia del Viaje</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Vista previa</th>
-                            <th>Nombre</th>
-                            <th>Subido por</th>
-                            <th>Fecha</th>
-                            <th>Tamaño</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for file in shared_files %}
-                            <tr>
-                                <td class="text-center" style="width: 80px;">
-                                    {% if file.mimetype.startswith('image/') %}
-                                        <!-- CAMBIO: Usar la nueva ruta preview para las imágenes -->
-                                        <img src="{{ url_for('files.preview', file_id=file.id) }}" 
-                                             class="img-thumbnail" 
-                                             style="max-height: 60px;"
-                                             alt="{{ file.original_filename }}">
-                                    {% elif file.mimetype.startswith('video/') %}
-                                        <i class="fas fa-film fa-2x text-primary"></i>
-                                    {% elif file.mimetype.startswith('application/pdf') %}
-                                        <i class="fas fa-file-pdf fa-2x text-danger"></i>
-                                    {% elif file.mimetype.startswith('application/zip') or file.mimetype.startswith('application/x-rar') %}
-                                        <i class="fas fa-file-archive fa-2x text-warning"></i>
-                                    {% else %}
-                                        <i class="fas fa-file fa-2x text-secondary"></i>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {{ file.original_filename }}
-                                    {% if file.description %}
-                                        <p class="small text-muted mb-0">{{ file.description }}</p>
-                                    {% endif %}
-                                </td>
-                                <td>{{ file.user.name }}</td>
-                                <td>{{ file.upload_date|format_date }}</td>
-                                <td>{{ (file.filesize / 1024)|int }} KB</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="{{ url_for('files.download', file_id=file.id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-download"></i>
-                                        </a>
-                                        {% if current_user.id == file.user_id or current_user.is_admin %}
-                                            <form action="{{ url_for('files.delete', file_id=file.id) }}" method="POST" style="display: inline;">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+<!-- Barra de acciones flotante para archivos seleccionados -->
+<div id="bulk-actions" class="selection-toolbar" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-white">
+            <i class="fas fa-check-circle me-2"></i>
+            <span id="selected-count">0</span> archivo(s) seleccionado(s)
+        </span>
+        <div>
+            <button class="btn btn-sm btn-light me-2" onclick="downloadSelected()" id="download-btn">
+                <i class="fas fa-download me-1"></i> Descargar
+            </button>
+            <button class="btn btn-sm btn-danger me-2" onclick="deleteSelected()" id="delete-btn">
+                <i class="fas fa-trash me-1"></i> Eliminar
+            </button>
+            <button class="btn btn-sm btn-outline-light" onclick="exitSelectionMode()">
+                <i class="fas fa-times me-1"></i> Salir
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- Galería de imágenes -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-images me-2"></i>Galería de Imágenes</h5>
-        </div>
-        <div class="card-body">
-            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3">
-                {% for file in shared_files %}
-                    {% if file.mimetype.startswith('image/') %}
+{% if shared_files %}
+    <!-- Organizar archivos por fecha -->
+    {% set files_by_date = {} %}
+    {% for file in shared_files %}
+        {% set date_key = file.upload_date.strftime('%Y-%m-%d') %}
+        {% if date_key not in files_by_date %}
+            {% set _ = files_by_date.update({date_key: []}) %}
+        {% endif %}
+        {% set _ = files_by_date[date_key].append(file) %}
+    {% endfor %}
+    
+    <!-- Mostrar archivos agrupados por fecha -->
+    {% for date, files in files_by_date.items() | sort(reverse=true) %}
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    {{ date }}
+                </h6>
+                <div>
+                    {% if loop.first %}
+                        <button class="btn btn-sm btn-outline-secondary me-2" onclick="toggleSelectionMode()" id="selection-mode-btn">
+                            <i class="fas fa-check-square me-1"></i> Seleccionar
+                        </button>
+                    {% endif %}
+                    <button class="btn btn-sm btn-outline-primary" onclick="downloadByDate('{{ date }}')">
+                        <i class="fas fa-download me-1"></i> Descargar todos de este día
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
+                    {% for file in files %}
                         <div class="col">
-                            <div class="card h-100">
-                                <!-- CAMBIO: Usar la nueva ruta preview para las imágenes -->
-                                <img src="{{ url_for('files.preview', file_id=file.id) }}" 
-                                     class="card-img-top" 
-                                     alt="{{ file.original_filename }}">
-                                <div class="card-body">
-                                    <h6 class="card-title">{{ file.original_filename }}</h6>
-                                    <p class="card-text small">
-                                        <small class="text-muted">
-                                            Subido por {{ file.user.name }} el {{ file.upload_date|format_date }}
-                                        </small>
-                                    </p>
-                                    {% if file.description %}
-                                        <p class="card-text small">{{ file.description }}</p>
+                            <div class="card h-100 file-card" data-file-id="{{ file.id }}" data-date="{{ date }}">
+                                <div class="position-relative">
+                                    <div class="selection-overlay" style="display: none;">
+                                        <div class="form-check position-absolute top-0 start-0 m-2">
+                                            <input type="checkbox" class="form-check-input file-select" 
+                                                   data-file-id="{{ file.id }}" 
+                                                   data-filename="{{ file.original_filename }}"
+                                                   {% if current_user.id == file.user_id or current_user.is_admin %}data-can-delete="true"{% else %}data-can-delete="false"{% endif %}>
+                                        </div>
+                                    </div>
+                                    {% if file.mimetype.startswith('image/') %}
+                                        <img src="{{ url_for('files.preview', file_id=file.id) }}" 
+                                             class="card-img-top" 
+                                             alt="{{ file.original_filename }}"
+                                             style="height: 200px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="card-img-top d-flex align-items-center justify-content-center" 
+                                             style="height: 200px; background-color: #f8f9fa;">
+                                            {% if file.mimetype.startswith('video/') %}
+                                                <i class="fas fa-film fa-3x text-primary"></i>
+                                            {% elif file.mimetype.startswith('audio/') %}
+                                                <i class="fas fa-music fa-3x text-info"></i>
+                                            {% elif file.mimetype.startswith('application/pdf') %}
+                                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                            {% else %}
+                                                <i class="fas fa-file fa-3x text-secondary"></i>
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
                                 </div>
-                                <div class="card-footer d-flex justify-content-between">
-                                    <a href="{{ url_for('files.download', file_id=file.id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-download me-1"></i> Descargar
-                                    </a>
-                                    {% if current_user.id == file.user_id or current_user.is_admin %}
-                                        <form action="{{ url_for('files.delete', file_id=file.id) }}" method="POST" style="display: inline;">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    {% endif %}
+                                <div class="card-body p-2">
+                                    <h6 class="card-title text-truncate mb-1" title="{{ file.original_filename }}">
+                                        {{ file.original_filename }}
+                                    </h6>
+                                    <p class="card-text small text-muted mb-0">
+                                        <i class="fas fa-user me-1"></i> {{ file.user.name }}
+                                    </p>
+                                    <p class="card-text small text-muted mb-0">
+                                        <i class="fas fa-database me-1"></i> {{ (file.filesize / 1024)|int }} KB
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                    {% endif %}
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
         </div>
-    </div>
+    {% endfor %}
 {% else %}
     <div class="alert alert-info">
         <i class="fas fa-info-circle me-2"></i>
@@ -179,9 +157,17 @@
     <div class="card-body">
         <p>En esta sección puedes compartir y descargar fotos, videos y otros archivos relacionados con el viaje.</p>
         
+        <h6 class="mt-3">Cómo seleccionar archivos:</h6>
+        <ul>
+            <li><strong>Mantén presionado</strong> sobre cualquier archivo para activar el modo selección</li>
+            <li>O usa el botón "Seleccionar" en la primera fecha</li>
+            <li>En modo selección, toca los archivos para seleccionarlos</li>
+            <li>Usa la barra flotante para las acciones</li>
+        </ul>
+        
         <div class="alert alert-info mt-3">
             <i class="fas fa-lightbulb me-2"></i>
-            <strong>Consejo:</strong> Puedes seleccionar varios archivos a la vez para subirlos.
+            <strong>Consejo:</strong> Solo puedes eliminar archivos que hayas subido tú o si eres administrador.
         </div>
     </div>
 </div>
@@ -192,13 +178,388 @@
         <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Estadísticas</h5>
     </div>
     <div class="card-body">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between">
-                <span>Total de archivos:</span>
-                <strong>{{ shared_files|length }}</strong>
-            </li>
-        </ul>
+        <div class="text-center">
+            <h3 class="display-6">{{ shared_files|length }}</h3>
+            <p class="text-muted mb-0">Archivos totales</p>
+        </div>
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .file-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        user-select: none;
+    }
+    
+    .file-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .file-card.selected {
+        border: 2px solid #0d6efd;
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
+    }
+    
+    .selection-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        z-index: 5;
+    }
+    
+    .form-check-input.file-select {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #0d6efd;
+    }
+    
+    /* Barra de selección flotante */
+    .selection-toolbar {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #343a40;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1050;
+        min-width: 300px;
+        max-width: 90%;
+    }
+    
+    @media (max-width: 768px) {
+        .selection-toolbar {
+            bottom: 80px; /* Ajustar para la navegación móvil */
+            min-width: 90%;
+        }
+    }
+    
+    /* Animación para presionar y mantener */
+    .file-card.pressing {
+        transform: scale(0.95);
+        transition: transform 0.2s ease;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectionMode = false;
+let selectedFiles = new Map();
+let longPressTimer;
+const LONG_PRESS_DURATION = 500;
+
+function toggleSelectionMode() {
+    selectionMode = !selectionMode;
+    
+    if (selectionMode) {
+        enterSelectionMode();
+    } else {
+        exitSelectionMode();
+    }
+}
+
+function enterSelectionMode() {
+    selectionMode = true;
+    const btn = document.getElementById('selection-mode-btn');
+    const overlays = document.querySelectorAll('.selection-overlay');
+    const bulkActions = document.getElementById('bulk-actions');
+    
+    document.body.classList.add('selection-mode');
+    overlays.forEach(overlay => {
+        overlay.style.display = 'block';
+    });
+    bulkActions.style.display = 'block';
+    
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-times me-1"></i> Cancelar Selección';
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-outline-danger');
+    }
+    
+    updateSelectedCount();
+}
+
+function exitSelectionMode() {
+    selectionMode = false;
+    const btn = document.getElementById('selection-mode-btn');
+    const overlays = document.querySelectorAll('.selection-overlay');
+    const bulkActions = document.getElementById('bulk-actions');
+    
+    document.body.classList.remove('selection-mode');
+    overlays.forEach(overlay => {
+        overlay.style.display = 'none';
+    });
+    bulkActions.style.display = 'none';
+    
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-check-square me-1"></i> Seleccionar';
+        btn.classList.remove('btn-outline-danger');
+        btn.classList.add('btn-outline-secondary');
+    }
+    
+    // Limpiar selección
+    selectedFiles.clear();
+    document.querySelectorAll('.file-select').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    document.querySelectorAll('.file-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const count = selectedFiles.size;
+    document.getElementById('selected-count').textContent = count;
+    
+    // Habilitar/deshabilitar botones según la selección
+    const downloadBtn = document.getElementById('download-btn');
+    const deleteBtn = document.getElementById('delete-btn');
+    
+    if (count === 0) {
+        downloadBtn.disabled = true;
+        deleteBtn.disabled = true;
+    } else {
+        downloadBtn.disabled = false;
+        
+        // Verificar si hay archivos que el usuario puede eliminar
+        let canDelete = false;
+        selectedFiles.forEach((data) => {
+            if (data.canDelete) canDelete = true;
+        });
+        deleteBtn.disabled = !canDelete;
+    }
+}
+
+function downloadSelected() {
+    if (selectedFiles.size === 0) return;
+    
+    selectedFiles.forEach((data, fileId) => {
+        setTimeout(() => {
+            window.open(`/files/compartir/descargar/${fileId}`, '_blank');
+        }, 100);
+    });
+}
+
+function deleteSelected() {
+    if (selectedFiles.size === 0) return;
+    
+    // Filtrar solo los archivos que el usuario puede eliminar
+    const deletableFiles = Array.from(selectedFiles.entries())
+        .filter(([fileId, data]) => data.canDelete)
+        .map(([fileId, data]) => fileId);
+    
+    if (deletableFiles.length === 0) {
+        showAlert('No tienes permisos para eliminar los archivos seleccionados', 'warning');
+        return;
+    }
+    
+    if (!confirm(`¿Estás seguro de que quieres eliminar ${deletableFiles.length} archivo(s)?`)) {
+        return;
+    }
+    
+    const bulkActions = document.getElementById('bulk-actions');
+    const originalContent = bulkActions.innerHTML;
+    bulkActions.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border spinner-border-sm text-light" role="status">
+                <span class="visually-hidden">Eliminando...</span>
+            </div>
+            <span class="ms-2">Eliminando ${deletableFiles.length} archivo(s)...</span>
+        </div>
+    `;
+    
+    Promise.all(deletableFiles.map(fileId => deleteFileAjax(fileId)))
+        .then(results => {
+            const successCount = results.filter(r => r.success).length;
+            const errorCount = results.length - successCount;
+            
+            let message = `${successCount} archivo(s) eliminado(s) correctamente.`;
+            if (errorCount > 0) {
+                message += ` ${errorCount} error(es).`;
+            }
+            
+            showAlert(message, errorCount > 0 ? 'warning' : 'success');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        })
+        .catch(error => {
+            showAlert('Error al eliminar archivos', 'danger');
+            bulkActions.innerHTML = originalContent;
+        });
+}
+
+function deleteFileAjax(fileId) {
+    return fetch(`/files/compartir/eliminar/${fileId}`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .catch(error => ({success: false, error: error.message}));
+}
+
+function downloadByDate(date) {
+    const cards = document.querySelectorAll(`.file-card[data-date="${date}"]`);
+    cards.forEach(card => {
+        const fileId = card.dataset.fileId;
+        setTimeout(() => {
+            window.open(`/files/compartir/descargar/${fileId}`, '_blank');
+        }, 100);
+    });
+}
+
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alertDiv.style.zIndex = '9999';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+function startSelectionMode() {
+    if (!selectionMode) {
+        enterSelectionMode();
+        if ('vibrate' in navigator) {
+            navigator.vibrate(50);
+        }
+    }
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Detectar pulsación larga en dispositivos táctiles
+    let touchTimer;
+    document.addEventListener('touchstart', function(e) {
+        const card = e.target.closest('.file-card');
+        if (card && !selectionMode) {
+            card.classList.add('pressing');
+            touchTimer = setTimeout(() => {
+                startSelectionMode();
+                const checkbox = card.querySelector('.file-select');
+                if (checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            }, LONG_PRESS_DURATION);
+        }
+    });
+    
+    document.addEventListener('touchend', function(e) {
+        clearTimeout(touchTimer);
+        const card = e.target.closest('.file-card');
+        if (card) {
+            card.classList.remove('pressing');
+        }
+    });
+    
+    document.addEventListener('touchmove', function(e) {
+        clearTimeout(touchTimer);
+        const card = e.target.closest('.file-card');
+        if (card) {
+            card.classList.remove('pressing');
+        }
+    });
+    
+    // Detectar pulsación larga en escritorio
+    let mouseTimer;
+    document.addEventListener('mousedown', function(e) {
+        const card = e.target.closest('.file-card');
+        if (card && e.button === 0 && !selectionMode) {
+            card.classList.add('pressing');
+            mouseTimer = setTimeout(() => {
+                startSelectionMode();
+                const checkbox = card.querySelector('.file-select');
+                if (checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            }, LONG_PRESS_DURATION);
+        }
+    });
+    
+    document.addEventListener('mouseup', function(e) {
+        clearTimeout(mouseTimer);
+        const card = e.target.closest('.file-card');
+        if (card) {
+            card.classList.remove('pressing');
+        }
+    });
+    
+    document.addEventListener('mouseleave', function(e) {
+        clearTimeout(mouseTimer);
+        const card = e.target.closest('.file-card');
+        if (card) {
+            card.classList.remove('pressing');
+        }
+    });
+    
+    // Click en modo selección
+    document.addEventListener('click', function(e) {
+        if (!selectionMode) return;
+        
+        const card = e.target.closest('.file-card');
+        if (card && e.target.tagName !== 'INPUT') {
+            e.preventDefault();
+            e.stopPropagation();
+            const checkbox = card.querySelector('.file-select');
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                checkbox.dispatchEvent(new Event('change'));
+            }
+        }
+    });
+    
+    // Cambios en checkboxes
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('file-select')) {
+            const fileId = e.target.dataset.fileId;
+            const filename = e.target.dataset.filename;
+            const canDelete = e.target.dataset.canDelete === 'true';
+            const card = e.target.closest('.file-card');
+            
+            if (e.target.checked) {
+                selectedFiles.set(fileId, { filename: filename, canDelete: canDelete });
+                card.classList.add('selected');
+            } else {
+                selectedFiles.delete(fileId);
+                card.classList.remove('selected');
+            }
+            
+            updateSelectedCount();
+        }
+    });
+    
+    // Prevenir menú contextual
+    document.addEventListener('contextmenu', function(e) {
+        const card = e.target.closest('.file-card');
+        if (card) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
 {% endblock %}
