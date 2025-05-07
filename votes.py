@@ -161,6 +161,82 @@ def get_rankings():
     
     return jsonify(rankings)
 
+@votes.route('/api/reset_category/<int:category_id>', methods=['POST'])
+@login_required
+def reset_category(category_id):
+    """Resetea todos los votos de una categoría específica (solo admin)"""
+    # Verificar que el usuario es administrador
+    if not current_user.is_admin:
+        return jsonify({
+            'success': False,
+            'error': 'Solo los administradores pueden resetear las votaciones'
+        }), 403
+    
+    # Verificar que la categoría existe
+    category = VoteCategory.query.get(category_id)
+    if not category:
+        return jsonify({
+            'success': False,
+            'error': 'Categoría no encontrada'
+        }), 404
+    
+    try:
+        # Eliminar todos los votos de esta categoría
+        Vote.query.filter_by(category_id=category_id).delete()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Todos los votos de la categoría "{category.name}" han sido reseteados'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@votes.route('/api/reset_all_votes', methods=['POST'])
+@login_required
+def reset_all_votes():
+    """Resetea TODOS los votos de TODAS las categorías (solo admin)"""
+    # Verificar que el usuario es administrador
+    if not current_user.is_admin:
+        return jsonify({
+            'success': False,
+            'error': 'Solo los administradores pueden resetear las votaciones'
+        }), 403
+    
+    try:
+        # Eliminar TODOS los votos
+        Vote.query.delete()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Todos los votos de todas las categorías han sido reseteados'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+    
+@votes.route('/api/categories')
+@login_required
+def get_categories():
+    """API para obtener todas las categorías con sus IDs"""
+    if not current_user.is_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    categories = VoteCategory.query.all()
+    return jsonify([{
+        'id': cat.id,
+        'name': cat.name,
+        'description': cat.description
+    } for cat in categories])
+
 @votes.route('/votaciones/resultados')
 @login_required
 def results():

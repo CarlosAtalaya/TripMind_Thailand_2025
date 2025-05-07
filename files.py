@@ -6,7 +6,7 @@ from models import db, SharedFile
 from datetime import datetime
 import os
 import uuid
-from config import MULTIMEDIA_BASE_PATH, MULTIMEDIA_FOLDER_NAME, MAX_FOLDER_SIZE
+from config import MULTIMEDIA_BASE_PATH, MAX_FOLDER_SIZE, ALLOWED_EXTENSIONS
 
 files = Blueprint('files', __name__)
 
@@ -67,7 +67,6 @@ def get_upload_folder():
 
 def allowed_file(filename):
     """Verifica si el archivo tiene una extensión permitida"""
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'pdf', 'zip', 'rar'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @files.route('/compartir')
@@ -184,7 +183,7 @@ def download(file_id):
     filename = shared_file.filename
     
     return send_from_directory(
-        os.path.join('/home/carlos/Documentos/Multimedia_Tailandia2025', date_folder),
+        os.path.join(MULTIMEDIA_BASE_PATH, date_folder),
         filename,
         as_attachment=True,
         download_name=shared_file.original_filename
@@ -203,7 +202,7 @@ def delete(file_id):
     
     try:
         # Eliminar el archivo físico
-        file_path = os.path.join('/home/carlos/Documentos/Multimedia_Tailandia2025', shared_file.path)
+        file_path = os.path.join(MULTIMEDIA_BASE_PATH, shared_file.path)
         if os.path.exists(file_path):
             os.remove(file_path)
         
@@ -213,6 +212,7 @@ def delete(file_id):
         
         flash('Archivo eliminado correctamente', 'success')
     except Exception as e:
+        db.session.rollback()
         flash(f'Error al eliminar el archivo: {str(e)}', 'danger')
     
     return redirect(url_for('files.index'))

@@ -29,3 +29,20 @@ else:
 # Límites de almacenamiento
 MAX_UPLOAD_SIZE = 6 * 1024 * 1024 * 1024  # 6 GB en bytes
 MAX_FOLDER_SIZE = 400 * 1024 * 1024 * 1024  # 400 GB en bytes
+
+ALLOWED_EXTENSIONS = {
+    # Imágenes
+    'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff', 'tif', 'svg', 'heic', 'heif',
+    # Videos
+    'mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'm4v', 'mpg', 'mpeg', '3gp',
+    # Audio
+    'mp3', 'wav', 'aac', 'flac', 'm4a', 'wma', 'ogg',
+    # Documentos
+    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'odt', 'ods', 'odp',
+    # Archivos comprimidos
+    'zip', 'rar', '7z', 'tar', 'gz', 'bz2',
+    # Otros formatos útiles
+    'json', 'xml', 'csv', 'md', 'html', 'htm', 'css', 'js',
+    # Formatos de imagen raw/profesionales
+    'raw', 'cr2', 'nef', 'arw', 'dng'
+}
