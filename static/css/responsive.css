@@ -1,132 +1,352 @@
-/* Estilos para dispositivos pequeños (móviles) */
-@media (max-width: 576px) {
+/* ===== NAVEGACIÓN MÓVIL ===== */
+@media (max-width: 768px) {
+    /* Ajustar padding del body para la navegación fija */
     body {
-        padding-top: 56px;
+        padding-bottom: 70px; /* Espacio para bottom navigation */
     }
     
+    /* Navbar superior más compacta */
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    /* Contenedores principales */
     .container {
-        padding-left: 15px;
-        padding-right: 15px;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
     
+    /* Títulos más pequeños */
     h1.display-5 {
-        font-size: 1.8rem;
+        font-size: 1.75rem;
     }
     
     h2.display-6 {
         font-size: 1.5rem;
     }
     
+    /* Cards más compactas */
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    /* Ocultar sidebar en móvil */
+    .col-lg-4 {
+        display: none !important;
+    }
+    
+    /* Hacer el contenido principal de ancho completo */
+    .col-lg-8 {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* ===== REGIÓN CARDS MÓVIL ===== */
+@media (max-width: 768px) {
+    .region-card {
+        margin-bottom: 2rem;
+    }
+    
     .region-header {
         height: 120px;
+    }
+    
+    .region-overlay {
+        padding: 0.75rem;
     }
     
     .region-overlay h3 {
         font-size: 1.25rem;
     }
     
-    .region-card {
-        margin-bottom: 2rem;
+    /* Stack activities y weather verticalmente */
+    .region-card .row {
+        margin: 0;
     }
     
-    .date-badge, .activity-time {
+    .region-card .col-md-7,
+    .region-card .col-md-5 {
+        padding: 0;
+        width: 100%;
+    }
+    
+    .weather-container {
+        margin-top: 1.5rem;
+    }
+    
+    /* Actividades más compactas */
+    .list-group-item {
+        padding: 0.75rem;
+    }
+    
+    .date-badge {
         display: block;
         margin-bottom: 0.25rem;
     }
     
-    .weather-icon {
-        font-size: 1.5rem;
+    .activity-time {
+        display: block;
     }
 }
 
-/* Estilos para dispositivos medianos (tablets) */
-@media (min-width: 577px) and (max-width: 991px) {
-    .region-header {
-        height: 130px;
+/* ===== BOTÓN CONTADOR DE CACAS MÓVIL ===== */
+@media (max-width: 768px) {
+    .poop-counter-button {
+        position: fixed !important;
+        bottom: 80px;
+        right: 20px;
+        z-index: 1000;
+        margin: 0 !important;
     }
     
-    .region-overlay h3 {
-        font-size: 1.3rem;
-    }
-}
-
-/* Ajustes para la visualización del clima en todos los dispositivos */
-@media (max-width: 767px) {
-    /* Mostrar pronóstico del clima en formato vertical */
-    .weather-container .row {
+    #incrementPoopButton {
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        padding: 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         display: flex;
+        align-items: center;
+        justify-content: center;
         flex-direction: column;
     }
     
-    .weather-container .col {
-        width: 100%;
-        margin-bottom: 0.5rem;
+    #incrementPoopButton span {
+        margin: 0 !important;
+        line-height: 1;
+    }
+    
+    #incrementPoopButton .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        font-size: 0.75rem;
+    }
+}
+
+/* ===== TABS DE CONTENIDO MÓVIL ===== */
+.mobile-content-tabs {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-content-tabs {
+        display: block;
+        margin-bottom: 1rem;
+        position: sticky;
+        top: 56px;
+        z-index: 100;
+        background: white;
+        padding: 0.5rem 0;
+    }
+}
+
+/* ===== NOTICIAS MÓVIL ===== */
+@media (max-width: 768px) {
+    .news-tab-content {
+        display: none;
+    }
+    
+    .news-list {
+        max-height: none;
+        overflow-y: visible;
+    }
+    
+    .news-item {
+        padding: 0.75rem !important;
+    }
+    
+    .news-item h6 {
+        font-size: 0.9rem;
+    }
+}
+
+/* ===== NAVEGACIÓN INFERIOR ===== */
+.bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid #dee2e6;
+        justify-content: space-around;
+        padding: 0.5rem 0;
+        z-index: 1001;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .bottom-nav .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #6c757d;
+        font-size: 0.7rem;
+        padding: 0.25rem;
+        transition: color 0.2s ease;
+    }
+    
+    .bottom-nav .nav-item.active {
+        color: #0d6efd;
+    }
+    
+    .bottom-nav .nav-item i {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* ===== FORMULARIOS MÓVIL ===== */
+@media (max-width: 768px) {
+    .form-control,
+    .form-select {
+        font-size: 16px; /* Evita zoom en iOS */
+        padding: 0.75rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* ===== VOTACIONES MÓVIL ===== */
+@media (max-width: 768px) {
+    .vote-category-card {
+        margin-bottom: 0.75rem;
+    }
+    
+    #rankings-container .col {
+        margin-bottom: 1rem;
+    }
+    
+    .list-group-item {
+        padding: 0.75rem;
+    }
+}
+
+/* ===== ARCHIVOS COMPARTIDOS MÓVIL ===== */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .table td, .table th {
         padding: 0.5rem;
-        border-bottom: 1px solid #e9ecef;
     }
     
-    .weather-container .col:last-child {
-        border-bottom: none;
-    }
-    
-    /* Reorganizar el diseño para mostrar clima y noticias */
-    .weather-container, .news-container {
-        margin-bottom: 2rem;
+    /* Galería de imágenes */
+    .row-cols-md-3.row-cols-lg-4 {
+        row-gap: 1rem;
     }
 }
 
-/* Ajustes para modo oscuro si el sistema lo prefiere */
-@media (prefers-color-scheme: dark) {
-    body {
-        background-color: #1a1a1a;
-        color: #f5f7fa;
+/* ===== UTILITIES MÓVIL ===== */
+@media (max-width: 768px) {
+    /* Espaciados más pequeños */
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
     }
     
-    .card {
-        background-color: #2a2a2a;
-        border-color: #333;
+    .mb-5 {
+        margin-bottom: 2rem !important;
     }
     
-    .list-group-item {
-        background-color: #2a2a2a;
-        border-color: #333;
+    /* Ocultar elementos no esenciales */
+    .d-none-mobile {
+        display: none !important;
     }
     
-    .bg-light {
-        background-color: #2a2a2a !important;
-        color: #f5f7fa;
-    }
-    
-    .text-muted {
-        color: #adb5bd !important;
-    }
-    
-    .loading-placeholder {
-        background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
-    }
-}
-
-/* Correcciones para Safari en iOS */
-@supports (-webkit-touch-callout: none) {
-    .card:hover {
-        transform: none;
-    }
-    
-    .list-group-item {
+    /* Scroll horizontal para tablas */
+    .table-responsive {
         -webkit-overflow-scrolling: touch;
     }
 }
 
-/* Soporte para pantallas grandes */
-@media (min-width: 1200px) {
-    .container {
-        max-width: 1140px;
+/* ===== MODALES MÓVIL ===== */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 1rem;
+    }
+    
+    .modal-content {
+        border-radius: 0.5rem;
     }
 }
 
-/* Ajustes para pantallas de alta densidad de píxeles */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .region-header {
-        background-size: cover;
+/* ===== LANDSCAPE MÓVIL ===== */
+@media (max-width: 768px) and (orientation: landscape) {
+    .navbar {
+        padding: 0.25rem 1rem;
     }
+    
+    .bottom-nav {
+        padding: 0.25rem 0;
+    }
+    
+    .poop-counter-button {
+        bottom: 60px;
+    }
+}
+
+/* ===== TABLETS ===== */
+@media (min-width: 768px) and (max-width: 991px) {
+    .container {
+        max-width: 750px;
+    }
+    
+    .region-header {
+        height: 150px;
+    }
+    
+    /* Mostrar sidebar pero más estrecho */
+    .col-lg-4 {
+        display: block !important;
+    }
+    
+    .col-lg-8 {
+        flex: 0 0 auto;
+        width: 66.666667%;
+    }
+    
+    .col-lg-4 {
+        flex: 0 0 auto;
+        width: 33.333333%;
+    }
+}
+
+/* ===== ANIMACIONES Y TRANSICIONES ===== */
+@media (prefers-reduced-motion: no-preference) {
+    .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .nav-item {
+        transition: all 0.2s ease;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== MODO OSCURO (SI LO IMPLEMENTAS) ===== */
+@media (prefers-color-scheme: dark) {
+    /* Aquí puedes agregar estilos para modo oscuro */
 }

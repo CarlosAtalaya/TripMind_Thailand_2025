@@ -160,17 +160,47 @@
 
 <h2 class="display-6 mb-4"><i class="fas fa-map-marked-alt me-2"></i>Itinerario por Regiones</h2>
 
-{% from "components/region_card.html" import region_card %}
-{% if itinerary and itinerary.regions %}
-    {% for region in itinerary.regions %}
-        {{ region_card(region, current_region and current_region.id == region.id) }}
-    {% endfor %}
-{% else %}
-    <div class="alert alert-info">
-        <i class="fas fa-info-circle me-2"></i>
-        No hay regiones definidas en este itinerario o los datos no están disponibles.
+<!-- NUEVO: Tabs de contenido para móvil -->
+<div class="mobile-content-tabs d-lg-none">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#regions-content" type="button">
+                <i class="fas fa-map-marked-alt"></i> Regiones
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#news-content" type="button">
+                <i class="fas fa-newspaper"></i> Noticias
+            </button>
+        </li>
+    </ul>
+</div>
+
+<!-- NUEVO: Contenedor de tabs -->
+<div class="tab-content">
+    <!-- Tab de regiones -->
+    <div class="tab-pane fade show active" id="regions-content" role="tabpanel">
+        {% from "components/region_card.html" import region_card %}
+        {% if itinerary and itinerary.regions %}
+            {% for region in itinerary.regions %}
+                {{ region_card(region, current_region and current_region.id == region.id) }}
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No hay regiones definidas en este itinerario o los datos no están disponibles.
+            </div>
+        {% endif %}
     </div>
-{% endif %}
+    
+    <!-- NUEVO: Tab de noticias para móvil -->
+    <div class="tab-pane fade" id="news-content" role="tabpanel">
+        <div class="news-tab-content d-lg-none">
+            {% from "components/news_sidebar.html" import news_sidebar %}
+            {{ news_sidebar() }}
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -408,6 +438,23 @@
                     notification.remove();
                 }, 500);
             }, 2000);
+        }
+        
+        // NUEVO: Ajustes para móvil
+        // Ajustar posición del contador en móvil
+        if (window.innerWidth <= 768) {
+            const button = document.getElementById('incrementPoopButton');
+            if (button) {
+                button.parentElement.classList.add('mobile-poop-counter');
+            }
+        }
+        
+        // Evitar scroll en móvil cuando se hace click
+        if (incrementButton) {
+            incrementButton.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                this.click();
+            });
         }
         
         // Cargar contadores al inicio

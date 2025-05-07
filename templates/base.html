@@ -14,7 +14,7 @@
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -140,6 +140,8 @@
     <!-- Scripts personalizados -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/global_news.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lazy-load.js') }}"></script>
     {% block extra_js %}{% endblock %}
     <div id="itinerary-data" data-name="{{ request.args.get('name', 'thailand_2025.yaml') }}" style="display: none;"></div>
     
@@ -147,6 +149,39 @@
         <div id="current-user-data" data-user-id="{{ current_user.id }}" style="display: none;"></div>
     {% endif %}
     
+    <nav class="bottom-nav">
+        <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+            <i class="fas fa-globe"></i>
+            <span>Itinerario</span>
+        </a>
+        <a href="{{ url_for('files.index') }}" class="nav-item {% if request.blueprint == 'files' %}active{% endif %}">
+            <i class="fas fa-images"></i>
+            <span>Archivos</span>
+        </a>
+        <a href="{{ url_for('votes.index') }}" class="nav-item {% if request.blueprint == 'votes' %}active{% endif %}">
+            <i class="fas fa-trophy"></i>
+            <span>Votos</span>
+        </a>
+        <a href="{{ url_for('diary.index') }}" class="nav-item {% if request.blueprint == 'diary' %}active{% endif %}">
+            <i class="fas fa-book"></i>
+            <span>Diario</span>
+        </a>
+    </nav>
+    
+    <!-- Script para gestionar navegación móvil -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Marcar la página actual en la navegación inferior
+        const currentPath = window.location.pathname;
+        const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+        
+        navItems.forEach(item => {
+            if (item.getAttribute('href') === currentPath) {
+                item.classList.add('active');
+            }
+        });
+    });
+    </script>
     {% block poop_counter %}{% endblock %}
 </body>
 </html>

@@ -11,8 +11,10 @@
     </div>
     
     <div class="card-body">
-        <div class="row">
-            <div class="col-md-7">
+        <!-- CAMBIO: Clase flex-column flex-md-row para que sea columna en móvil y fila en desktop -->
+        <div class="row flex-column flex-md-row">
+            <!-- CAMBIO: Ajuste de columnas para móvil -->
+            <div class="col-12 col-md-7 mb-3 mb-md-0">
                 <h4><i class="fas fa-tasks me-2"></i>Actividades</h4>
                 <ul class="list-group mb-4">
                     {% for activity in region.activities %}
@@ -79,7 +81,8 @@
                 {% endif %}
             </div>
             
-            <div class="col-md-5">
+            <!-- CAMBIO: Ajuste de columnas para móvil -->
+            <div class="col-12 col-md-5">
                 <div class="weather-container mb-4" id="weather-{{ region.id }}">
                     <h4><i class="fas fa-cloud-sun me-2"></i>Clima</h4>
                     <div class="card">
