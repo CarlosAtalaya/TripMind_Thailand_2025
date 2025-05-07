@@ -152,8 +152,21 @@
 
 /* ===== NOTICIAS MÓVIL ===== */
 @media (max-width: 768px) {
-    .news-tab-content {
-        display: none;
+    /* En móvil, la sidebar de noticias se oculta por defecto */
+    .col-lg-4 {
+        display: none !important;
+    }
+    
+    /* Pero la mostramos si está dentro del tab de noticias */
+    .news-tab-content .col-lg-4 {
+        display: block !important;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .news-tab-content .sticky-top {
+        position: relative !important;
+        top: 0 !important;
     }
     
     .news-list {

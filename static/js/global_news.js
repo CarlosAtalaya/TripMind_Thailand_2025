@@ -188,13 +188,89 @@ document.addEventListener('DOMContentLoaded', function() {
     const itineraryElement = document.getElementById('itinerary-data');
     const itineraryName = itineraryElement ? itineraryElement.dataset.name : 'thailand_2025.yaml';
     
-    // Cargar noticias
+    // Cargar noticias para el contenedor principal
     globalNewsService.getAllNews(20, itineraryName)
         .then(data => {
+            // Renderizar en el contenedor principal (sidebar)
             globalNewsService.renderNewsData(data);
+            
+            // NUEVO: También renderizar en el contenedor móvil si existe
+            const mobileContainer = document.getElementById('mobile-news-container');
+            if (mobileContainer) {
+                globalNewsService.renderMobileNewsData(data);
+            }
         })
         .catch(error => {
             globalNewsService.renderErrorState('No se pudieron cargar las noticias');
+            
+            // NUEVO: También mostrar error en móvil
+            const mobileContainer = document.getElementById('mobile-news-container');
+            if (mobileContainer) {
+                globalNewsService.renderMobileErrorState('No se pudieron cargar las noticias');
+            }
+            
             console.error('Error al cargar noticias globales:', error);
         });
+    
+    // NUEVO: Añadir métodos para renderizar en móvil
+    GlobalNewsService.prototype.renderMobileNewsData = function(newsData) {
+        const container = document.getElementById('mobile-news-container');
+        if (!container) return;
+
+        // Si hay un error en los datos o no hay artículos
+        if (!newsData.articles || newsData.articles.length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-info m-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No hay noticias relevantes para tu viaje en este momento.
+                </div>
+            `;
+            return;
+        }
+
+        // Crear contenido HTML para las noticias
+        let html = '<div class="news-list">';
+
+        newsData.articles.forEach(article => {
+            const alertClass = this.getAlertClass(article);
+            
+            html += `
+                <div class="news-item p-3 border-bottom ${alertClass}">
+                    <h6 class="mb-1">
+                        <a href="${article.url}" target="_blank" rel="noopener noreferrer">
+                            ${article.title}
+                        </a>
+                    </h6>
+                    <p class="mb-1 small">
+                        ${article.description || ''}
+                    </p>
+                    <div class="news-source d-flex justify-content-between">
+                        <span class="small text-muted">${article.source}</span>
+                        <span class="small text-muted">${this.formatPublishedDate(article.publishedAt)}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+        
+        // Actualizar la hora de última actualización
+        const updateElement = document.getElementById('mobile-news-last-updated');
+        if (updateElement) {
+            updateElement.textContent = `Actualizado: ${new Date().toLocaleTimeString()}`;
+        }
+    };
+    
+    GlobalNewsService.prototype.renderMobileErrorState = function(errorMessage) {
+        const container = document.getElementById('mobile-news-container');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="alert alert-danger m-3">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Error: ${errorMessage}
+            </div>
+        `;
+    };
 });

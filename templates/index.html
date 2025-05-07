@@ -160,23 +160,23 @@
 
 <h2 class="display-6 mb-4"><i class="fas fa-map-marked-alt me-2"></i>Itinerario por Regiones</h2>
 
-<!-- NUEVO: Tabs de contenido para móvil -->
+<!-- Tabs de contenido para móvil -->
 <div class="mobile-content-tabs d-lg-none">
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#regions-content" type="button">
+            <button class="nav-link active" id="mobile-regions-tab" data-bs-toggle="tab" data-bs-target="#regions-content" type="button" role="tab" aria-controls="regions-content" aria-selected="true">
                 <i class="fas fa-map-marked-alt"></i> Regiones
             </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#news-content" type="button">
+            <button class="nav-link" id="mobile-news-tab" data-bs-toggle="tab" data-bs-target="#news-content" type="button" role="tab" aria-controls="news-content" aria-selected="false">
                 <i class="fas fa-newspaper"></i> Noticias
             </button>
         </li>
     </ul>
 </div>
 
-<!-- NUEVO: Contenedor de tabs -->
+<!-- Contenedor de tabs -->
 <div class="tab-content">
     <!-- Tab de regiones -->
     <div class="tab-pane fade show active" id="regions-content" role="tabpanel">
@@ -193,11 +193,30 @@
         {% endif %}
     </div>
     
-    <!-- NUEVO: Tab de noticias para móvil -->
+    <!-- Tab de noticias para móvil -->
     <div class="tab-pane fade" id="news-content" role="tabpanel">
         <div class="news-tab-content d-lg-none">
-            {% from "components/news_sidebar.html" import news_sidebar %}
-            {{ news_sidebar() }}
+            <!-- Contenedor para las noticias globales -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-newspaper me-2"></i>Noticias de Viaje</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="mobile-news-container">
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2 mb-0">Buscando noticias relevantes para tu viaje...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-sync-alt me-1"></i><span id="mobile-news-last-updated">Actualizando...</span>
+                    </small>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -205,13 +224,11 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/weather.js') }}"></script>
-<script src="{{ url_for('static', filename='js/news.js') }}"></script>
 <script src="{{ url_for('static', filename='js/votes.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar servicios
         const weatherService = new WeatherService();
-        const newsService = new NewsService();
         const votesService = new VotesService();
         
         // Cargar datos para cada región
@@ -226,17 +243,6 @@
                     .catch(error => {
                         weatherService.renderErrorState(`weather-{{ region.id }}`, 'No se pudo cargar el clima');
                         console.error('Error al cargar clima:', error);
-                    });
-                    
-                // Cargar noticias
-                newsService.renderLoadingState(`news-{{ region.id }}`);
-                newsService.getNewsForRegion('{{ region.id }}')
-                    .then(data => {
-                        newsService.renderNewsData(`news-{{ region.id }}`, data);
-                    })
-                    .catch(error => {
-                        newsService.renderErrorState(`news-{{ region.id }}`, 'No se pudieron cargar las noticias');
-                        console.error('Error al cargar noticias:', error);
                     });
             {% endfor %}
         {% endif %}
@@ -337,6 +343,20 @@
         
         // Actualizar rankings cada 5 minutos
         setInterval(loadVoteCategories, 300000);
+        
+        // Asegurarnos de que las noticias se carguen cuando se hace clic en el tab
+        const newsTab = document.getElementById('mobile-news-tab');
+        if (newsTab) {
+            newsTab.addEventListener('shown.bs.tab', function (e) {
+                // Disparar la carga de noticias si aún no se han cargado
+                const mobileContainer = document.getElementById('mobile-news-container');
+                if (mobileContainer && mobileContainer.querySelector('.spinner-border')) {
+                    // Si todavía está el spinner, significa que no se han cargado
+                    const event = new Event('DOMContentLoaded');
+                    document.dispatchEvent(event);
+                }
+            });
+        }
     });
 </script>
 {% endblock %}
@@ -440,8 +460,7 @@
             }, 2000);
         }
         
-        // NUEVO: Ajustes para móvil
-        // Ajustar posición del contador en móvil
+        // Ajustes para móvil
         if (window.innerWidth <= 768) {
             const button = document.getElementById('incrementPoopButton');
             if (button) {
