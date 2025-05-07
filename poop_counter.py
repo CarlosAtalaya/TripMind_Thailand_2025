@@ -3,8 +3,35 @@ from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from models import db, User, PoopCounter
 from datetime import datetime
+import yaml
+import os
 
 poop_counter = Blueprint('poop_counter', __name__)
+
+def get_traveler_name_mapping():
+    """Obtener mapeo entre nombres de usuarios y nombres de viajeros del itinerario"""
+    try:
+        # Cargar el itinerario para obtener los nombres de viajeros
+        file_path = os.path.join('data', 'itineraries', 'thailand_2025.yaml')
+        with open(file_path, 'r', encoding='utf-8') as file:
+            itinerary = yaml.safe_load(file)
+        
+        # Crear un diccionario de mapeo basado en los usuarios existentes
+        users = User.query.all()
+        user_mapping = {}
+        
+        for user in users:
+            # Intentar encontrar el nombre del viajero que coincida con el nombre del usuario
+            for traveler in itinerary.get('travelers', []):
+                # Comparar el username o name del usuario con el nombre del viajero
+                if user.username == traveler['name'] or user.name == traveler['name']:
+                    user_mapping[user.id] = traveler['name']
+                    break
+        
+        return user_mapping
+    except Exception as e:
+        print(f"Error al obtener mapeo de viajeros: {e}")
+        return {}
 
 @poop_counter.route('/api/poop/increment', methods=['POST'])
 @login_required
@@ -39,16 +66,22 @@ def increment_counter():
 @login_required
 def get_all_counts():
     """Obtiene los contadores de todos los usuarios"""
+    # Obtener mapeo de nombres
+    traveler_mapping = get_traveler_name_mapping()
+    
     counters = PoopCounter.query.all()
     
     # Crear una lista con todos los contadores
     counts = []
     for counter in counters:
+        # Usar el mapeo para obtener el nombre del viajero
+        traveler_name = traveler_mapping.get(counter.user_id, counter.user.name)
+        
         counts.append({
             'user_id': counter.user_id,
-            'user_name': counter.user.name,
+            'user_name': traveler_name,  # Usar el nombre mapeado
             'count': counter.count,
-            'last_updated': counter.last_updated.strftime('%Y-%m-%d %H:%M:%S')
+            'last_updated': counter.last_updated.strftime('%Y-%m-%d %H:%M:%S') if counter.last_updated else None
         })
     
     # También añadir usuarios que no tienen contador aún
@@ -56,9 +89,12 @@ def get_all_counts():
     users_without_counters = User.query.filter(~User.id.in_(users_with_counters)).all()
     
     for user in users_without_counters:
+        # Usar el mapeo para obtener el nombre del viajero
+        traveler_name = traveler_mapping.get(user.id, user.name)
+        
         counts.append({
             'user_id': user.id,
-            'user_name': user.name,
+            'user_name': traveler_name,  # Usar el nombre mapeado
             'count': 0,
             'last_updated': None
         })

@@ -48,6 +48,9 @@
         font-size: 0.75rem;
         font-style: italic;
     }
+    .poop-counter-button {
+        margin: 1rem 0;
+    }
 </style>
 {% endblock %}
 
@@ -72,6 +75,15 @@
             </div>
         </div>
         <div class="col-md-6">
+            <!-- Botón contador de cacas -->
+            <div class="poop-counter-button text-center">
+                <button class="btn btn-outline-warning" id="incrementPoopButton" title="¡He hecho caca!">
+                    <span style="font-size: 1.2rem;">+1</span>
+                    <span style="font-size: 1.5rem;">💩</span>
+                    <span class="badge bg-danger ms-1" id="myPoopCount">0</span>
+                </button>
+            </div>
+            
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0"><i class="fas fa-users me-2"></i>Viajeros</h5>
@@ -295,63 +307,110 @@
         
         // Actualizar rankings cada 5 minutos
         setInterval(loadVoteCategories, 300000);
+    });
+</script>
+{% endblock %}
+
+{% block poop_counter %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configurar el contador de cacas
+        const incrementButton = document.getElementById('incrementPoopButton');
+        const myPoopCount = document.getElementById('myPoopCount');
         
-        // Script específico para los contadores de caca en la sección de viajeros
+        // Función para obtener el ID del usuario actual
+        function getCurrentUserId() {
+            const userElement = document.getElementById('current-user-data');
+            return userElement ? userElement.dataset.userId : null;
+        }
+        
+        // Función actualizada para cargar y actualizar los contadores
         function updatePoopCounters() {
-            console.log('Actualizando contadores de viajeros en index.html');
-            
-            // Verificar si estamos en la página principal con la sección de viajeros
-            const travelersSection = document.getElementById('travelers-content');
-            if (!travelersSection) {
-                console.warn('No se encontró la sección de viajeros');
-                return; // No estamos en la página correcta
-            }
-            
-            // Obtener todos los elementos de viajeros
-            const travelers = travelersSection.querySelectorAll('[data-traveler-name]');
-            if (travelers.length === 0) {
-                console.warn('No se encontraron elementos de viajeros');
-                return;
-            }
-            
-            console.log('Encontrados', travelers.length, 'elementos de viajeros');
-            
-            // Obtener contadores actuales desde el servidor
             fetch('/api/poop/counts')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && Array.isArray(data.counts)) {
-                        console.log('Datos de contadores recibidos:', data.counts);
+                        // Actualizar el contador del usuario actual
+                        const currentUserId = getCurrentUserId();
+                        const myData = data.counts.find(c => c.user_id == currentUserId);
+                        if (myData && myPoopCount) {
+                            myPoopCount.textContent = myData.count;
+                        }
                         
-                        // Actualizar cada contador
-                        travelers.forEach(travelerEl => {
-                            const name = travelerEl.dataset.travelerName;
-                            const countEl = travelerEl.querySelector('.poop-count');
+                        // Actualizar contadores de todos los viajeros
+                        const travelersContent = document.getElementById('travelers-content');
+                        if (travelersContent) {
+                            const travelerElements = travelersContent.querySelectorAll('[data-traveler-name]');
                             
-                            if (countEl) {
-                                // Buscar el contador para este viajero
-                                const travelerData = data.counts.find(c => c.user_name === name);
-                                if (travelerData) {
-                                    console.log('Actualizando contador para', name, 'a', travelerData.count);
-                                    countEl.textContent = travelerData.count;
-                                } else {
-                                    console.log('No se encontraron datos para', name, ', dejando en 0');
-                                    countEl.textContent = '0';
+                            travelerElements.forEach(element => {
+                                const travelerName = element.dataset.travelerName;
+                                const countElement = element.querySelector('.poop-count');
+                                
+                                if (countElement) {
+                                    // Buscar el contador correspondiente por nombre de usuario
+                                    const travelerData = data.counts.find(c => c.user_name === travelerName);
+                                    
+                                    if (travelerData) {
+                                        countElement.textContent = travelerData.count;
+                                    } else {
+                                        countElement.textContent = '0';
+                                    }
                                 }
-                            } else {
-                                console.warn('No se encontró el elemento contador para', name);
-                            }
-                        });
-                    } else {
-                        console.error('Formato de datos incorrecto:', data);
+                            });
+                        }
                     }
                 })
-                .catch(error => {
-                    console.error('Error al cargar contadores:', error);
-                });
+                .catch(error => console.error('Error al cargar contadores:', error));
         }
         
-        // Actualizar contadores inmediatamente
+        // Configurar evento de clic para incrementar
+        if (incrementButton) {
+            incrementButton.addEventListener('click', function() {
+                fetch('/api/poop/increment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Actualizar contador local
+                        myPoopCount.textContent = data.count;
+                        
+                        // Mostrar una pequeña notificación
+                        showPoopNotification();
+                        
+                        // Actualizar todos los contadores después de un pequeño delay
+                        setTimeout(updatePoopCounters, 500);
+                    }
+                })
+                .catch(error => console.error('Error al incrementar contador:', error));
+            });
+        }
+        
+        // Función para mostrar una pequeña notificación
+        function showPoopNotification() {
+            const notification = document.createElement('div');
+            notification.className = 'position-fixed top-50 start-50 translate-middle bg-warning p-3 rounded shadow text-center';
+            notification.style.zIndex = '1050';
+            notification.style.opacity = '0.9';
+            notification.innerHTML = '<span style="font-size: 2rem;">💩</span><p class="mb-0 mt-2">¡Caca registrada!</p>';
+            
+            document.body.appendChild(notification);
+            
+            // Desaparecer después de 2 segundos
+            setTimeout(() => {
+                notification.style.transition = 'opacity 0.5s';
+                notification.style.opacity = '0';
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 2000);
+        }
+        
+        // Cargar contadores al inicio
         updatePoopCounters();
         
         // Actualizar contadores cada 5 segundos
