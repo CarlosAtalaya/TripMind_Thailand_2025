@@ -21,6 +21,30 @@
     {% endif %}
 {% endwith %}
 
+<!-- Botón para subir foto diaria -->
+<div id="daily-photo-status" class="mb-4">
+    <div class="card bg-light">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0"><i class="fas fa-camera me-2"></i>Foto del Día</h5>
+                    <p class="mb-0 text-muted">
+                        <span id="photo-status-text">Cargando estado...</span>
+                    </p>
+                </div>
+                <div>
+                    <button id="upload-photo-btn" class="btn btn-primary" disabled>
+                        <i class="fas fa-upload me-2"></i> Subir Foto
+                    </button>
+                    <a href="{{ url_for('daily_photos.gallery') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-images me-2"></i> Ver Galería
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
         <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Categorías para Votar</h5>
@@ -28,18 +52,38 @@
     <div class="card-body p-0">
         <div class="list-group list-group-flush">
             {% for category in categories %}
-                <a href="{{ url_for('votes.vote_category', category_id=category.id) }}" 
-                   class="list-group-item list-group-item-action {% if category.id in voted_categories %}list-group-item-success{% endif %}">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">{{ category.name }}</h5>
-                        {% if category.id in voted_categories %}
-                            <span class="badge bg-success">Votado hoy</span>
-                        {% else %}
-                            <span><i class="fas fa-chevron-right"></i></span>
-                        {% endif %}
-                    </div>
-                    <p class="mb-1">{{ category.description }}</p>
-                </a>
+                {% if category.name == "Foto del día" %}
+                    <!-- Tratamiento especial para Foto del día -->
+                    <a href="{{ url_for('votes.vote_photo_of_day') }}" 
+                       class="list-group-item list-group-item-action {% if category.id in voted_categories %}list-group-item-success{% endif %}">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">
+                                <i class="fas fa-camera me-2"></i>{{ category.name }}
+                            </h5>
+                            {% if category.id in voted_categories %}
+                                <span class="badge bg-success">Votado hoy</span>
+                            {% else %}
+                                <span><i class="fas fa-chevron-right"></i></span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-1">{{ category.description }}</p>
+                        <small class="text-muted">Vota por la mejor foto del día</small>
+                    </a>
+                {% else %}
+                    <!-- Categorías normales -->
+                    <a href="{{ url_for('votes.vote_category', category_id=category.id) }}" 
+                       class="list-group-item list-group-item-action {% if category.id in voted_categories %}list-group-item-success{% endif %}">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ category.name }}</h5>
+                            {% if category.id in voted_categories %}
+                                <span class="badge bg-success">Votado hoy</span>
+                            {% else %}
+                                <span><i class="fas fa-chevron-right"></i></span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-1">{{ category.description }}</p>
+                    </a>
+                {% endif %}
             {% endfor %}
         </div>
     </div>
@@ -50,6 +94,53 @@
         <i class="fas fa-chart-bar me-2"></i> Ver Resultados
     </a>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtener el estado de subida de foto del usuario
+        fetch('/daily-photo/api/status')
+            .then(response => response.json())
+            .then(data => {
+                const statusText = document.getElementById('photo-status-text');
+                const uploadBtn = document.getElementById('upload-photo-btn');
+                
+                if (data.has_uploaded) {
+                    statusText.textContent = '¡Ya has subido tu foto de hoy!';
+                    uploadBtn.disabled = true;
+                    uploadBtn.innerHTML = '<i class="fas fa-check me-2"></i> Foto Subida';
+                    uploadBtn.classList.remove('btn-primary');
+                    uploadBtn.classList.add('btn-success');
+                } else if (!data.can_upload) {
+                    statusText.textContent = 'El tiempo para subir fotos ha terminado (después de las 8 PM)';
+                    uploadBtn.disabled = true;
+                    uploadBtn.innerHTML = '<i class="fas fa-times me-2"></i> Tiempo Terminado';
+                    uploadBtn.classList.remove('btn-primary');
+                    uploadBtn.classList.add('btn-secondary');
+                } else {
+                    statusText.textContent = `Tiempo restante: ${formatTimeRemaining(data.time_remaining)}`;
+                    uploadBtn.disabled = false;
+                    uploadBtn.onclick = function() {
+                        window.location.href = "{{ url_for('daily_photos.upload') }}";
+                    };
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener estado de foto:', error);
+                document.getElementById('photo-status-text').textContent = 'Error al cargar estado';
+            });
+        
+        // Función para formatear tiempo restante
+        function formatTimeRemaining(timeString) {
+            if (!timeString) return '';
+            const parts = timeString.split(':');
+            const hours = parseInt(parts[0]);
+            const minutes = parseInt(parts[1]);
+            return `${hours}h ${minutes}m`;
+        }
+    });
+</script>
 {% endblock %}
 
 {% block sidebar %}
@@ -71,6 +162,13 @@
             <i class="fas fa-lightbulb me-2"></i>
             <strong>Consejo:</strong> Los resultados se actualizarán en tiempo real en la página principal.
         </div>
+        
+        <h6 class="mt-3">Foto del Día</h6>
+        <ul>
+            <li>Sube tu mejor foto antes de las 8 PM</li>
+            <li>Solo una foto por día</li>
+            <li>Vota por la mejor foto en la categoría especial</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

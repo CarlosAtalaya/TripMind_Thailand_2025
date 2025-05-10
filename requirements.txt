@@ -14,3 +14,4 @@ feedparser==6.0.10
 Flask-Login==0.6.2
 Flask-SQLAlchemy==3.0.5
 SQLAlchemy==2.0.19
+Pillow==10.0.0

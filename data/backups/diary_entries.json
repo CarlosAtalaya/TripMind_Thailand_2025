@@ -40,5 +40,12 @@
         "name": "Carlos Atalaya Gomez",
         "date": "2025-05-07 20:20:20",
         "content": "Hoooola"
+    },
+    {
+        "user_id": 6,
+        "username": "Nacho33",
+        "name": "Nacho 33?",
+        "date": "2025-05-10 12:35:35",
+        "content": "Hoola"
     }
 ]

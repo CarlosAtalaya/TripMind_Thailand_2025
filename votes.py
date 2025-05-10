@@ -5,6 +5,7 @@ from models import db, VoteCategory, Vote
 from datetime import datetime, timedelta
 import yaml
 import os
+import pytz
 
 votes = Blueprint('votes', __name__)
 
@@ -77,6 +78,11 @@ def index():
 def vote_category(category_id):
     """Página para votar en una categoría específica"""
     category = VoteCategory.query.get_or_404(category_id)
+    
+    # Si es la categoría de "Foto del día", redirigir a la página especial
+    if category.name == "Foto del día":
+        return redirect(url_for('votes.vote_photo_of_day'))
+    
     travelers = get_travelers_from_itinerary()
     today = datetime.now().date()
     
@@ -115,6 +121,60 @@ def vote_category(category_id):
     return render_template('votes/vote_form.html',
                           category=category,
                           travelers=travelers,
+                          existing_votes=existing_votes)
+
+@votes.route('/votaciones/foto-del-dia', methods=['GET', 'POST'])
+@login_required
+def vote_photo_of_day():
+    """Página especial para votar en la categoría Foto del día"""
+    from daily_photos import get_all_daily_photos
+    
+    # Obtener la categoría de "Foto del día"
+    category = VoteCategory.query.filter_by(name="Foto del día").first()
+    if not category:
+        flash('Categoría no encontrada', 'danger')
+        return redirect(url_for('votes.index'))
+    
+    today = datetime.now(pytz.timezone('Asia/Bangkok')).date()
+    
+    # Verificar si el usuario ya votó en esta categoría hoy
+    existing_votes = Vote.query.filter_by(
+        category_id=category.id,
+        voter_id=current_user.id,
+        date=today
+    ).all()
+    
+    if request.method == 'POST':
+        if existing_votes:
+            flash('Ya has votado en esta categoría hoy', 'warning')
+            return redirect(url_for('votes.index'))
+        
+        # Procesar el voto
+        traveler_name = request.form.get('traveler')
+        if traveler_name:
+            vote = Vote(
+                category_id=category.id,
+                voter_id=current_user.id,
+                traveler_name=traveler_name,
+                position=1,
+                date=today
+            )
+            db.session.add(vote)
+            
+            try:
+                db.session.commit()
+                flash('¡Voto registrado con éxito!', 'success')
+                return redirect(url_for('votes.index'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error al registrar voto: {e}', 'danger')
+    
+    # Obtener las fotos del día
+    photos = get_all_daily_photos()
+    
+    return render_template('votes/vote_photo_of_day.html',
+                          category=category,
+                          photos=photos,
                           existing_votes=existing_votes)
 
 @votes.route('/api/rankings')

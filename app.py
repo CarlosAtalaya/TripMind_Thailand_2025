@@ -14,6 +14,7 @@ from files import files
 from votes import votes
 from diary import diary
 from poop_counter import poop_counter
+from daily_photos import daily_photos  # Nuevo import
 import logging
 from logging.handlers import RotatingFileHandler
 from config import MAX_UPLOAD_SIZE
@@ -61,6 +62,7 @@ app.register_blueprint(files, url_prefix='/files')
 app.register_blueprint(votes, url_prefix='/votes')
 app.register_blueprint(diary, url_prefix='/diary')
 app.register_blueprint(poop_counter)
+app.register_blueprint(daily_photos)  # Registrar el nuevo blueprint
 
 @login_manager.user_loader
 def load_user(user_id):
