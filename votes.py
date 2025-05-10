@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import yaml
 import os
 import pytz
+from config import VOTE_CATEGORIES
 
 votes = Blueprint('votes', __name__)
 
@@ -22,19 +23,8 @@ def get_travelers_from_itinerary(itinerary_name='thailand_2025.yaml'):
         return []
 
 def initialize_categories():
-    """Inicializar las categorías de votación si no existen"""
-    categories = [
-        {"name": "MVP diario", "description": "El más valioso del día"},
-        {"name": "Donde está Wally", "description": "El que más se pierde"},
-        {"name": "Foto del día", "description": "La mejor foto"},
-        {"name": "Fue con fé, no con lógica", "description": "Decisiones cuestionables"},
-        {"name": "Mamá ven a por mí", "description": "El más desvalido"},
-        {"name": "Fashion Victim, Luis Butrón", "description": "El mejor/peor vestido"},
-        {"name": "Pa el Tinder", "description": "La foto más seductora"},
-        {"name": "El seguro no cubre esto", "description": "La situación más arriesgada"}
-    ]
     
-    for cat in categories:
+    for cat in VOTE_CATEGORIES:
         existing = VoteCategory.query.filter_by(name=cat["name"]).first()
         if not existing:
             new_category = VoteCategory(name=cat["name"], description=cat["description"])

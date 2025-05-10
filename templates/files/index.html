@@ -255,311 +255,358 @@
 
 {% block extra_js %}
 <script>
-let selectionMode = false;
-let selectedFiles = new Map();
-let longPressTimer;
-const LONG_PRESS_DURATION = 500;
-
-function toggleSelectionMode() {
-    selectionMode = !selectionMode;
+    let selectionMode = false;
+    let selectedFiles = new Map();
     
-    if (selectionMode) {
-        enterSelectionMode();
-    } else {
-        exitSelectionMode();
-    }
-}
-
-function enterSelectionMode() {
-    selectionMode = true;
-    const btn = document.getElementById('selection-mode-btn');
-    const overlays = document.querySelectorAll('.selection-overlay');
-    const bulkActions = document.getElementById('bulk-actions');
-    
-    document.body.classList.add('selection-mode');
-    overlays.forEach(overlay => {
-        overlay.style.display = 'block';
-    });
-    bulkActions.style.display = 'block';
-    
-    if (btn) {
-        btn.innerHTML = '<i class="fas fa-times me-1"></i> Cancelar Selección';
-        btn.classList.remove('btn-outline-secondary');
-        btn.classList.add('btn-outline-danger');
-    }
-    
-    updateSelectedCount();
-}
-
-function exitSelectionMode() {
-    selectionMode = false;
-    const btn = document.getElementById('selection-mode-btn');
-    const overlays = document.querySelectorAll('.selection-overlay');
-    const bulkActions = document.getElementById('bulk-actions');
-    
-    document.body.classList.remove('selection-mode');
-    overlays.forEach(overlay => {
-        overlay.style.display = 'none';
-    });
-    bulkActions.style.display = 'none';
-    
-    if (btn) {
-        btn.innerHTML = '<i class="fas fa-check-square me-1"></i> Seleccionar';
-        btn.classList.remove('btn-outline-danger');
-        btn.classList.add('btn-outline-secondary');
-    }
-    
-    // Limpiar selección
-    selectedFiles.clear();
-    document.querySelectorAll('.file-select').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    document.querySelectorAll('.file-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    updateSelectedCount();
-}
-
-function updateSelectedCount() {
-    const count = selectedFiles.size;
-    document.getElementById('selected-count').textContent = count;
-    
-    // Habilitar/deshabilitar botones según la selección
-    const downloadBtn = document.getElementById('download-btn');
-    const deleteBtn = document.getElementById('delete-btn');
-    
-    if (count === 0) {
-        downloadBtn.disabled = true;
-        deleteBtn.disabled = true;
-    } else {
-        downloadBtn.disabled = false;
+    // Función para mostrar notificaciones
+    function showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+        alertDiv.style.zIndex = '9999';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
         
-        // Verificar si hay archivos que el usuario puede eliminar
-        let canDelete = false;
-        selectedFiles.forEach((data) => {
-            if (data.canDelete) canDelete = true;
-        });
-        deleteBtn.disabled = !canDelete;
-    }
-}
-
-function downloadSelected() {
-    if (selectedFiles.size === 0) return;
-    
-    selectedFiles.forEach((data, fileId) => {
+        document.body.appendChild(alertDiv);
+        
         setTimeout(() => {
-            window.open(`/files/compartir/descargar/${fileId}`, '_blank');
-        }, 100);
-    });
-}
-
-function deleteSelected() {
-    if (selectedFiles.size === 0) return;
-    
-    // Filtrar solo los archivos que el usuario puede eliminar
-    const deletableFiles = Array.from(selectedFiles.entries())
-        .filter(([fileId, data]) => data.canDelete)
-        .map(([fileId, data]) => fileId);
-    
-    if (deletableFiles.length === 0) {
-        showAlert('No tienes permisos para eliminar los archivos seleccionados', 'warning');
-        return;
+            alertDiv.remove();
+        }, 3000);
     }
     
-    if (!confirm(`¿Estás seguro de que quieres eliminar ${deletableFiles.length} archivo(s)?`)) {
-        return;
+    // Función para cambiar el modo de selección
+    function toggleSelectionMode() {
+        selectionMode = !selectionMode;
+        
+        if (selectionMode) {
+            enterSelectionMode();
+        } else {
+            exitSelectionMode();
+        }
     }
     
-    const bulkActions = document.getElementById('bulk-actions');
-    const originalContent = bulkActions.innerHTML;
-    bulkActions.innerHTML = `
-        <div class="text-center">
-            <div class="spinner-border spinner-border-sm text-light" role="status">
-                <span class="visually-hidden">Eliminando...</span>
-            </div>
-            <span class="ms-2">Eliminando ${deletableFiles.length} archivo(s)...</span>
-        </div>
-    `;
+    // Función para entrar en modo selección
+    function enterSelectionMode() {
+        selectionMode = true;
+        const btn = document.getElementById('selection-mode-btn');
+        const overlays = document.querySelectorAll('.selection-overlay');
+        const bulkActions = document.getElementById('bulk-actions');
+        
+        // Mostrar overlays
+        overlays.forEach(overlay => {
+            overlay.style.display = 'block';
+        });
+        
+        // Mostrar barra de acciones
+        bulkActions.style.display = 'block';
+        
+        // Cambiar apariencia del botón
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-times me-1"></i> Cancelar Selección';
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-outline-danger');
+        }
+        
+        updateSelectedCount();
+    }
     
-    Promise.all(deletableFiles.map(fileId => deleteFileAjax(fileId)))
-        .then(results => {
-            const successCount = results.filter(r => r.success).length;
-            const errorCount = results.length - successCount;
+    // Función para salir del modo selección
+    function exitSelectionMode() {
+        selectionMode = false;
+        const btn = document.getElementById('selection-mode-btn');
+        const overlays = document.querySelectorAll('.selection-overlay');
+        const bulkActions = document.getElementById('bulk-actions');
+        
+        // Ocultar overlays
+        overlays.forEach(overlay => {
+            overlay.style.display = 'none';
+        });
+        
+        // Ocultar barra de acciones
+        bulkActions.style.display = 'none';
+        
+        // Restaurar botón
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-check-square me-1"></i> Seleccionar';
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-outline-secondary');
+        }
+        
+        // Limpiar selección
+        clearSelection();
+    }
+    
+    // Función para limpiar la selección
+    function clearSelection() {
+        selectedFiles.clear();
+        
+        // Desmarcar todos los checkboxes
+        document.querySelectorAll('.file-select').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Quitar estilo de selección de las tarjetas
+        document.querySelectorAll('.file-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        updateSelectedCount();
+    }
+    
+    // Función para actualizar el contador de selección
+    function updateSelectedCount() {
+        const count = selectedFiles.size;
+        const countElement = document.getElementById('selected-count');
+        const downloadBtn = document.getElementById('download-btn');
+        const deleteBtn = document.getElementById('delete-btn');
+        
+        // Actualizar contador
+        if (countElement) {
+            countElement.textContent = count;
+        }
+        
+        // Habilitar/deshabilitar botones según la selección
+        if (count === 0) {
+            if (downloadBtn) downloadBtn.disabled = true;
+            if (deleteBtn) deleteBtn.disabled = true;
+        } else {
+            if (downloadBtn) downloadBtn.disabled = false;
             
-            let message = `${successCount} archivo(s) eliminado(s) correctamente.`;
-            if (errorCount > 0) {
-                message += ` ${errorCount} error(es).`;
-            }
+            // Verificar si hay archivos que el usuario puede eliminar
+            let canDeleteAny = false;
+            selectedFiles.forEach((data) => {
+                if (data.canDelete) canDeleteAny = true;
+            });
             
-            showAlert(message, errorCount > 0 ? 'warning' : 'success');
-            
+            if (deleteBtn) deleteBtn.disabled = !canDeleteAny;
+        }
+    }
+    
+    // Función para seleccionar/deseleccionar un archivo
+    function toggleFileSelection(fileId, filename, canDelete, checkbox) {
+        const card = checkbox.closest('.file-card');
+        
+        if (checkbox.checked) {
+            // Agregar a la selección
+            selectedFiles.set(fileId, { 
+                filename: filename, 
+                canDelete: canDelete 
+            });
+            card.classList.add('selected');
+        } else {
+            // Quitar de la selección
+            selectedFiles.delete(fileId);
+            card.classList.remove('selected');
+        }
+        
+        updateSelectedCount();
+    }
+    
+    // Función para descargar archivos seleccionados
+    function downloadSelected() {
+        if (selectedFiles.size === 0) {
+            showAlert('No hay archivos seleccionados', 'warning');
+            return;
+        }
+        
+        let downloaded = 0;
+        selectedFiles.forEach((data, fileId) => {
             setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        })
-        .catch(error => {
-            showAlert('Error al eliminar archivos', 'danger');
-            bulkActions.innerHTML = originalContent;
+                window.open(`/files/compartir/descargar/${fileId}`, '_blank');
+                downloaded++;
+                
+                if (downloaded === selectedFiles.size) {
+                    showAlert(`${downloaded} archivo(s) descargado(s)`, 'success');
+                }
+            }, downloaded * 100); // Pequeño delay entre descargas
         });
-}
-
-function deleteFileAjax(fileId) {
-    return fetch(`/files/compartir/eliminar/${fileId}`, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .catch(error => ({success: false, error: error.message}));
-}
-
-function downloadByDate(date) {
-    const cards = document.querySelectorAll(`.file-card[data-date="${date}"]`);
-    cards.forEach(card => {
-        const fileId = card.dataset.fileId;
-        setTimeout(() => {
-            window.open(`/files/compartir/descargar/${fileId}`, '_blank');
-        }, 100);
-    });
-}
-
-function showAlert(message, type = 'info') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-    alertDiv.style.zIndex = '9999';
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-    
-    document.body.appendChild(alertDiv);
-    
-    setTimeout(() => {
-        alertDiv.remove();
-    }, 3000);
-}
-
-function startSelectionMode() {
-    if (!selectionMode) {
-        enterSelectionMode();
-        if ('vibrate' in navigator) {
-            navigator.vibrate(50);
-        }
     }
-}
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Detectar pulsación larga en dispositivos táctiles
-    let touchTimer;
-    document.addEventListener('touchstart', function(e) {
-        const card = e.target.closest('.file-card');
-        if (card && !selectionMode) {
-            card.classList.add('pressing');
-            touchTimer = setTimeout(() => {
-                startSelectionMode();
-                const checkbox = card.querySelector('.file-select');
-                if (checkbox && !checkbox.checked) {
-                    checkbox.checked = true;
-                    checkbox.dispatchEvent(new Event('change'));
-                }
-            }, LONG_PRESS_DURATION);
-        }
-    });
     
-    document.addEventListener('touchend', function(e) {
-        clearTimeout(touchTimer);
-        const card = e.target.closest('.file-card');
-        if (card) {
-            card.classList.remove('pressing');
+    // Función para eliminar archivos seleccionados
+    function deleteSelected() {
+        if (selectedFiles.size === 0) {
+            showAlert('No hay archivos seleccionados', 'warning');
+            return;
         }
-    });
-    
-    document.addEventListener('touchmove', function(e) {
-        clearTimeout(touchTimer);
-        const card = e.target.closest('.file-card');
-        if (card) {
-            card.classList.remove('pressing');
-        }
-    });
-    
-    // Detectar pulsación larga en escritorio
-    let mouseTimer;
-    document.addEventListener('mousedown', function(e) {
-        const card = e.target.closest('.file-card');
-        if (card && e.button === 0 && !selectionMode) {
-            card.classList.add('pressing');
-            mouseTimer = setTimeout(() => {
-                startSelectionMode();
-                const checkbox = card.querySelector('.file-select');
-                if (checkbox && !checkbox.checked) {
-                    checkbox.checked = true;
-                    checkbox.dispatchEvent(new Event('change'));
-                }
-            }, LONG_PRESS_DURATION);
-        }
-    });
-    
-    document.addEventListener('mouseup', function(e) {
-        clearTimeout(mouseTimer);
-        const card = e.target.closest('.file-card');
-        if (card) {
-            card.classList.remove('pressing');
-        }
-    });
-    
-    document.addEventListener('mouseleave', function(e) {
-        clearTimeout(mouseTimer);
-        const card = e.target.closest('.file-card');
-        if (card) {
-            card.classList.remove('pressing');
-        }
-    });
-    
-    // Click en modo selección
-    document.addEventListener('click', function(e) {
-        if (!selectionMode) return;
         
-        const card = e.target.closest('.file-card');
-        if (card && e.target.tagName !== 'INPUT') {
-            e.preventDefault();
-            e.stopPropagation();
-            const checkbox = card.querySelector('.file-select');
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
-                checkbox.dispatchEvent(new Event('change'));
-            }
+        // Filtrar solo los archivos que el usuario puede eliminar
+        const deletableFiles = Array.from(selectedFiles.entries())
+            .filter(([fileId, data]) => data.canDelete);
+        
+        if (deletableFiles.length === 0) {
+            showAlert('No tienes permisos para eliminar los archivos seleccionados', 'warning');
+            return;
         }
-    });
+        
+        if (!confirm(`¿Estás seguro de que quieres eliminar ${deletableFiles.length} archivo(s)?`)) {
+            return;
+        }
+        
+        const bulkActions = document.getElementById('bulk-actions');
+        const originalContent = bulkActions.innerHTML;
+        bulkActions.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border spinner-border-sm text-light" role="status">
+                    <span class="visually-hidden">Eliminando...</span>
+                </div>
+                <span class="ms-2">Eliminando ${deletableFiles.length} archivo(s)...</span>
+            </div>
+        `;
+        
+        // Eliminar archivos
+        Promise.all(deletableFiles.map(([fileId, data]) => deleteFileAjax(fileId)))
+            .then(results => {
+                const successCount = results.filter(r => r.success).length;
+                const errorCount = results.length - successCount;
+                
+                let message = `${successCount} archivo(s) eliminado(s) correctamente.`;
+                if (errorCount > 0) {
+                    message += ` ${errorCount} error(es).`;
+                }
+                
+                showAlert(message, errorCount > 0 ? 'warning' : 'success');
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            })
+            .catch(error => {
+                showAlert('Error al eliminar archivos', 'danger');
+                bulkActions.innerHTML = originalContent;
+            });
+    }
     
-    // Cambios en checkboxes
-    document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('file-select')) {
-            const fileId = e.target.dataset.fileId;
-            const filename = e.target.dataset.filename;
-            const canDelete = e.target.dataset.canDelete === 'true';
+    // Función AJAX para eliminar un archivo
+    function deleteFileAjax(fileId) {
+        return fetch(`/files/compartir/eliminar/${fileId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .catch(error => ({success: false, error: error.message}));
+    }
+    
+    // Función para descargar archivos por fecha
+    function downloadByDate(date) {
+        const cards = document.querySelectorAll(`.file-card[data-date="${date}"]`);
+        
+        if (cards.length === 0) {
+            showAlert('No hay archivos para esta fecha', 'warning');
+            return;
+        }
+        
+        let downloaded = 0;
+        cards.forEach((card, index) => {
+            const fileId = card.dataset.fileId;
+            setTimeout(() => {
+                window.open(`/files/compartir/descargar/${fileId}`, '_blank');
+                downloaded++;
+                
+                if (downloaded === cards.length) {
+                    showAlert(`${downloaded} archivo(s) descargado(s)`, 'success');
+                }
+            }, index * 100);
+        });
+    }
+    
+    // Inicialización cuando se carga el documento
+    document.addEventListener('DOMContentLoaded', function() {
+        // Detectar pulsación larga en elementos
+        let pressTimer;
+        let isLongPress = false;
+        
+        // Función para iniciar el modo selección con pulsación larga
+        function startLongPress(element) {
+            isLongPress = false;
+            pressTimer = setTimeout(() => {
+                isLongPress = true;
+                if (!selectionMode) {
+                    enterSelectionMode();
+                    // Si es una tarjeta, seleccionarla automáticamente
+                    const card = element.closest('.file-card');
+                    if (card) {
+                        const checkbox = card.querySelector('.file-select');
+                        if (checkbox && !checkbox.checked) {
+                            checkbox.checked = true;
+                            const event = new Event('change', { bubbles: true });
+                            checkbox.dispatchEvent(event);
+                        }
+                    }
+                }
+            }, 500); // 500ms para pulsación larga
+        }
+        
+        // Función para cancelar la pulsación larga
+        function cancelLongPress() {
+            clearTimeout(pressTimer);
+        }
+        
+        // Event listeners para pulsación larga (táctil)
+        document.addEventListener('touchstart', function(e) {
             const card = e.target.closest('.file-card');
-            
-            if (e.target.checked) {
-                selectedFiles.set(fileId, { filename: filename, canDelete: canDelete });
-                card.classList.add('selected');
-            } else {
-                selectedFiles.delete(fileId);
-                card.classList.remove('selected');
+            if (card) {
+                startLongPress(card);
             }
-            
-            updateSelectedCount();
-        }
+        });
+        
+        document.addEventListener('touchend', cancelLongPress);
+        document.addEventListener('touchmove', cancelLongPress);
+        
+        // Event listeners para pulsación larga (ratón)
+        document.addEventListener('mousedown', function(e) {
+            if (e.button === 0) { // Solo botón izquierdo
+                const card = e.target.closest('.file-card');
+                if (card) {
+                    startLongPress(card);
+                }
+            }
+        });
+        
+        document.addEventListener('mouseup', cancelLongPress);
+        document.addEventListener('mouseleave', cancelLongPress);
+        
+        // Manejar clicks en las tarjetas
+        document.addEventListener('click', function(e) {
+            // Si estamos en modo selección
+            if (selectionMode) {
+                const card = e.target.closest('.file-card');
+                
+                // Si el click fue en la tarjeta pero no en el checkbox
+                if (card && !e.target.classList.contains('file-select')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const checkbox = card.querySelector('.file-select');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        const event = new Event('change', { bubbles: true });
+                        checkbox.dispatchEvent(event);
+                    }
+                }
+            }
+        });
+        
+        // Manejar cambios en los checkboxes
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('file-select')) {
+                const fileId = e.target.dataset.fileId;
+                const filename = e.target.dataset.filename;
+                const canDelete = e.target.dataset.canDelete === 'true';
+                
+                toggleFileSelection(fileId, filename, canDelete, e.target);
+            }
+        });
+        
+        // Prevenir el menú contextual en las tarjetas
+        document.addEventListener('contextmenu', function(e) {
+            const card = e.target.closest('.file-card');
+            if (card) {
+                e.preventDefault();
+            }
+        });
     });
-    
-    // Prevenir menú contextual
-    document.addEventListener('contextmenu', function(e) {
-        const card = e.target.closest('.file-card');
-        if (card) {
-            e.preventDefault();
-        }
-    });
-});
-</script>
+    </script>
 {% endblock %}

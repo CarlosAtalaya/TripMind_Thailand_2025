@@ -1,59 +1,11 @@
-# services/news_alternative.py
+# services/news.py
 import feedparser
 import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-import time
-import os
-import yaml
 from services.itinerary import load_itinerary
+from config import NEWS_ALERT_KEYWORDS, NEWS_RSS_FEEDS
 
-# Palabras clave que indican noticias potencialmente relevantes
-alert_keywords = [
-    # Seguridad y emergencias
-    'alert', 'security', 'protest', 'emergency', 'evacuation', 'earthquake',
-    'storm', 'rain', 'flood', 'travel warning', 'demonstration', 'danger',
-    'violence', 'outbreak', 'covid', 'hurricane', 'tsunami', 'closure', 'strike',
-    'terrorist', 'attack', 'police', 'military', 'curfew', 'lockdown',
-    'accident', 'crash', 'fire', 'explosion', 'incident', 'crisis',
-    
-    # Salud y enfermedades
-    'disease', 'virus', 'infection', 'outbreak', 'hospital', 'medical', 'health',
-    'dengue', 'malaria', 'fever', 'vaccination', 'quarantine', 'pandemic',
-    
-    # Transporte y turismo
-    'tourist', 'tourism', 'airport', 'flight', 'canceled', 'delayed', 'transport',
-    'road closure', 'traffic', 'visa', 'immigration', 'embassy', 'consulate',
-    'backpacker', 'hotel', 'hostel', 'ferry', 'train', 'bus',
-    
-    # Clima y desastres naturales
-    'weather', 'monsoon', 'typhoon', 'landslide', 'drought', 'heatwave',
-    'temperature', 'humidity', 'forecast', 'season', 'tropical storm',
-    
-    # Cultura y entretenimiento (incluyendo términos graciosos)
-    'ladyboy', 'kathoey', 'nightlife', 'red light', 'ping pong show', 'full moon party',
-    'massage parlor', 'happy ending', 'tuk tuk', 'scam', 'tourist trap',
-    'bar girl', 'go go bar', 'soapy massage', 'karaoke', 'walking street',
-    
-    # Términos específicos de viajeros españoles
-    'spanish tourist', 'spanish group', 'español', 'españoles', 'turista español',
-    'group tour', 'party', 'fiesta', 'alcohol', 'drunk', 'arrest', 'jail',
-    
-    # Otros términos relevantes
-    'drugs', 'marijuana', 'cannabis', 'mushrooms', 'police raid', 'fine', 'penalty',
-    'money', 'atm', 'credit card', 'theft', 'robbery', 'pickpocket',
-    'food poisoning', 'stomach', 'diarrhea', 'doctor', 'clinic',
-    'temple', 'buddha', 'monk', 'festival', 'celebration', 'holiday',
-    'beach', 'island', 'diving', 'snorkeling', 'boat', 'speedboat'
-]
-
-# Fuentes RSS de noticias tailandesas e internacionales
-rss_feeds = [
-    'https://www.bangkokpost.com/rss/data/topstories.xml',
-    'https://thethaiger.com/feed',
-    'https://news.google.com/rss/search?q=thailand&hl=en-US&gl=US&ceid=US:en',
-    'https://www.channelnewsasia.com/api/v1/rss-outbound-feed/latest_news'
-]
 
 def get_itinerary_regions(itinerary_name='thailand_2025.yaml'):
     """
@@ -122,7 +74,7 @@ def fetch_rss(feed_url, regions_keywords):
                 continue
                 
             # Verificar si contiene palabras clave de alerta
-            has_alert = any(keyword.lower() in content for keyword in alert_keywords)
+            has_alert = any(keyword.lower() in content for keyword in NEWS_ALERT_KEYWORDS)
             
             # Priorizar noticias con alertas pero incluir algunas sin alertas
             if has_alert or len(results) < 10:
@@ -168,9 +120,9 @@ def get_filtered_news(itinerary_name='thailand_2025.yaml', max_items=50):
     all_results = []
     
     # Usar ThreadPoolExecutor para hacer las peticiones en paralelo
-    with ThreadPoolExecutor(max_workers=len(rss_feeds)) as executor:
+    with ThreadPoolExecutor(max_workers=len(NEWS_RSS_FEEDS)) as executor:
         # Pasar regiones_keywords como argumento a fetch_rss
-        tasks = [executor.submit(fetch_rss, feed, regions_keywords) for feed in rss_feeds]
+        tasks = [executor.submit(fetch_rss, feed, regions_keywords) for feed in NEWS_RSS_FEEDS]
         
         for task in tasks:
             try:

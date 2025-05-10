@@ -22,9 +22,9 @@ CUSTOM_MULTIMEDIA_PATH = os.environ.get('MULTIMEDIA_PATH')
 if CUSTOM_MULTIMEDIA_PATH:
     MULTIMEDIA_BASE_PATH = CUSTOM_MULTIMEDIA_PATH
 else:
-    # Ruta relativa desde la ubicación del proyecto (un nivel arriba)
+    # La carpeta multimedia estará en la raíz del proyecto
     PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    MULTIMEDIA_BASE_PATH = os.path.join(os.path.dirname(PROJECT_ROOT), MULTIMEDIA_FOLDER_NAME)
+    MULTIMEDIA_BASE_PATH = os.path.join(PROJECT_ROOT, MULTIMEDIA_FOLDER_NAME)
 
 # Límites de almacenamiento
 MAX_UPLOAD_SIZE = 6 * 1024 * 1024 * 1024  # 6 GB en bytes
@@ -46,3 +46,68 @@ ALLOWED_EXTENSIONS = {
     # Formatos de imagen raw/profesionales
     'raw', 'cr2', 'nef', 'arw', 'dng'
 }
+
+# Configuración de fotos diarias (daily_photos.py)
+DAILY_PHOTOS_FOLDER = 'Dailys_photos'
+DAILY_PHOTOS_ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+DAILY_PHOTOS_MAX_SIZE = 10 * 1024 * 1024  # 10 MB
+DAILY_DEADLINE_HOUR = 20  # 8 PM hora tailandesa
+THAILAND_TZ = 'Asia/Bangkok'
+
+# Configuración de votaciones (votes.py)
+VOTE_CATEGORIES = [
+    {"name": "MVP diario", "description": "El más valioso del día"},
+    {"name": "Donde está Wally", "description": "El que más se pierde"},
+    {"name": "Foto del día", "description": "La mejor foto"},
+    {"name": "Fue con fé, no con lógica", "description": "Decisiones cuestionables"},
+    {"name": "Mamá ven a por mí", "description": "El más desvalido"},
+    {"name": "Fashion Victim, Luis Butrón", "description": "El mejor/peor vestido"},
+    {"name": "Pa el Tinder", "description": "La foto más seductora"},
+    {"name": "El seguro no cubre esto", "description": "La situación más arriesgada"}
+]
+
+# Configuración de noticias (news.py)
+NEWS_ALERT_KEYWORDS = [
+    # Seguridad y emergencias
+    'alert', 'security', 'protest', 'emergency', 'evacuation', 'earthquake',
+    'storm', 'rain', 'flood', 'travel warning', 'demonstration', 'danger',
+    'violence', 'outbreak', 'covid', 'hurricane', 'tsunami', 'closure', 'strike',
+    'terrorist', 'attack', 'police', 'military', 'curfew', 'lockdown',
+    'accident', 'crash', 'fire', 'explosion', 'incident', 'crisis',
+    
+    # Salud y enfermedades
+    'disease', 'virus', 'infection', 'outbreak', 'hospital', 'medical', 'health',
+    'dengue', 'malaria', 'fever', 'vaccination', 'quarantine', 'pandemic',
+    
+    # Transporte y turismo
+    'tourist', 'tourism', 'airport', 'flight', 'canceled', 'delayed', 'transport',
+    'road closure', 'traffic', 'visa', 'immigration', 'embassy', 'consulate',
+    'backpacker', 'hotel', 'hostel', 'ferry', 'train', 'bus',
+    
+    # Clima y desastres naturales
+    'weather', 'monsoon', 'typhoon', 'landslide', 'drought', 'heatwave',
+    'temperature', 'humidity', 'forecast', 'season', 'tropical storm',
+    
+    # Cultura y entretenimiento (incluyendo términos graciosos)
+    'ladyboy', 'kathoey', 'nightlife', 'red light', 'ping pong show', 'full moon party',
+    'massage parlor', 'happy ending', 'tuk tuk', 'scam', 'tourist trap',
+    'bar girl', 'go go bar', 'soapy massage', 'karaoke', 'walking street',
+    
+    # Términos específicos de viajeros españoles
+    'spanish tourist', 'spanish group', 'español', 'españoles', 'turista español',
+    'group tour', 'party', 'fiesta', 'alcohol', 'drunk', 'arrest', 'jail',
+    
+    # Otros términos relevantes
+    'drugs', 'marijuana', 'cannabis', 'mushrooms', 'police raid', 'fine', 'penalty',
+    'money', 'atm', 'credit card', 'theft', 'robbery', 'pickpocket',
+    'food poisoning', 'stomach', 'diarrhea', 'doctor', 'clinic',
+    'temple', 'buddha', 'monk', 'festival', 'celebration', 'holiday',
+    'beach', 'island', 'diving', 'snorkeling', 'boat', 'speedboat'
+]
+
+NEWS_RSS_FEEDS = [
+    'https://www.bangkokpost.com/rss/data/topstories.xml',
+    'https://thethaiger.com/feed',
+    'https://news.google.com/rss/search?q=thailand&hl=en-US&gl=US&ceid=US:en',
+    'https://www.channelnewsasia.com/api/v1/rss-outbound-feed/latest_news'
+]

@@ -6,28 +6,32 @@ from models import db, User
 from datetime import datetime
 import os
 import pytz
-from config import MULTIMEDIA_FOLDER_NAME
+from config import (
+    MULTIMEDIA_BASE_PATH,
+    DAILY_PHOTOS_FOLDER,
+    DAILY_PHOTOS_ALLOWED_EXTENSIONS,
+    DAILY_PHOTOS_MAX_SIZE,
+    DAILY_DEADLINE_HOUR,
+    THAILAND_TZ
+)
 from PIL import Image
 import uuid
 
 daily_photos = Blueprint('daily_photos', __name__)
 
 # Configuración específica para fotos diarias
-DAILY_PHOTOS_FOLDER = os.path.join(MULTIMEDIA_FOLDER_NAME, 'Dailys_photos')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10 MB
-THAILAND_TZ = pytz.timezone('Asia/Bangkok')
-DAILY_DEADLINE_HOUR = 20  # 8 PM hora tailandesa
+DAILY_PHOTOS_FULL_PATH = os.path.join(MULTIMEDIA_BASE_PATH, DAILY_PHOTOS_FOLDER)
+THAILAND_TZ_OBJ = pytz.timezone(THAILAND_TZ)
 
 def allowed_file(filename):
     """Verifica si el archivo tiene una extensión permitida"""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in DAILY_PHOTOS_ALLOWED_EXTENSIONS
 
 def ensure_daily_photos_folder():
     """Asegura que la carpeta base de fotos diarias exista"""
-    if not os.path.exists(DAILY_PHOTOS_FOLDER):
+    if not os.path.exists(DAILY_PHOTOS_FULL_PATH):
         try:
-            os.makedirs(DAILY_PHOTOS_FOLDER)
+            os.makedirs(DAILY_PHOTOS_FULL_PATH)
         except Exception as e:
             print(f"Error al crear carpeta de fotos diarias: {e}")
             raise
@@ -37,11 +41,11 @@ def get_daily_folder(date=None):
     ensure_daily_photos_folder()
     
     if date is None:
-        date = datetime.now(THAILAND_TZ)
+        date = datetime.now(THAILAND_TZ_OBJ)
     
     # Crear subcarpeta con la fecha actual
     date_folder = date.strftime('%Y-%m-%d')
-    folder_path = os.path.join(DAILY_PHOTOS_FOLDER, date_folder)
+    folder_path = os.path.join(DAILY_PHOTOS_FULL_PATH, date_folder)
     
     # Crear la carpeta si no existe
     if not os.path.exists(folder_path):
@@ -55,15 +59,15 @@ def get_daily_folder(date=None):
 
 def get_user_photo_filename(user_id, extension='jpg'):
     """Genera el nombre del archivo para la foto del usuario"""
-    return f"User_{user_id}_{datetime.now(THAILAND_TZ).strftime('%Y-%m-%d')}.{extension}"
+    return f"User_{user_id}_{datetime.now(THAILAND_TZ_OBJ).strftime('%Y-%m-%d')}.{extension}"
 
 def has_user_uploaded_today(user_id):
     """Verifica si el usuario ya ha subido una foto hoy"""
     today_folder = get_daily_folder()
-    date_str = datetime.now(THAILAND_TZ).strftime('%Y-%m-%d')
+    date_str = datetime.now(THAILAND_TZ_OBJ).strftime('%Y-%m-%d')
     
     # Buscar si existe algún archivo del usuario para hoy
-    for ext in ALLOWED_EXTENSIONS:
+    for ext in DAILY_PHOTOS_ALLOWED_EXTENSIONS:
         filename = f"User_{user_id}_{date_str}.{ext}"
         if os.path.exists(os.path.join(today_folder, filename)):
             return True
@@ -71,7 +75,7 @@ def has_user_uploaded_today(user_id):
 
 def is_upload_time_valid():
     """Verifica si aún se pueden subir fotos (antes de las 8 PM hora tailandesa)"""
-    current_time = datetime.now(THAILAND_TZ)
+    current_time = datetime.now(THAILAND_TZ_OBJ)
     return current_time.hour < DAILY_DEADLINE_HOUR
 
 def get_all_daily_photos(date=None):
