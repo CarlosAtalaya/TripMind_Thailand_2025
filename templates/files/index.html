@@ -96,9 +96,10 @@
                                     </div>
                                     {% if file.mimetype.startswith('image/') %}
                                         <img src="{{ url_for('files.preview', file_id=file.id) }}" 
-                                             class="card-img-top" 
-                                             alt="{{ file.original_filename }}"
-                                             style="height: 200px; object-fit: cover;">
+                                            class="card-img-top" 
+                                            alt="{{ file.original_filename }}"
+                                            style="height: 200px; object-fit: cover;"
+                                            onerror="this.onerror=null; this.src='/static/img/image-not-found.png';">
                                     {% else %}
                                         <div class="card-img-top d-flex align-items-center justify-content-center" 
                                              style="height: 200px; background-color: #f8f9fa;">

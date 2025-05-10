@@ -16,15 +16,27 @@ AUTO_UPDATE_INTERVAL = 1800  # 0.5 hora en segundos
 # Configuración de archivos multimedia
 MULTIMEDIA_FOLDER_NAME = 'Multimedia_Tailandia2025'
 
-# Permitir configuración personalizada mediante variable de entorno
-CUSTOM_MULTIMEDIA_PATH = os.environ.get('MULTIMEDIA_PATH')
+# IMPORTANTE: La carpeta multimedia SIEMPRE estará en la raíz del proyecto
+# Obtener la ruta absoluta del archivo config.py
+CONFIG_FILE_PATH = os.path.abspath(__file__)
 
-if CUSTOM_MULTIMEDIA_PATH:
-    MULTIMEDIA_BASE_PATH = CUSTOM_MULTIMEDIA_PATH
-else:
-    # La carpeta multimedia estará en la raíz del proyecto
-    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    MULTIMEDIA_BASE_PATH = os.path.join(PROJECT_ROOT, MULTIMEDIA_FOLDER_NAME)
+# Obtener el directorio donde está config.py (que debería ser la raíz del proyecto)
+PROJECT_ROOT = os.path.dirname(CONFIG_FILE_PATH)
+
+# La carpeta multimedia SIEMPRE estará en PROJECT_ROOT/MULTIMEDIA_FOLDER_NAME
+MULTIMEDIA_BASE_PATH = os.path.join(PROJECT_ROOT, MULTIMEDIA_FOLDER_NAME)
+
+# Verificación para asegurar que la ruta es correcta
+print(f"Raíz del proyecto: {PROJECT_ROOT}")
+print(f"Carpeta multimedia configurada en: {MULTIMEDIA_BASE_PATH}")
+
+# Crear la carpeta si no existe
+if not os.path.exists(MULTIMEDIA_BASE_PATH):
+    try:
+        os.makedirs(MULTIMEDIA_BASE_PATH)
+        print(f"Carpeta multimedia creada en: {MULTIMEDIA_BASE_PATH}")
+    except Exception as e:
+        print(f"ERROR: No se pudo crear la carpeta multimedia: {e}")
 
 # Límites de almacenamiento
 MAX_UPLOAD_SIZE = 6 * 1024 * 1024 * 1024  # 6 GB en bytes
@@ -50,7 +62,7 @@ ALLOWED_EXTENSIONS = {
 # Configuración de fotos diarias (daily_photos.py)
 DAILY_PHOTOS_FOLDER = 'Dailys_photos'
 DAILY_PHOTOS_ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-DAILY_PHOTOS_MAX_SIZE = 10 * 1024 * 1024  # 10 MB
+DAILY_PHOTOS_MAX_SIZE = 25 * 1024 * 1024  # 25 MB
 DAILY_DEADLINE_HOUR = 20  # 8 PM hora tailandesa
 THAILAND_TZ = 'Asia/Bangkok'
 

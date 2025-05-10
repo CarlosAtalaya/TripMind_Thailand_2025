@@ -81,7 +81,7 @@ def is_upload_time_valid():
 def get_all_daily_photos(date=None):
     """Obtiene todas las fotos del día especificado"""
     if date is None:
-        date = datetime.now(THAILAND_TZ)
+        date = datetime.now(THAILAND_TZ_OBJ)
     
     date_str = date.strftime('%Y-%m-%d')
     folder_path = get_daily_folder(date)
@@ -89,7 +89,7 @@ def get_all_daily_photos(date=None):
     photos = []
     if os.path.exists(folder_path):
         for filename in os.listdir(folder_path):
-            if filename.startswith('User_') and any(filename.endswith(f'.{ext}') for ext in ALLOWED_EXTENSIONS):
+            if filename.startswith('User_') and any(filename.endswith(f'.{ext}') for ext in DAILY_PHOTOS_ALLOWED_EXTENSIONS):
                 # Extraer user_id del nombre del archivo
                 parts = filename.split('_')
                 if len(parts) >= 3:
@@ -152,9 +152,9 @@ def upload():
                 file.save(temp_path)
                 
                 # Verificar tamaño del archivo
-                if os.path.getsize(temp_path) > MAX_IMAGE_SIZE:
+                if os.path.getsize(temp_path) > DAILY_PHOTOS_MAX_SIZE:
                     os.remove(temp_path)
-                    flash('El archivo es demasiado grande. Máximo 10 MB.', 'danger')
+                    flash('El archivo es demasiado grande. Máximo 25 MB.', 'danger')
                     return redirect(request.url)
                 
                 # Procesar imagen (opcional: redimensionar si es muy grande)
@@ -192,7 +192,7 @@ def upload():
             return redirect(request.url)
     
     # GET request
-    current_time = datetime.now(THAILAND_TZ)
+    current_time = datetime.now(THAILAND_TZ_OBJ)
     deadline_time = current_time.replace(hour=DAILY_DEADLINE_HOUR, minute=0, second=0, microsecond=0)
     time_remaining = deadline_time - current_time
     
@@ -207,11 +207,11 @@ def gallery():
     date_str = request.args.get('date')
     if date_str:
         try:
-            date = datetime.strptime(date_str, '%Y-%m-%d').replace(tzinfo=THAILAND_TZ)
+            date = datetime.strptime(date_str, '%Y-%m-%d').replace(tzinfo=THAILAND_TZ_OBJ)
         except:
-            date = datetime.now(THAILAND_TZ)
+            date = datetime.now(THAILAND_TZ_OBJ)
     else:
-        date = datetime.now(THAILAND_TZ)
+        date = datetime.now(THAILAND_TZ_OBJ)
     
     photos = get_all_daily_photos(date)
     
@@ -223,7 +223,7 @@ def gallery():
 @login_required
 def get_photo(date, filename):
     """Servir una foto específica"""
-    folder_path = os.path.join(DAILY_PHOTOS_FOLDER, date)
+    folder_path = os.path.join(DAILY_PHOTOS_FULL_PATH, date)
     return send_from_directory(folder_path, filename)
 
 @daily_photos.route('/daily-photo/api/photos')
@@ -233,11 +233,11 @@ def api_get_photos():
     date_str = request.args.get('date')
     if date_str:
         try:
-            date = datetime.strptime(date_str, '%Y-%m-%d').replace(tzinfo=THAILAND_TZ)
+            date = datetime.strptime(date_str, '%Y-%m-%d').replace(tzinfo=THAILAND_TZ_OBJ)
         except:
-            date = datetime.now(THAILAND_TZ)
+            date = datetime.now(THAILAND_TZ_OBJ)
     else:
-        date = datetime.now(THAILAND_TZ)
+        date = datetime.now(THAILAND_TZ_OBJ)
     
     photos = get_all_daily_photos(date)
     return jsonify({'success': True, 'photos': photos})
@@ -246,7 +246,7 @@ def api_get_photos():
 @login_required
 def api_status():
     """API para obtener el estado de subida del usuario actual"""
-    current_time = datetime.now(THAILAND_TZ)
+    current_time = datetime.now(THAILAND_TZ_OBJ)
     deadline_time = current_time.replace(hour=DAILY_DEADLINE_HOUR, minute=0, second=0, microsecond=0)
     
     return jsonify({

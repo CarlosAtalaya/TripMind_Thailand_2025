@@ -69,6 +69,30 @@ def allowed_file(filename):
     """Verifica si el archivo tiene una extensión permitida"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def cleanup_orphaned_records():
+    """Limpia registros de archivos que ya no existen en el servidor"""
+    orphaned_count = 0
+    shared_files = SharedFile.query.all()
+    
+    for file in shared_files:
+        file_path = os.path.join(MULTIMEDIA_BASE_PATH, file.path)
+        if not os.path.exists(file_path):
+            db.session.delete(file)
+            orphaned_count += 1
+    
+    if orphaned_count > 0:
+        try:
+            db.session.commit()
+            current_app.logger.info(f"Limpiados {orphaned_count} registros huérfanos")
+            return orphaned_count
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error al limpiar registros huérfanos: {e}")
+            return 0
+    
+    return 0
+
+
 @files.route('/compartir')
 @login_required
 def index():
@@ -79,11 +103,33 @@ def index():
     # Obtener todos los archivos compartidos ordenados por fecha
     shared_files = SharedFile.query.order_by(SharedFile.upload_date.desc()).all()
     
+    # Filtrar archivos que realmente existen en el servidor
+    valid_files = []
+    orphaned_files = []
+    
+    for file in shared_files:
+        file_path = os.path.join(MULTIMEDIA_BASE_PATH, file.path)
+        if os.path.exists(file_path):
+            valid_files.append(file)
+        else:
+            orphaned_files.append(file)
+    
+    # Opcional: Limpiar registros huérfanos automáticamente
+    if orphaned_files:
+        for orphan in orphaned_files:
+            db.session.delete(orphan)
+        try:
+            db.session.commit()
+            flash(f'Se han limpiado {len(orphaned_files)} registros de archivos no existentes.', 'info')
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error al limpiar registros huérfanos: {e}")
+    
     # Obtener información de almacenamiento
     current_size = get_folder_size(MULTIMEDIA_BASE_PATH)
     
     return render_template('files/index.html', 
-                         shared_files=shared_files,
+                         shared_files=valid_files,
                          current_storage=format_size(current_size),
                          max_storage=format_size(MAX_FOLDER_SIZE),
                          storage_percentage=(current_size / MAX_FOLDER_SIZE) * 100)
@@ -237,6 +283,13 @@ def preview(file_id):
     # Verificar que el archivo existe
     file_path = os.path.join(MULTIMEDIA_BASE_PATH, date_folder, filename)
     if not os.path.exists(file_path):
+        # Opcional: Eliminar el registro huérfano
+        db.session.delete(shared_file)
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+        
         flash('El archivo no existe en el servidor', 'danger')
         return redirect(url_for('files.index'))
     
@@ -246,6 +299,24 @@ def preview(file_id):
         filename,
         as_attachment=False  # Esto permite que se muestre en el navegador
     )
+
+@files.route('/admin/cleanup-orphaned')
+@login_required
+def admin_cleanup_orphaned():
+    """Limpia manualmente los registros huérfanos (solo admin)"""
+    from auth import admin_required
+    
+    if not current_user.is_admin:
+        flash('Se requieren permisos de administrador', 'danger')
+        return redirect(url_for('files.index'))
+    
+    count = cleanup_orphaned_records()
+    if count > 0:
+        flash(f'Se han limpiado {count} registros de archivos no existentes.', 'success')
+    else:
+        flash('No se encontraron registros huérfanos.', 'info')
+    
+    return redirect(url_for('files.index'))
 
 @files.route('/api/storage-info')
 @login_required
