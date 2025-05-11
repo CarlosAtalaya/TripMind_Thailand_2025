@@ -26,9 +26,14 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-users me-2"></i>Gestión de Usuarios</h5>
-                <a href="{{ url_for('auth.add_user') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus me-1"></i> Añadir Usuario
-                </a>
+                <div>
+                    <a href="{{ url_for('auth.add_user') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i> Añadir Usuario
+                    </a>
+                    <a href="{{ url_for('auth.add_user', pending=1) }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-user-clock me-1"></i> Añadir Usuario Pendiente
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 {% if users %}
@@ -38,8 +43,8 @@
                                 <tr>
                                     <th>Usuario</th>
                                     <th>Nombre</th>
-                                    <th>Teléfono</th>
-                                    <th>Rol</th>
+                                    <th class="d-none d-md-table-cell">Teléfono</th>
+                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -48,45 +53,37 @@
                                     <tr>
                                         <td>{{ user.username }}</td>
                                         <td>{{ user.name }}</td>
-                                        <td>{{ user.phone or '---' }}</td>
+                                        <td class="d-none d-md-table-cell">{{ user.phone or '---' }}</td>
                                         <td>
                                             {% if user.is_admin %}
-                                                <span class="badge bg-primary">Administrador</span>
+                                                <span class="badge bg-primary">Admin</span>
+                                            {% endif %}
+                                            {% if user.is_active_member %}
+                                                <span class="badge bg-success">Activo</span>
                                             {% else %}
-                                                <span class="badge bg-secondary">Usuario</span>
+                                                <span class="badge bg-warning">Pendiente</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group">
-                                                <a href="{{ url_for('auth.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('auth.edit_user', user_id=user.id) }}" class="btn btn-outline-primary" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}">
+                                                {% if not user.is_active_member %}
+                                                    <button type="button" class="btn btn-outline-success" 
+                                                            onclick="toggleUserStatus({{ user.id }}, true)" title="Activar">
+                                                        <i class="fas fa-user-check"></i>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="button" class="btn btn-outline-warning" 
+                                                            onclick="toggleUserStatus({{ user.id }}, false)" title="Desactivar">
+                                                        <i class="fas fa-user-times"></i>
+                                                    </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="confirmDelete({{ user.id }}, '{{ user.username }}')" title="Eliminar">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-                                            </div>
-                                            
-                                            <!-- Modal de confirmación para eliminar -->
-                                            <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Confirmar eliminación</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>¿Estás seguro de que deseas eliminar al usuario <strong>{{ user.username }}</strong>?</p>
-                                                            <p class="text-danger">Esta acción no se puede deshacer.</p>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                            <form action="{{ url_for('auth.delete_user', user_id=user.id) }}" method="POST">
-                                                                <button type="submit" class="btn btn-danger">Eliminar</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -100,6 +97,28 @@
                         No hay usuarios registrados.
                     </div>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal único para confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar al usuario <strong id="deleteUserName"></strong>?</p>
+                <p class="text-danger">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
             </div>
         </div>
     </div>
@@ -335,6 +354,39 @@
             });
         }
     });
+    
+    // Funciones para gestionar usuarios
+    function confirmDelete(userId, username) {
+        document.getElementById('deleteUserName').textContent = username;
+        document.getElementById('deleteForm').action = `{{ url_for('auth.delete_user', user_id=0) }}`.replace('0', userId);
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    function toggleUserStatus(userId, activate) {
+        const action = activate ? 'activar' : 'desactivar';
+        if (confirm(`¿Estás seguro de que deseas ${action} este usuario?`)) {
+            fetch(`/auth/admin/user/${userId}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ activate: activate })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error al cambiar el estado del usuario');
+            });
+        }
+    }
 </script>
 {% endblock %}
 
@@ -350,6 +402,7 @@
         <ul>
             <li><strong>Administrador:</strong> Puede gestionar usuarios y acceder a todas las funciones.</li>
             <li><strong>Usuario:</strong> Puede acceder al itinerario y sus detalles, pero no puede administrar usuarios.</li>
+            <li><strong>Pendiente:</strong> Usuario que no está activo y se activará mediante el contador.</li>
         </ul>
         
         <div class="alert alert-warning mt-3">

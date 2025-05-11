@@ -104,10 +104,22 @@ def index():
     current_date = datetime.now(pytz.UTC)
     current_region = get_current_region(itinerary, current_date)
     
+    # Filtrar los viajeros para mostrar solo los usuarios activos
+    active_travelers = []
+    if 'travelers' in itinerary and itinerary['travelers']:
+        active_travelers = get_active_travelers(itinerary['travelers'])
+        
+    # Mantener la lista original para otras partes del sistema que puedan necesitarla
+    original_travelers = itinerary.get('travelers', [])
+    
+    # Reemplazar la lista de viajeros con solo los activos para la página principal
+    itinerary['travelers'] = active_travelers
+    
     return render_template('index.html', 
                           itinerary=itinerary, 
                           current_date=current_date,
-                          current_region=current_region)
+                          current_region=current_region,
+                          original_travelers=original_travelers)
 
 @app.route('/itinerary')
 def itinerary_view():
@@ -212,6 +224,42 @@ def setup():
         
     current_date = datetime.now(pytz.UTC)
     return render_template('setup.html', current_date=current_date)
+
+def get_active_travelers(itinerary_travelers):
+    """
+    Filtra la lista de viajeros del itinerario para devolver solo los usuarios activos
+    
+    Args:
+        itinerary_travelers: Lista de viajeros del itinerario YAML
+        
+    Returns:
+        list: Lista filtrada de viajeros que son usuarios activos
+    """
+    from models import User
+    
+    # Obtener todos los usuarios activos
+    active_users = User.query.filter_by(is_active_member=True).all()
+    
+    # Mapear usuarios por nombre
+    active_users_map = {}
+    for user in active_users:
+        active_users_map[user.username] = user
+        # También consideramos el campo name del usuario
+        active_users_map[user.name] = user
+    
+    # Filtrar viajeros del itinerario que coincidan con usuarios activos
+    active_travelers = []
+    for traveler in itinerary_travelers:
+        traveler_name = traveler['name']
+        if traveler_name in active_users_map:
+            # Añadir el viajero junto con el usuario relacionado
+            active_travelers.append({
+                'name': traveler_name,
+                'phone': traveler.get('phone', ''),
+                'user': active_users_map[traveler_name]
+            })
+    
+    return active_travelers
 
 # Crear tablas de la base de datos
 def create_tables():

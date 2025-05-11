@@ -65,13 +65,18 @@ def increment_counter():
 @poop_counter.route('/api/poop/counts', methods=['GET'])
 @login_required
 def get_all_counts():
-    """Obtiene los contadores de todos los usuarios"""
+    """Obtiene los contadores de todos los usuarios activos"""
     # Obtener mapeo de nombres
     traveler_mapping = get_traveler_name_mapping()
     
-    counters = PoopCounter.query.all()
+    # Obtener solo los usuarios activos
+    active_users = User.query.filter_by(is_active_member=True).all()
+    active_user_ids = [user.id for user in active_users]
     
-    # Crear una lista con todos los contadores
+    # Filtrar solo contadores de usuarios activos
+    counters = PoopCounter.query.filter(PoopCounter.user_id.in_(active_user_ids)).all()
+    
+    # Crear una lista con los contadores de usuarios activos
     counts = []
     for counter in counters:
         # Usar el mapeo para obtener el nombre del viajero
@@ -84,11 +89,11 @@ def get_all_counts():
             'last_updated': counter.last_updated.strftime('%Y-%m-%d %H:%M:%S') if counter.last_updated else None
         })
     
-    # También añadir usuarios que no tienen contador aún
+    # También añadir usuarios activos que no tienen contador aún
     users_with_counters = [c.user_id for c in counters]
-    users_without_counters = User.query.filter(~User.id.in_(users_with_counters)).all()
+    active_users_without_counters = [u for u in active_users if u.id not in users_with_counters]
     
-    for user in users_without_counters:
+    for user in active_users_without_counters:
         # Usar el mapeo para obtener el nombre del viajero
         traveler_name = traveler_mapping.get(user.id, user.name)
         

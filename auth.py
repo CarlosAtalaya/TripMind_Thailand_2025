@@ -98,6 +98,7 @@ def add_user():
     current_date = datetime.now(pytz.UTC)
     return render_template('user_form.html', action='add', current_date=current_date)
 
+
 @auth.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -109,6 +110,7 @@ def edit_user(user_id):
         user.name = request.form.get('name')
         user.phone = request.form.get('phone')
         user.is_admin = True if request.form.get('is_admin') else False
+        user.is_active_member = True if request.form.get('is_active_member') else False
         
         # Actualizar contraseña solo si se proporciona una nueva
         password = request.form.get('password')
@@ -137,6 +139,40 @@ def delete_user(user_id):
     db.session.commit()
     flash('Usuario eliminado exitosamente', 'success')
     return redirect(url_for('auth.admin_panel'))
+
+# Añadir esta nueva función en auth.py
+
+@auth.route('/admin/user/<int:user_id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def toggle_user_status(user_id):
+    """Activar o desactivar un usuario"""
+    user = User.query.get_or_404(user_id)
+    data = request.get_json()
+    activate = data.get('activate', True)
+    
+    # No permitir desactivar al propio usuario
+    if user.id == current_user.id and not activate:
+        return jsonify({
+            'success': False,
+            'error': 'No puedes desactivarte a ti mismo'
+        }), 400
+    
+    try:
+        user.is_active_member = activate
+        db.session.commit()
+        
+        action = "activado" if activate else "desactivado"
+        return jsonify({
+            'success': True,
+            'message': f'Usuario {action} exitosamente'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @auth.route('/admin/countdown', methods=['GET', 'POST'])
 @login_required
@@ -189,45 +225,53 @@ def manage_countdown():
 @auth.route('/api/countdown/status')
 def countdown_status():
     """API para obtener el estado del contador"""
-    countdown = CountdownEvent.query.filter_by(is_active=True).first()
-    
-    if not countdown:
-        return jsonify({'active': False})
-    
-    now = datetime.now()
-    event_time = countdown.event_datetime
-    
-    # Verificar si ya pasó el evento
-    if now >= event_time:
-        # Verificar si han pasado menos de 1 hora
-        time_diff = (now - event_time).total_seconds()
+    try:
+        countdown = CountdownEvent.query.filter_by(is_active=True).first()
         
-        if time_diff <= 3600:  # 1 hora = 3600 segundos
-            # Activar el usuario si existe
-            if countdown.user_to_activate_id and time_diff < 60:  # Solo la primera vez
-                user = User.query.get(countdown.user_to_activate_id)
-                if user and not user.is_active_member:
-                    user.is_active_member = True
-                    db.session.commit()
-            
-            return jsonify({
-                'active': True,
-                'event_happened': True,
-                'message': countdown.message,
-                'new_user': user.name if countdown.user_to_activate_id else None
-            })
-        else:
-            # Desactivar el contador después de 1 hora
-            countdown.is_active = False
-            db.session.commit()
+        if not countdown:
             return jsonify({'active': False})
-    
-    # El evento aún no ha ocurrido
-    time_remaining = (event_time - now).total_seconds()
-    
-    return jsonify({
-        'active': True,
-        'event_happened': False,
-        'time_remaining': int(time_remaining),
-        'event_datetime': event_time.isoformat()
-    })
+        
+        now = datetime.now()
+        event_time = countdown.event_datetime
+        
+        # Verificar si ya pasó el evento
+        if now >= event_time:
+            # Verificar si han pasado menos de 1 hora
+            time_diff = (now - event_time).total_seconds()
+            
+            if time_diff <= 3600:  # 1 hora = 3600 segundos
+                # Activar el usuario si existe y aún no está activado
+                user_name = None
+                if countdown.user_to_activate_id:
+                    user = User.query.get(countdown.user_to_activate_id)
+                    if user:
+                        user_name = user.name
+                        if not user.is_active_member and time_diff < 60:  # Solo la primera vez
+                            user.is_active_member = True
+                            db.session.commit()
+                
+                return jsonify({
+                    'active': True,
+                    'event_happened': True,
+                    'message': countdown.message,
+                    'new_user': user_name
+                })
+            else:
+                # Desactivar el contador después de 1 hora
+                countdown.is_active = False
+                db.session.commit()
+                return jsonify({'active': False})
+        
+        # El evento aún no ha ocurrido
+        time_remaining = (event_time - now).total_seconds()
+        
+        return jsonify({
+            'active': True,
+            'event_happened': False,
+            'time_remaining': int(time_remaining),
+            'event_datetime': event_time.isoformat()
+        })
+        
+    except Exception as e:
+        print(f"Error en countdown_status: {e}")
+        return jsonify({'active': False, 'error': str(e)}), 500

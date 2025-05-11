@@ -152,7 +152,7 @@
                             </div>
                         </div>
                     {% else %}
-                        <p class="mb-0">No hay viajeros registrados.</p>
+                        <p class="mb-0">No hay viajeros activos registrados.</p>
                     {% endif %}
                 </div>
             </div>
@@ -398,7 +398,7 @@
                         const minutes = Math.floor((data.time_remaining % (60 * 60)) / 60);
                         const seconds = Math.floor(data.time_remaining % 60);
                         
-                        document.getElementById('countdown-message').textContent = '¡Un nuevo aventurero se unirá a la expedición en:';
+                        document.getElementById('countdown-message').textContent = 'ALGO GORDO SE VIENE en:';
                         document.getElementById('countdown-timer').textContent = 
                             `${days}d ${hours}h ${minutes}m ${seconds}s`;
                     }

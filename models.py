@@ -13,6 +13,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
+    is_active_member = db.Column(db.Boolean, default=True)  # Campo para activación
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -101,4 +102,5 @@ class CountdownEvent(db.Model):
     message = db.Column(db.String(200), default="UN NUEVO MIEMBRO SE HA UNIDO A LA EXPEDICIÓN!!!")
     created_at = db.Column(db.DateTime, default=datetime.now)
     
-    user_to_activate = db.relationship('User', backref='countdown_event')
+    # Relación con el usuario a activar
+    user_to_activate = db.relationship('User', foreign_keys=[user_to_activate_id])

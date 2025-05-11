@@ -1,7 +1,7 @@
 # votes.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from models import db, VoteCategory, Vote
+from models import db, VoteCategory, Vote, User
 from datetime import datetime, timedelta
 import yaml
 import os
@@ -22,8 +22,47 @@ def get_travelers_from_itinerary(itinerary_name='thailand_2025.yaml'):
         print(f"Error al obtener viajeros: {e}")
         return []
 
-def initialize_categories():
+def get_active_travelers(itinerary_travelers):
+    """
+    Filtra la lista de viajeros del itinerario para devolver solo los usuarios activos
     
+    Args:
+        itinerary_travelers: Lista de viajeros del itinerario YAML
+        
+    Returns:
+        list: Lista filtrada de viajeros que son usuarios activos
+    """
+    # Obtener todos los usuarios activos
+    active_users = User.query.filter_by(is_active_member=True).all()
+    
+    # Mapear usuarios por nombre
+    active_users_map = {}
+    for user in active_users:
+        active_users_map[user.username] = user
+        # También consideramos el campo name del usuario
+        active_users_map[user.name] = user
+    
+    # Filtrar viajeros del itinerario que coincidan con usuarios activos
+    active_travelers = []
+    for traveler in itinerary_travelers:
+        traveler_name = traveler['name']
+        if traveler_name in active_users_map:
+            # Añadir el viajero junto con el usuario relacionado
+            active_travelers.append({
+                'name': traveler_name,
+                'phone': traveler.get('phone', ''),
+                'user': active_users_map[traveler_name]
+            })
+    
+    return active_travelers
+
+def get_active_travelers_for_voting():
+    """Obtener viajeros activos para votaciones"""
+    itinerary_travelers = get_travelers_from_itinerary()
+    return get_active_travelers(itinerary_travelers)
+
+def initialize_categories():
+    """Inicializar las categorías de votación"""
     for cat in VOTE_CATEGORIES:
         existing = VoteCategory.query.filter_by(name=cat["name"]).first()
         if not existing:
@@ -46,7 +85,7 @@ def before_request():
 def index():
     """Página principal de votaciones"""
     categories = VoteCategory.query.all()
-    travelers = get_travelers_from_itinerary()
+    travelers = get_active_travelers_for_voting()
     today = datetime.now().date()
     
     # Obtener votos del usuario actual para hoy
@@ -73,7 +112,8 @@ def vote_category(category_id):
     if category.name == "Foto del día":
         return redirect(url_for('votes.vote_photo_of_day'))
     
-    travelers = get_travelers_from_itinerary()
+    # Obtener solo viajeros activos
+    travelers = get_active_travelers_for_voting()
     today = datetime.now().date()
     
     # Verificar si el usuario ya votó en esta categoría hoy
@@ -88,7 +128,7 @@ def vote_category(category_id):
             flash('Ya has votado en esta categoría hoy', 'warning')
             return redirect(url_for('votes.index'))
         
-        # Procesar el voto (ahora solo uno)
+        # Procesar el voto
         traveler_name = request.form.get('traveler')
         if traveler_name:
             vote = Vote(
