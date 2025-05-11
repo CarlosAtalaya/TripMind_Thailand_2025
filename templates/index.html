@@ -183,7 +183,7 @@
         {% from "components/region_card.html" import region_card %}
         {% if itinerary and itinerary.regions %}
             {% for region in itinerary.regions %}
-                {{ region_card(region, current_region and current_region.id == region.id) }}
+                {{ region_card(region, current_region and current_region.id == region.id, current_user) }}
             {% endfor %}
         {% else %}
             <div class="alert alert-info">

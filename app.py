@@ -122,6 +122,31 @@ def itinerary_view():
                           current_date=current_date,
                           current_region=current_region)
 
+@app.route('/mis-reservas')
+def my_bookings():
+    """Muestra los códigos de reserva del usuario actual"""
+    itinerary = load_itinerary('thailand_2025.yaml')
+    user_bookings = []
+    
+    # Usar directamente el nombre o username del usuario actual
+    traveler_name = current_user.username  # o current_user.username según cómo estén configurados
+    
+    for region in itinerary.get('regions', []):
+        for transport in region.get('transport', []):
+            if transport.get('booking_refs'):
+                # Buscar el código del usuario actual
+                user_ref = transport.get('booking_refs', {}).get(traveler_name)
+                if user_ref:
+                    user_bookings.append({
+                        'region': region['name'],
+                        'transport': f"{transport['from']} → {transport['to']}",
+                        'date': transport['departure'],
+                        'airline': transport.get('airline', ''),
+                        'booking_ref': user_ref
+                    })
+    
+    return render_template('bookings.html', bookings=user_bookings)
+
 @app.route('/api/itinerary')
 def get_itinerary():
     """API para obtener el itinerario completo"""

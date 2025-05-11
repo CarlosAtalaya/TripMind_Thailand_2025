@@ -1,4 +1,4 @@
-{% macro region_card(region, is_current=False) %}
+{% macro region_card(region, is_current=False, current_user=None) %}
 <div id="region-{{ region.id }}" class="region-card card mb-5 {% if is_current %}current-region{% endif %}">
     <div class="region-header" style="background-image: url('https://source.unsplash.com/600x150/?{{ region.name }},travel')">
         <div class="region-overlay">
@@ -64,6 +64,9 @@
                                         <i class="fas fa-car me-1"></i>
                                     {% endif %}
                                     {{ transport.from }} → {{ transport.to }}
+                                    {% if transport.airline %}
+                                        <span class="badge bg-info ms-2">{{ transport.airline }}</span>
+                                    {% endif %}
                                 </div>
                                 <div class="mt-1">
                                     <small class="text-muted">
@@ -72,8 +75,20 @@
                                         Llegada: {{ transport.arrival|replace('T', ' ') }}
                                     </small>
                                 </div>
+                                {% if transport.booking_refs and current_user and current_user.is_authenticated %}
+                                    {% for username, ref in transport.booking_refs.items() %}
+                                        {% if username == current_user.name %}
+                                            <div class="mt-2">
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-ticket-alt me-1"></i>
+                                                    Mi Ref: {{ ref }}
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
                                 {% if transport.booking_ref %}
-                                    <small class="d-block mt-1"><strong>Ref:</strong> {{ transport.booking_ref }}</small>
+                                    <small class="d-block mt-1"><strong>Ref general:</strong> {{ transport.booking_ref }}</small>
                                 {% endif %}
                             </li>
                         {% endfor %}
