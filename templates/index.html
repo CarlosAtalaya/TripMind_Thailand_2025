@@ -252,7 +252,8 @@
             const categorySelect = document.getElementById('category-select');
             if (!categorySelect) return;
             
-            fetch('/votes/api/rankings')
+            // Modificar esta línea para obtener rankings generales
+            fetch('/votes/api/rankings?period=all')  // Cambiar de period=today a period=all
                 .then(response => response.json())
                 .then(data => {
                     // Limpiar opciones actuales
@@ -298,7 +299,7 @@
                 container.innerHTML = `
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        No hay votos aún para la categoría "${categoryName}".
+                        No hay votos para la categoría "${categoryName}".
                     </div>
                 `;
                 return;
