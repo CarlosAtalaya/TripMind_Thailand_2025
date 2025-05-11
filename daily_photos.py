@@ -57,18 +57,18 @@ def get_daily_folder(date=None):
     
     return folder_path
 
-def get_user_photo_filename(user_id, extension='jpg'):
+def get_user_photo_filename(user_id, user_name, extension='jpg'):
     """Genera el nombre del archivo para la foto del usuario"""
-    return f"User_{user_id}_{datetime.now(THAILAND_TZ_OBJ).strftime('%Y-%m-%d')}.{extension}"
+    return f"{user_name}_{datetime.now(THAILAND_TZ_OBJ).strftime('%Y-%m-%d')}.{extension}"
 
-def has_user_uploaded_today(user_id):
+def has_user_uploaded_today(user_id, user_name):
     """Verifica si el usuario ya ha subido una foto hoy"""
     today_folder = get_daily_folder()
     date_str = datetime.now(THAILAND_TZ_OBJ).strftime('%Y-%m-%d')
     
     # Buscar si existe algún archivo del usuario para hoy
     for ext in DAILY_PHOTOS_ALLOWED_EXTENSIONS:
-        filename = f"User_{user_id}_{date_str}.{ext}"
+        filename = f"{user_name}_{date_str}.{ext}"
         if os.path.exists(os.path.join(today_folder, filename)):
             return True
     return False
@@ -89,23 +89,20 @@ def get_all_daily_photos(date=None):
     photos = []
     if os.path.exists(folder_path):
         for filename in os.listdir(folder_path):
-            if filename.startswith('User_') and any(filename.endswith(f'.{ext}') for ext in DAILY_PHOTOS_ALLOWED_EXTENSIONS):
-                # Extraer user_id del nombre del archivo
+            if any(filename.endswith(f'.{ext}') for ext in DAILY_PHOTOS_ALLOWED_EXTENSIONS):
+                # Extraer el nombre del usuario del filename
                 parts = filename.split('_')
-                if len(parts) >= 3:
-                    user_id = parts[1]
-                    try:
-                        user = User.query.get(int(user_id))
-                        if user:
-                            photos.append({
-                                'user_id': user_id,
-                                'user_name': user.name,
-                                'filename': filename,
-                                'path': os.path.join(date_str, filename),
-                                'url': url_for('daily_photos.get_photo', date=date_str, filename=filename)
-                            })
-                    except:
-                        continue
+                if len(parts) >= 2:  # Formato: nombre_fecha.ext
+                    user_name = parts[0]
+                    user = User.query.filter_by(name=user_name).first()
+                    if user:
+                        photos.append({
+                            'user_id': user.id,
+                            'user_name': user.name,
+                            'filename': filename,
+                            'path': os.path.join(date_str, filename),
+                            'url': url_for('daily_photos.get_photo', date=date_str, filename=filename)
+                        })
     
     return photos
 
@@ -119,7 +116,7 @@ def upload():
         return redirect(url_for('votes.index'))
     
     # Verificar si ya subió hoy
-    if has_user_uploaded_today(current_user.id):
+    if has_user_uploaded_today(current_user.id, current_user.name):
         flash('Ya has subido tu foto de hoy', 'info')
         return redirect(url_for('votes.index'))
     
@@ -141,7 +138,7 @@ def upload():
                 extension = file.filename.rsplit('.', 1)[1].lower()
                 
                 # Generar nombre del archivo
-                filename = get_user_photo_filename(current_user.id, extension)
+                filename = get_user_photo_filename(current_user.id, current_user.name, extension)
                 
                 # Obtener carpeta del día
                 folder_path = get_daily_folder()
@@ -251,7 +248,7 @@ def api_status():
     
     return jsonify({
         'success': True,
-        'has_uploaded': has_user_uploaded_today(current_user.id),
+        'has_uploaded': has_user_uploaded_today(current_user.id, current_user.name),
         'can_upload': is_upload_time_valid(),
         'current_time': current_time.isoformat(),
         'deadline_time': deadline_time.isoformat(),
