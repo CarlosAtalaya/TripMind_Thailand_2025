@@ -4,6 +4,8 @@ from flask_login import login_required
 from config import (
     DANGEROUS_ANIMALS,
     THAI_FOOD,
+    DANGEROUS_PLANTS,
+    THAI_TRADITIONS,
     REGIONAL_SUMMARY
 )
 
@@ -30,4 +32,20 @@ def thai_food():
     """Guía de comida tailandesa"""
     return render_template('guides/thai_food.html', 
                           foods=THAI_FOOD,
+                          regional_summary=REGIONAL_SUMMARY)
+
+@guides.route('/guias/plantas-peligrosas')
+@login_required
+def dangerous_plants():
+    """Guía de plantas peligrosas"""
+    return render_template('guides/dangerous_plants.html', 
+                          plants=DANGEROUS_PLANTS,
+                          regional_summary=REGIONAL_SUMMARY)
+
+@guides.route('/guias/tradiciones-culturales')
+@login_required
+def thai_traditions():
+    """Guía de tradiciones culturales"""
+    return render_template('guides/traditions.html', 
+                          traditions=THAI_TRADITIONS,
                           regional_summary=REGIONAL_SUMMARY)

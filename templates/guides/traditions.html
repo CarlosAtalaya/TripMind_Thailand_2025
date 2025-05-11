@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Tradiciones y Cultura Tailandesa - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">Tradiciones y Cultura Tailandesa</h1>
+    <a href="{{ url_for('guides.index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i> Volver
+    </a>
+</div>
+
+<div class="alert alert-info mb-4">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>Respeto cultural:</strong> Tailandia es conocida como "La Tierra de las Sonrisas". Respetar sus tradiciones te abrirá muchas puertas y corazones.
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 g-4 mb-5">
+    {% for tradition in traditions %}
+    <div class="col">
+        <div class="card h-100">
+            <img src="{{ url_for('static', filename='img/traditions/' + tradition.image) }}" 
+                 class="card-img-top" 
+                 alt="{{ tradition.name }}"
+                 style="height: 200px; object-fit: cover;"
+                 onerror="this.src='{{ url_for('static', filename='img/placeholder-tradition.jpg') }}'">
+            <div class="card-body">
+                <h5 class="card-title">{{ tradition.name }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ tradition.thai_name }}</h6>
+                <p class="card-text">{{ tradition.description }}</p>
+                <div class="mt-3 p-2 bg-light rounded">
+                    <small><strong>Etiqueta:</strong> {{ tradition.etiquette }}</small>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="badge bg-{{ 'danger' if tradition.importance == 'Crítica' else 'primary' if tradition.importance == 'Esencial' else 'success' }}">
+                        Importancia: {{ tradition.importance }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    {{ tradition.areas|join(', ') }}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Contenido del sidebar para móvil -->
+<div class="d-lg-none mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-hands-praying me-2"></i>Consejos Generales</h5>
+        </div>
+        <div class="card-body">
+            <h6>Reglas de oro:</h6>
+            <ul>
+                <li>Sonríe siempre, es parte de la cultura</li>
+                <li>Mantén la calma en toda situación</li>
+                <li>Muestra respeto a mayores y autoridades</li>
+                <li>Viste modestamente, especialmente en templos</li>
+                <li>Quítate los zapatos al entrar a casas y templos</li>
+            </ul>
+            
+            <h6 class="mt-3">Errores comunes a evitar:</h6>
+            <ul>
+                <li>Elevar la voz o mostrar enfado</li>
+                <li>Tocar a la gente en la cabeza</li>
+                <li>Señalar con el dedo o los pies</li>
+                <li>Mostrar afecto en público (besos)</li>
+                <li>Criticar a la monarquía o religión</li>
+            </ul>
+            
+            <div class="alert alert-warning mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Importante:</strong> Las ofensas a la monarquía pueden conllevar hasta 15 años de prisión.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-hands-praying me-2"></i>Consejos Generales</h5>
+    </div>
+    <div class="card-body">
+        <h6>Reglas de oro:</h6>
+        <ul>
+            <li>Sonríe siempre, es parte de la cultura</li>
+            <li>Mantén la calma en toda situación</li>
+            <li>Muestra respeto a mayores y autoridades</li>
+            <li>Viste modestamente, especialmente en templos</li>
+            <li>Quítate los zapatos al entrar a casas y templos</li>
+        </ul>
+        
+        <h6 class="mt-3">Errores comunes a evitar:</h6>
+        <ul>
+            <li>Elevar la voz o mostrar enfado</li>
+            <li>Tocar a la gente en la cabeza</li>
+            <li>Señalar con el dedo o los pies</li>
+            <li>Mostrar afecto en público (besos)</li>
+            <li>Criticar a la monarquía o religión</li>
+        </ul>
+        
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Importante:</strong> Las ofensas a la monarquía pueden conllevar hasta 15 años de prisión.
+        </div>
+    </div>
+</div>
+<h2 class="mb-4">Tradiciones por Región</h2>
+<div class="accordion mb-5" id="regionAccordion">
+    {% for region, info in regional_summary.items() %}
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="heading{{ loop.index }}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" 
+                    aria-controls="collapse{{ loop.index }}">
+                <i class="fas fa-map-marker-alt me-2"></i>{{ region }}
+            </button>
+        </h2>
+        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" 
+             aria-labelledby="heading{{ loop.index }}" data-bs-parent="#regionAccordion">
+            <div class="accordion-body">
+                {% if info.cultural_traditions %}
+                    <h6>Tradiciones y costumbres en esta región:</h6>
+                    <ul>
+                        {% for tradition_name in info.cultural_traditions %}
+                            <li>{{ tradition_name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No hay información específica de tradiciones para esta región.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

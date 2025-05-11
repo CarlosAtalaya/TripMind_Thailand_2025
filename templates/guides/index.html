@@ -44,9 +44,45 @@
             </div>
         </div>
     </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-leaf me-2"></i>
+                    Plantas Peligrosas
+                </h5>
+                <p class="card-text">
+                    Identifica las plantas tóxicas comunes en jardines y espacios públicos de Tailandia.
+                </p>
+                <a href="{{ url_for('guides.dangerous_plants') }}" class="btn btn-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Ver Guía
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-hands-praying me-2"></i>
+                    Tradiciones y Cultura
+                </h5>
+                <p class="card-text">
+                    Aprende sobre las costumbres tailandesas para mostrar respeto y evitar ofensas culturales.
+                </p>
+                <a href="{{ url_for('guides.thai_traditions') }}" class="btn btn-success">
+                    <i class="fas fa-om me-2"></i>
+                    Ver Guía
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Contenido del sidebar para móvil - solo se muestra en móvil al final de la página -->
+<!-- Contenido del sidebar para móvil -->
 <div class="d-lg-none mt-5">
     <div class="card">
         <div class="card-header bg-primary text-white">
@@ -59,6 +95,8 @@
             <ul>
                 <li><strong>Animales Peligrosos:</strong> Fauna que debes conocer y evitar</li>
                 <li><strong>Comida Tailandesa:</strong> Platos típicos que debes probar</li>
+                <li><strong>Plantas Peligrosas:</strong> Flora tóxica común en espacios públicos</li>
+                <li><strong>Tradiciones y Cultura:</strong> Costumbres esenciales para respetar</li>
             </ul>
             
             <div class="alert alert-warning mt-3">
@@ -82,6 +120,8 @@
         <ul>
             <li><strong>Animales Peligrosos:</strong> Fauna que debes conocer y evitar</li>
             <li><strong>Comida Tailandesa:</strong> Platos típicos que debes probar</li>
+            <li><strong>Plantas Peligrosas:</strong> Flora tóxica común en espacios públicos</li>
+            <li><strong>Tradiciones y Cultura:</strong> Costumbres esenciales para respetar</li>
         </ul>
         
         <div class="alert alert-warning mt-3">

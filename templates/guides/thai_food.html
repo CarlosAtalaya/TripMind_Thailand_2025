@@ -50,7 +50,38 @@
     {% endfor %}
 </div>
 
-<!-- Contenido del sidebar para móvil - solo se muestra en móvil al final de la página -->
+<!-- Sección de especialidades por región -->
+<h2 class="mb-4">Especialidades por Región</h2>
+<div class="accordion mb-5" id="regionAccordion">
+    {% for region, info in regional_summary.items() %}
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="heading{{ loop.index }}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" 
+                    aria-controls="collapse{{ loop.index }}">
+                <i class="fas fa-map-marker-alt me-2"></i>{{ region }}
+            </button>
+        </h2>
+        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" 
+             aria-labelledby="heading{{ loop.index }}" data-bs-parent="#regionAccordion">
+            <div class="accordion-body">
+                {% if info.food_specialties %}
+                    <h6>Especialidades gastronómicas de esta región:</h6>
+                    <ul>
+                        {% for food_name in info.food_specialties %}
+                            <li>{{ food_name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No hay información específica de comida para esta región.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Contenido del sidebar para móvil -->
 <div class="d-lg-none mt-5">
     <div class="card">
         <div class="card-header bg-primary text-white">

@@ -233,34 +233,156 @@ THAI_FOOD = [
     }
 ]
 
+DANGEROUS_PLANTS = [
+    {
+        'name': 'Flor de Oleandro',
+        'thai_name': 'ยี่โถ (Yi Tho)',
+        'image': 'oleander.jpg',
+        'description': 'Planta ornamental muy común pero extremadamente tóxica. Todas sus partes son venenosas. Puede causar problemas cardíacos graves si se ingiere.',
+        'danger_level': 'Extremo',
+        'areas': ['Todo el país', 'Jardines', 'Parques']
+    },
+    {
+        'name': 'Fruto del Manzanillo',
+        'thai_name': 'มะขามป้อมพิษ',
+        'image': 'manchineel.jpg',
+        'description': 'Árbol costero cuyo fruto parece una manzana verde pequeña. Extremadamente tóxico, su savia puede causar quemaduras severas en la piel.',
+        'danger_level': 'Extremo',
+        'areas': ['Zonas costeras', 'Playas del sur']
+    },
+    {
+        'name': 'Dieffenbachia',
+        'thai_name': 'ว่านน้ำเต้า',
+        'image': 'dieffenbachia.jpg',
+        'description': 'Planta de interior común. Sus hojas contienen cristales de oxalato que pueden causar hinchazón severa de la lengua y garganta si se mastican.',
+        'danger_level': 'Alto',
+        'areas': ['Hoteles', 'Casas', 'Oficinas']
+    },
+    {
+        'name': 'Ricino',
+        'thai_name': 'ละหุ่ง (La Hung)',
+        'image': 'castor_bean.jpg',
+        'description': 'Sus semillas contienen ricina, una de las sustancias más venenosas conocidas. Masticar las semillas puede ser mortal.',
+        'danger_level': 'Extremo',
+        'areas': ['Áreas rurales', 'Jardines']
+    },
+    {
+        'name': 'Anturio',
+        'thai_name': 'หน้าวัว',
+        'image': 'anthurium.jpg',
+        'description': 'Popular planta ornamental con flores rojas brillantes. Todas sus partes son tóxicas y pueden causar irritación severa en boca y garganta.',
+        'danger_level': 'Moderado',
+        'areas': ['Jardines', 'Hoteles', 'Decoración interior']
+    },
+    {
+        'name': 'Lirio de Cala',
+        'thai_name': 'ดอกคาล่า',
+        'image': 'calla_lily.jpg',
+        'description': 'Elegante flor blanca muy usada en decoración. Contiene oxalatos de calcio que causan ardor intenso y problemas para tragar.',
+        'danger_level': 'Moderado',
+        'areas': ['Hoteles', 'Bodas', 'Eventos']
+    }
+]
+
+THAI_TRADITIONS = [
+    {
+        'name': 'Wai (Saludo tradicional)',
+        'thai_name': 'ไหว้',
+        'image': 'wai_greeting.jpg',
+        'description': 'El saludo tradicional tailandés. Se juntan las palmas en posición de oración y se inclina ligeramente. Cuanto más alto las manos y más profunda la inclinación, mayor respeto.',
+        'importance': 'Esencial',
+        'areas': ['Todo el país'],
+        'etiquette': 'Los jóvenes saludan primero a los mayores. No uses el wai con niños o personal de servicio.'
+    },
+    {
+        'name': 'Songkran',
+        'thai_name': 'สงกรานต์',
+        'image': 'songkran.jpg',
+        'description': 'El año nuevo tailandés (13-15 abril). Festival del agua donde la gente se rocía agua como bendición. Es la mayor celebración del país.',
+        'importance': 'Alta',
+        'areas': ['Todo el país'],
+        'etiquette': 'Protege tus dispositivos electrónicos. Viste ropa que se pueda mojar. Respeta a los monjes y ancianos.'
+    },
+    {
+        'name': 'Loy Krathong',
+        'thai_name': 'ลอยกระทง',
+        'image': 'loy_krathong.jpg',
+        'description': 'Festival de las luces flotantes. Se lanzan pequeñas balsas decoradas con velas al agua para pedir perdón a la diosa del agua.',
+        'importance': 'Alta',
+        'areas': ['Todo el país', 'Especialmente Chiang Mai'],
+        'etiquette': 'Usa materiales biodegradables. Pide un deseo mientras sueltas tu krathong. No recuperes krathongs ajenos.'
+    },
+    {
+        'name': 'Respeto a Buda y Monjes',
+        'thai_name': 'การเคารพพระ',
+        'image': 'monks_respect.jpg',
+        'description': 'Los monjes son muy respetados. Las mujeres no deben tocarlos ni entregarles cosas directamente. Todos deben mostrar respeto en templos.',
+        'importance': 'Esencial',
+        'areas': ['Todo el país', 'Templos'],
+        'etiquette': 'Viste modestamente en templos. Quítate los zapatos. No apuntes los pies hacia imágenes de Buda.'
+    },
+    {
+        'name': 'Cabeza y Pies',
+        'thai_name': 'ศีรษะและเท้า',
+        'image': 'head_feet.jpg',
+        'description': 'La cabeza es sagrada, los pies son impuros. Nunca toques la cabeza de alguien ni uses los pies para señalar.',
+        'importance': 'Esencial',
+        'areas': ['Todo el país'],
+        'etiquette': 'No toques la cabeza de nadie, ni de niños. No pongas los pies sobre mesas. No señales con los pies.'
+    },
+    {
+        'name': 'La Monarquía',
+        'thai_name': 'สถาบันพระมหากษัตริย์',
+        'image': 'monarchy.jpg',
+        'description': 'La familia real es profundamente respetada. Cualquier falta de respeto es ilegal y severamente castigada.',
+        'importance': 'Crítica',
+        'areas': ['Todo el país'],
+        'etiquette': 'Levántate cuando suene el himno real. Nunca critiques a la monarquía. Respeta imágenes y billetes con la imagen del rey.'
+    }
+]
+
 # Resumen por regiones basado en tu itinerario
 REGIONAL_SUMMARY = {
     'Bangkok': {
         'dangerous_animals': ['Escorpión Negro', 'Araña de Saco Amarillo', 'Ciempiés Gigante'],
-        'food_specialties': ['Pad Thai', 'Tom Yum Goong', 'Massaman Curry', 'Mango Sticky Rice']
+        'dangerous_plants': ['Dieffenbachia', 'Anturio', 'Lirio de Cala', 'Flor de Oleandro'],
+        'food_specialties': ['Pad Thai', 'Tom Yum Goong', 'Massaman Curry', 'Mango Sticky Rice'],
+        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Cabeza y Pies', 'La Monarquía']
     },
     'Chiang Mai': {
         'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
-        'food_specialties': ['Khao Soi', 'Sai Oua (salchicha norteña)', 'Nam Prik Ong']
+        'dangerous_plants': ['Ricino', 'Flor de Oleandro', 'Dieffenbachia'],
+        'food_specialties': ['Khao Soi', 'Sai Oua (salchicha norteña)', 'Nam Prik Ong'],
+        'cultural_traditions': ['Loy Krathong', 'Wai', 'Respeto a Buda y Monjes', 'Songkran']
     },
     'Khao Sok': {
         'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Ciempiés Gigante', 'Araña de Saco Amarillo'],
-        'food_specialties': ['Pescados de río', 'Curry selvático', 'Vegetales locales']
+        'dangerous_plants': ['Ricino', 'Flor de Oleandro'],
+        'food_specialties': ['Pescados de río', 'Curry selvático', 'Vegetales locales'],
+        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes']
     },
     'Krabi': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
-        'food_specialties': ['Mariscos frescos', 'Tom Yum Goong', 'Pescado a la parrilla']
+        'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Anturio'],
+        'food_specialties': ['Mariscos frescos', 'Tom Yum Goong', 'Pescado a la parrilla'],
+        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Songkran']
     },
     'Phuket': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
-        'food_specialties': ['Mariscos', 'Hokkien Mee', 'Oh Tao (tortilla de ostras)']
+        'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Lirio de Cala'],
+        'food_specialties': ['Mariscos', 'Hokkien Mee', 'Oh Tao (tortilla de ostras)'],
+        'cultural_traditions': ['Wai', 'Songkran', 'La Monarquía']
     },
     'Koh Phangan': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
-        'food_specialties': ['Pescado fresco', 'Curries de mariscos', 'Frutas tropicales']
+        'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro'],
+        'food_specialties': ['Pescado fresco', 'Curries de mariscos', 'Frutas tropicales'],
+        'cultural_traditions': ['Full Moon Party', 'Wai', 'Respeto a Buda y Monjes']
     },
     'Koh Samui': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante', 'Mono Macaco'],
-        'food_specialties': ['Mariscos', 'Som Tam', 'Coconut ice cream']
+        'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Dieffenbachia'],
+        'food_specialties': ['Mariscos', 'Som Tam', 'Coconut ice cream'],
+        'cultural_traditions': ['Wai', 'Songkran', 'Respeto a Buda y Monjes']
     }
 }
