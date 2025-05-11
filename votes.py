@@ -174,12 +174,15 @@ def get_rankings():
     travelers = get_travelers_from_itinerary()
     traveler_names = [t['name'] for t in travelers]
     
-    # Definir el período para los rankings (últimos 7 días por defecto)
-    days = request.args.get('days', 7, type=int)
-    if days == 0:  # Si es 0, mostrar de todo el tiempo
+    # Obtener el período solicitado
+    period = request.args.get('period', 'today')
+    
+    if period == 'today':
+        # Solo votos de hoy
+        start_date = datetime.now().date()
+    else:  # 'all' o cualquier otro valor
+        # Todos los votos
         start_date = datetime(1900, 1, 1).date()
-    else:
-        start_date = datetime.now().date() - timedelta(days=days)
     
     rankings = {}
     
