@@ -341,48 +341,166 @@ THAI_TRADITIONS = [
     }
 ]
 
+DANGEROUS_PLACES = [
+    {
+        'name': 'Patpong Night Market',
+        'type': 'Barrio Rojo',
+        'description': 'Zona de entretenimiento nocturno conocida por sus bares go-go, shows ping pong y negocios de dudosa reputación. Alto riesgo de estafas y sobreprecios.',
+        'danger_level': 'Alto',
+        'location_url': 'https://maps.google.com/?q=13.7300,100.5339',
+        'areas': ['Bangkok'],
+        'tips': 'Evita beber bebidas que no hayas visto servir. Pregunta precios antes de consumir. No aceptes invitaciones de desconocidos.'
+    },
+    {
+        'name': 'Soi Cowboy',
+        'type': 'Barrio Rojo',
+        'description': 'Calle conocida por sus bares go-go y prostitución. Frecuentes estafas con cuentas infladas y drogas en bebidas.',
+        'danger_level': 'Alto',
+        'location_url': 'https://maps.google.com/?q=13.7378,100.5607',
+        'areas': ['Bangkok'],
+        'tips': 'No dejes tu bebida sin supervisión. Negocia precios antes. Ten cuidado con las lady drinks infladas.'
+    },
+    {
+        'name': 'Khaosan Road de madrugada',
+        'type': 'Zona de fiesta',
+        'description': 'Después de las 2 AM, aumentan los robos, peleas y problemas con drogas. La policía hace redadas frecuentes.',
+        'danger_level': 'Moderado',
+        'location_url': 'https://maps.google.com/?q=13.7586,100.4971',
+        'areas': ['Bangkok'],
+        'tips': 'Mejor volver al hotel antes de las 2 AM. No compres drogas. Ten cuidado con tus pertenencias.'
+    },
+    {
+        'name': 'Nana Plaza',
+        'type': 'Barrio Rojo',
+        'description': 'Complejo de entretenimiento adulto con tres pisos de go-go bars. Alto riesgo de estafas y drogas.',
+        'danger_level': 'Alto',
+        'location_url': 'https://maps.google.com/?q=13.7410,100.5556',
+        'areas': ['Bangkok'],
+        'tips': 'Evita ir solo. No aceptes bebidas de desconocidos. Cuidado con las cuentas infladas.'
+    },
+    {
+        'name': 'Walking Street Pattaya',
+        'type': 'Barrio Rojo',
+        'description': 'La calle de entretenimiento nocturno más grande de Tailandia. Prostitución, drogas y estafas abundan.',
+        'danger_level': 'Extremo',
+        'location_url': 'https://maps.google.com/?q=12.9273,100.8736',
+        'areas': ['Pattaya'],
+        'tips': 'Extrema precaución. No lleves objetos de valor. Evita conflictos. La policía es corrupta en la zona.'
+    },
+    {
+        'name': 'Zonas fronterizas con Myanmar',
+        'type': 'Frontera conflictiva',
+        'description': 'Áreas con conflictos armados, tráfico de drogas y personas. Extremadamente peligroso.',
+        'danger_level': 'Extremo',
+        'location_url': 'https://maps.google.com/?q=19.8316,99.8325',
+        'areas': ['Mae Hong Son', 'Tak', 'Kanchanaburi'],
+        'tips': 'NO visitar sin guía local autorizado. Evitar completamente de noche. Posibles minas terrestres.'
+    },
+    {
+        'name': 'Mercados nocturnos ilegales',
+        'type': 'Mercado negro',
+        'description': 'Mercados donde se venden drogas, armas y productos falsificados. Frecuentes redadas policiales.',
+        'danger_level': 'Alto',
+        'location_url': 'https://maps.google.com/?q=13.7445,100.5100',
+        'areas': ['Bangkok', 'Chiang Mai'],
+        'tips': 'Evitar completamente. Si te pillan comprando productos ilegales, puedes ir a prisión.'
+    },
+    {
+        'name': 'Khlong Toei Slum',
+        'type': 'Barrio marginal',
+        'description': 'El barrio de chabolas más grande de Bangkok. Alta criminalidad, drogas y violencia.',
+        'danger_level': 'Extremo',
+        'location_url': 'https://maps.google.com/?q=13.7196,100.5570',
+        'areas': ['Bangkok'],
+        'tips': 'NO entrar sin acompañamiento local. Evitar completamente de noche. No sacar cámaras.'
+    },
+    {
+        'name': 'Playas solitarias de Koh Phangan',
+        'type': 'Playa peligrosa',
+        'description': 'Playas remotas con historial de asaltos y violaciones a turistas. Sin vigilancia ni iluminación.',
+        'danger_level': 'Alto',
+        'location_url': 'https://maps.google.com/?q=9.7500,100.0500',
+        'areas': ['Koh Phangan'],
+        'tips': 'Nunca ir solo, especialmente de noche. Informar a alguien de tu ubicación. Llevar spray pimienta.'
+    },
+    {
+        'name': 'Callejones de Chinatown de noche',
+        'type': 'Zona peligrosa',
+        'description': 'Callejones oscuros con actividad de pandillas, drogas y prostitución ilegal.',
+        'danger_level': 'Moderado',
+        'location_url': 'https://maps.google.com/?q=13.7390,100.5110',
+        'areas': ['Bangkok'],
+        'tips': 'Evitar callejones secundarios de noche. Ir en grupo. No mostrar objetos de valor.'
+    },
+    {
+        'name': 'Puentes fronterizos con Camboya',
+        'type': 'Frontera',
+        'description': 'Zonas de frontera con estafas de visado, robos y corrupción policial.',
+        'danger_level': 'Moderado',
+        'location_url': 'https://maps.google.com/?q=13.4394,102.8357',
+        'areas': ['Sa Kaeo', 'Trat'],
+        'tips': 'Usar solo cruces fronterizos oficiales. No confiar en "ayudantes". Tener documentos en regla.'
+    },
+    {
+        'name': 'Soi 6 Pattaya',
+        'type': 'Barrio Rojo',
+        'description': 'Calle conocida por bares de corta estancia y prostitución. Alta incidencia de robos y drogas.',
+        'danger_level': 'Alto',
+        'location_url': 'https://maps.google.com/?q=12.9365,100.8843',
+        'areas': ['Pattaya'],
+        'tips': 'Extrema precaución. No llevar mucho dinero. Evitar conflictos.'
+    }
+]
+
 # Resumen por regiones basado en tu itinerario
 REGIONAL_SUMMARY = {
     'Bangkok': {
         'dangerous_animals': ['Escorpión Negro', 'Araña de Saco Amarillo', 'Ciempiés Gigante'],
         'dangerous_plants': ['Dieffenbachia', 'Anturio', 'Lirio de Cala', 'Flor de Oleandro'],
         'food_specialties': ['Pad Thai', 'Tom Yum Goong', 'Massaman Curry', 'Mango Sticky Rice'],
-        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Cabeza y Pies', 'La Monarquía']
+        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Cabeza y Pies', 'La Monarquía'],
+        'dangerous_places': ['Patpong Night Market', 'Soi Cowboy', 'Khaosan Road de madrugada', 'Nana Plaza', 'Khlong Toei Slum', 'Callejones de Chinatown de noche']
     },
     'Chiang Mai': {
         'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
         'dangerous_plants': ['Ricino', 'Flor de Oleandro', 'Dieffenbachia'],
         'food_specialties': ['Khao Soi', 'Sai Oua (salchicha norteña)', 'Nam Prik Ong'],
-        'cultural_traditions': ['Loy Krathong', 'Wai', 'Respeto a Buda y Monjes', 'Songkran']
+        'cultural_traditions': ['Loy Krathong', 'Wai', 'Respeto a Buda y Monjes', 'Songkran'],
+        'dangerous_places': ['Mercados nocturnos ilegales']
     },
     'Khao Sok': {
         'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Ciempiés Gigante', 'Araña de Saco Amarillo'],
         'dangerous_plants': ['Ricino', 'Flor de Oleandro'],
         'food_specialties': ['Pescados de río', 'Curry selvático', 'Vegetales locales'],
-        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes']
+        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes'],
+        'dangerous_places': []
     },
     'Krabi': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Anturio'],
         'food_specialties': ['Mariscos frescos', 'Tom Yum Goong', 'Pescado a la parrilla'],
-        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Songkran']
+        'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Songkran'],
+        'dangerous_places': []
     },
     'Phuket': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Lirio de Cala'],
         'food_specialties': ['Mariscos', 'Hokkien Mee', 'Oh Tao (tortilla de ostras)'],
-        'cultural_traditions': ['Wai', 'Songkran', 'La Monarquía']
+        'cultural_traditions': ['Wai', 'Songkran', 'La Monarquía'],
+        'dangerous_places': []
     },
     'Koh Phangan': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro'],
         'food_specialties': ['Pescado fresco', 'Curries de mariscos', 'Frutas tropicales'],
-        'cultural_traditions': ['Full Moon Party', 'Wai', 'Respeto a Buda y Monjes']
+        'cultural_traditions': ['Full Moon Party', 'Wai', 'Respeto a Buda y Monjes'],
+        'dangerous_places': ['Playas solitarias de Koh Phangan']
     },
     'Koh Samui': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante', 'Mono Macaco'],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Dieffenbachia'],
         'food_specialties': ['Mariscos', 'Som Tam', 'Coconut ice cream'],
-        'cultural_traditions': ['Wai', 'Songkran', 'Respeto a Buda y Monjes']
+        'cultural_traditions': ['Wai', 'Songkran', 'Respeto a Buda y Monjes'],
+        'dangerous_places': []
     }
 }

@@ -6,6 +6,7 @@ from config import (
     THAI_FOOD,
     DANGEROUS_PLANTS,
     THAI_TRADITIONS,
+    DANGEROUS_PLACES,
     REGIONAL_SUMMARY
 )
 
@@ -48,4 +49,12 @@ def thai_traditions():
     """Guía de tradiciones culturales"""
     return render_template('guides/traditions.html', 
                           traditions=THAI_TRADITIONS,
+                          regional_summary=REGIONAL_SUMMARY)
+
+@guides.route('/guias/lugares-peligrosos')
+@login_required
+def dangerous_places():
+    """Guía de lugares peligrosos"""
+    return render_template('guides/dangerous_places.html', 
+                          places=DANGEROUS_PLACES,
                           regional_summary=REGIONAL_SUMMARY)
