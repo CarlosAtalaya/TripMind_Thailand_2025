@@ -123,3 +123,144 @@ NEWS_RSS_FEEDS = [
     'https://news.google.com/rss/search?q=thailand&hl=en-US&gl=US&ceid=US:en',
     'https://www.channelnewsasia.com/api/v1/rss-outbound-feed/latest_news'
 ]
+
+# Configuracion para guías
+DANGEROUS_ANIMALS = [
+    {
+        'name': 'Cobra Rey',
+        'thai_name': 'งูจงอาง (Ngu Chong Ang)',
+        'image': 'cobra.jpg',
+        'description': 'Una de las serpientes más venenosas de Tailandia. Puede alcanzar hasta 6 metros de longitud. Si la ves, mantén distancia y no la provoques.',
+        'danger_level': 'Extremo',
+        'areas': ['Kanchanaburi', 'Khao Yai', 'Areas rurales']
+    },
+    {
+        'name': 'Escorpión Negro',
+        'thai_name': 'แมงป่อง (Maeng Pong)',
+        'image': 'scorpion.jpg',
+        'description': 'Común en áreas rocosas y bajo troncos. Su picadura es dolorosa pero raramente mortal. Sacude zapatos antes de ponértelos.',
+        'danger_level': 'Moderado',
+        'areas': ['Todo el país', 'Especialmente en zonas rurales']
+    },
+    {
+        'name': 'Medusa Caja',
+        'thai_name': 'แมงกะพรุนกล่อง (Maeng Kaprun Klong)',
+        'image': 'jellyfish.jpg',
+        'description': 'Extremadamente venenosa, habita en aguas costeras. Su picadura puede ser mortal. Evitar nadar en temporada de medusas.',
+        'danger_level': 'Extremo',
+        'areas': ['Phuket', 'Krabi', 'Koh Samui', 'Koh Phangan']
+    },
+    {
+        'name': 'Ciempiés Gigante',
+        'thai_name': 'ตะขาบ (Takhap)',
+        'image': 'centipede.jpg',
+        'description': 'Puede crecer hasta 20 cm. Su mordedura es muy dolorosa y puede causar infección. Se esconde en lugares húmedos.',
+        'danger_level': 'Alto',
+        'areas': ['Todo el país', 'Especialmente en zonas húmedas']
+    },
+    {
+        'name': 'Mono Macaco',
+        'thai_name': 'ลิง (Ling)',
+        'image': 'macaque.jpg',
+        'description': 'Aunque parezcan amigables, pueden morder y transmitir rabia. No alimentes ni toques a los monos.',
+        'danger_level': 'Moderado',
+        'areas': ['Lopburi', 'Templos', 'Parques nacionales']
+    },
+    {
+        'name': 'Araña de Saco Amarillo',
+        'thai_name': 'แมงมุมถุงเหลือง',
+        'image': 'spider.jpg',
+        'description': 'Pequeña pero venenosa. Su mordedura causa dolor e hinchazón. Común en casas y hoteles.',
+        'danger_level': 'Bajo-Moderado',
+        'areas': ['Áreas urbanas', 'Hoteles', 'Casas']
+    }
+]
+
+THAI_FOOD = [
+    {
+        'name': 'Pad Thai',
+        'thai_name': 'ผัดไทย',
+        'image': 'pad_thai.jpg',
+        'description': 'Fideos de arroz salteados con huevo, tofu, gambas o pollo, cacahuetes y brotes de soja. El plato nacional de Tailandia.',
+        'spicy_level': 'Suave',
+        'areas': ['Todo el país'],
+        'price_range': '40-80 THB'
+    },
+    {
+        'name': 'Tom Yum Goong',
+        'thai_name': 'ต้มยำกุ้ง',
+        'image': 'tom_yum.jpg',
+        'description': 'Sopa picante y ácida con gambas, setas, limoncillo, hojas de lima kaffir y chiles. Plato emblemático tailandés.',
+        'spicy_level': 'Muy picante',
+        'areas': ['Todo el país'],
+        'price_range': '80-150 THB'
+    },
+    {
+        'name': 'Som Tam',
+        'thai_name': 'ส้มตำ',
+        'image': 'som_tam.jpg',
+        'description': 'Ensalada de papaya verde con tomates, judías largas, cacahuetes, gambas secas y chiles. Refrescante pero picante.',
+        'spicy_level': 'Picante',
+        'areas': ['Isaan', 'Bangkok'],
+        'price_range': '30-60 THB'
+    },
+    {
+        'name': 'Khao Soi',
+        'thai_name': 'ข้าวซอย',
+        'image': 'khao_soi.jpg',
+        'description': 'Curry de coco con fideos de huevo, pollo o ternera, típico del norte. Servido con fideos crujientes encima.',
+        'spicy_level': 'Moderado',
+        'areas': ['Chiang Mai', 'Norte de Tailandia'],
+        'price_range': '50-100 THB'
+    },
+    {
+        'name': 'Mango Sticky Rice',
+        'thai_name': 'ข้าวเหนียวมะม่วง',
+        'image': 'mango_sticky_rice.jpg',
+        'description': 'Postre de arroz glutinoso con leche de coco servido con mango maduro. Perfecto para el clima tropical.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '50-100 THB'
+    },
+    {
+        'name': 'Massaman Curry',
+        'thai_name': 'แกงมัสมั่น',
+        'image': 'massaman.jpg',
+        'description': 'Curry suave con influencia india, con carne, patatas, cacahuetes y especias aromáticas.',
+        'spicy_level': 'Suave',
+        'areas': ['Sur de Tailandia', 'Bangkok'],
+        'price_range': '60-120 THB'
+    }
+]
+
+# Resumen por regiones basado en tu itinerario
+REGIONAL_SUMMARY = {
+    'Bangkok': {
+        'dangerous_animals': ['Escorpión Negro', 'Araña de Saco Amarillo', 'Ciempiés Gigante'],
+        'food_specialties': ['Pad Thai', 'Tom Yum Goong', 'Massaman Curry', 'Mango Sticky Rice']
+    },
+    'Chiang Mai': {
+        'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
+        'food_specialties': ['Khao Soi', 'Sai Oua (salchicha norteña)', 'Nam Prik Ong']
+    },
+    'Khao Sok': {
+        'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Ciempiés Gigante', 'Araña de Saco Amarillo'],
+        'food_specialties': ['Pescados de río', 'Curry selvático', 'Vegetales locales']
+    },
+    'Krabi': {
+        'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
+        'food_specialties': ['Mariscos frescos', 'Tom Yum Goong', 'Pescado a la parrilla']
+    },
+    'Phuket': {
+        'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
+        'food_specialties': ['Mariscos', 'Hokkien Mee', 'Oh Tao (tortilla de ostras)']
+    },
+    'Koh Phangan': {
+        'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
+        'food_specialties': ['Pescado fresco', 'Curries de mariscos', 'Frutas tropicales']
+    },
+    'Koh Samui': {
+        'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante', 'Mono Macaco'],
+        'food_specialties': ['Mariscos', 'Som Tam', 'Coconut ice cream']
+    }
+}

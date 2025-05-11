@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Guías de Viaje - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-5">Guías de Tailandia</h1>
+    <p class="lead">Información esencial para tu seguridad y disfrute en Tailandia</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-spider me-2"></i>
+                    Animales Peligrosos
+                </h5>
+                <p class="card-text">
+                    Conoce la fauna potencialmente peligrosa de Tailandia y cómo evitar encuentros indeseados.
+                </p>
+                <a href="{{ url_for('guides.dangerous_animals') }}" class="btn btn-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Ver Guía
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-utensils me-2"></i>
+                    Comida Tailandesa
+                </h5>
+                <p class="card-text">
+                    Descubre los platos típicos que no puedes perderte en tu viaje por Tailandia.
+                </p>
+                <a href="{{ url_for('guides.thai_food') }}" class="btn btn-primary">
+                    <i class="fas fa-bowl-rice me-2"></i>
+                    Ver Guía
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido del sidebar para móvil - solo se muestra en móvil al final de la página -->
+<div class="d-lg-none mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Sobre las Guías</h5>
+        </div>
+        <div class="card-body">
+            <p>Estas guías están diseñadas para ayudarte a tener un viaje más seguro y placentero por Tailandia.</p>
+            
+            <h6 class="mt-3">Contenido:</h6>
+            <ul>
+                <li><strong>Animales Peligrosos:</strong> Fauna que debes conocer y evitar</li>
+                <li><strong>Comida Tailandesa:</strong> Platos típicos que debes probar</li>
+            </ul>
+            
+            <div class="alert alert-warning mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Importante:</strong> Estas guías son informativas. Siempre usa el sentido común y consulta a locales.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Sobre las Guías</h5>
+    </div>
+    <div class="card-body">
+        <p>Estas guías están diseñadas para ayudarte a tener un viaje más seguro y placentero por Tailandia.</p>
+        
+        <h6 class="mt-3">Contenido:</h6>
+        <ul>
+            <li><strong>Animales Peligrosos:</strong> Fauna que debes conocer y evitar</li>
+            <li><strong>Comida Tailandesa:</strong> Platos típicos que debes probar</li>
+        </ul>
+        
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Importante:</strong> Estas guías son informativas. Siempre usa el sentido común y consulta a locales.
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -13,6 +13,7 @@ from auth import auth
 from files import files
 from votes import votes
 from diary import diary
+from guides import guides
 from poop_counter import poop_counter
 from daily_photos import daily_photos  # Nuevo import
 import logging
@@ -62,7 +63,8 @@ app.register_blueprint(files, url_prefix='/files')
 app.register_blueprint(votes, url_prefix='/votes')
 app.register_blueprint(diary, url_prefix='/diary')
 app.register_blueprint(poop_counter)
-app.register_blueprint(daily_photos)  # Registrar el nuevo blueprint
+app.register_blueprint(daily_photos)
+app.register_blueprint(guides)
 
 @login_manager.user_loader
 def load_user(user_id):

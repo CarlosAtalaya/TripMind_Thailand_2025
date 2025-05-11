@@ -383,3 +383,18 @@
         margin: 0;
     }
 }
+
+@media (max-width: 768px) {
+    .bottom-nav {
+        padding: 0.25rem 0;
+    }
+    
+    .bottom-nav .nav-item {
+        font-size: 0.65rem;
+        padding: 0.2rem;
+    }
+    
+    .bottom-nav .nav-item i {
+        font-size: 1.2rem;
+    }
+}
