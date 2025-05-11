@@ -45,28 +45,6 @@
     {% endfor %}
 </div>
 
-<h2 class="display-6 mb-4">Resumen por Región</h2>
-
-<div class="row g-4">
-    {% for region, info in regional_summary.items() %}
-    <div class="col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-header bg-warning">
-                <h5 class="mb-0">{{ region }}</h5>
-            </div>
-            <div class="card-body">
-                <h6>Animales a tener en cuenta:</h6>
-                <ul class="list-unstyled">
-                    {% for animal in info.dangerous_animals %}
-                    <li><i class="fas fa-exclamation-circle text-danger me-2"></i>{{ animal }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-
 <!-- Contenido del sidebar para móvil - solo se muestra en móvil al final de la página -->
 <div class="d-lg-none mt-5">
     <div class="card">
