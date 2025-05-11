@@ -39,8 +39,7 @@ class SharedFile(db.Model):
     
     def __repr__(self):
         return f'<SharedFile {self.original_filename}>'
-    
-# Añadir a models.py
+
 class VoteCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
@@ -93,3 +92,13 @@ class PoopCounter(db.Model):
     
     def __repr__(self):
         return f'<PoopCounter {self.user.name}: {self.count}>'
+    
+class CountdownEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    event_datetime = db.Column(db.DateTime, nullable=False)
+    is_active = db.Column(db.Boolean, default=False)
+    user_to_activate_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    message = db.Column(db.String(200), default="UN NUEVO MIEMBRO SE HA UNIDO A LA EXPEDICIÓN!!!")
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    user_to_activate = db.relationship('User', backref='countdown_event')

@@ -53,8 +53,22 @@
     }
 </style>
 {% endblock %}
-
+<!-- Contador de evento especial -->
 {% block content %}
+<div id="countdown-container" style="display: none;">
+    <div class="alert alert-warning text-center mb-0 py-3" style="position: sticky; top: 56px; z-index: 1040;">
+        <div id="countdown-message" class="mb-2"></div>
+        <div id="countdown-timer" class="h4 mb-0"></div>
+    </div>
+</div>
+<!-- Banner de nuevo miembro -->
+<div id="new-member-banner" style="display: none;">
+    <div class="alert alert-success text-center mb-0 py-4" style="position: sticky; top: 56px; z-index: 1040;">
+        <h3 class="mb-2"><i class="fas fa-star me-2"></i>¡UN NUEVO MIEMBRO SE HA UNIDO A LA EXPEDICIÓN!</h3>
+        <p class="mb-0 h5" id="new-member-name"></p>
+    </div>
+</div>
+
 <div id="overview" class="mb-5">
     <h1 class="display-5">{{ itinerary.title }}</h1>
     <p class="lead">{{ itinerary.description }}</p>
@@ -359,6 +373,46 @@
             });
         }
     });
+    function updateCountdown() {
+        fetch('/auth/api/countdown/status')
+            .then(response => response.json())
+            .then(data => {
+                const countdownContainer = document.getElementById('countdown-container');
+                const newMemberBanner = document.getElementById('new-member-banner');
+                
+                if (data.active) {
+                    if (data.event_happened) {
+                        // Mostrar banner de nuevo miembro
+                        countdownContainer.style.display = 'none';
+                        newMemberBanner.style.display = 'block';
+                        if (data.new_user) {
+                            document.getElementById('new-member-name').textContent = `¡Bienvenido ${data.new_user}!`;
+                        }
+                    } else {
+                        // Mostrar contador
+                        countdownContainer.style.display = 'block';
+                        newMemberBanner.style.display = 'none';
+                        
+                        const days = Math.floor(data.time_remaining / (60 * 60 * 24));
+                        const hours = Math.floor((data.time_remaining % (60 * 60 * 24)) / (60 * 60));
+                        const minutes = Math.floor((data.time_remaining % (60 * 60)) / 60);
+                        const seconds = Math.floor(data.time_remaining % 60);
+                        
+                        document.getElementById('countdown-message').textContent = '¡Un nuevo aventurero se unirá a la expedición en:';
+                        document.getElementById('countdown-timer').textContent = 
+                            `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                    }
+                } else {
+                    countdownContainer.style.display = 'none';
+                    newMemberBanner.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error al actualizar contador:', error));
+    }
+
+    // Actualizar cada segundo
+    setInterval(updateCountdown, 1000);
+    updateCountdown(); // Llamada inicial
 </script>
 {% endblock %}
 

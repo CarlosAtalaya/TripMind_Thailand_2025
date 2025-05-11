@@ -5,7 +5,7 @@ Ejecutar este script para crear la base de datos y las tablas necesarias
 """
 
 from app import app, db, create_tables
-from models import User
+from models import User, CountdownEvent
 from votes import initialize_categories
 
 def init_database():
@@ -28,8 +28,24 @@ def init_database():
         else:
             print(f"\n✓ Base de datos lista con {user_count} usuario(s).")
 
+def update_database():
+    """Actualizar la estructura de la base de datos"""
+    with app.app_context():
+        # Esto creará las nuevas tablas sin afectar las existentes
+        db.create_all()
+        print("✓ Base de datos actualizada.")
+        
+        # Asegurarse de que las categorías de votación existen
+        initialize_categories()
+        print("✓ Categorías de votación verificadas.")
+
 if __name__ == '__main__':
+    '''
     print("Inicializando base de datos para TravelBoard...")
     init_database()
     print("\n¡Base de datos inicializada correctamente!")
     print("Puedes iniciar la aplicación con: python app.py")
+    '''
+    print("Actualizando base de datos para TravelBoard...")
+    update_database()
+    print("\n¡Base de datos actualizada correctamente!")

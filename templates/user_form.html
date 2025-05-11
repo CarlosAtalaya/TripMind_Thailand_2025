@@ -86,6 +86,14 @@
                         <label class="form-check-label" for="is_admin">Privilegios de administrador</label>
                         <div class="form-text">Los administradores pueden gestionar usuarios</div>
                     </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_active_member" name="is_active_member" 
+                               {% if user and user.is_active_member %}checked{% endif %}
+                               {% if action == 'add' %}checked{% endif %}>
+                        <label class="form-check-label" for="is_active_member">Miembro activo</label>
+                        <div class="form-text">Desmarca esta opción para crear un usuario pendiente de activación</div>
+                    </div>
                     
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
