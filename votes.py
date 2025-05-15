@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import yaml
 import os
 import pytz
-from config import VOTE_CATEGORIES
+from config import VOTE_CATEGORIES, VOTING_DEADLINE_HOUR
 
 votes = Blueprint('votes', __name__)
 
@@ -80,9 +80,6 @@ def get_daily_mvp():
     current_datetime = datetime.now(thailand_tz)
     today = current_datetime.date()
     
-    # Importar la hora límite desde la configuración
-    from config import VOTING_DEADLINE_HOUR
-    
     # Determinar qué día usar para buscar el ganador
     if current_datetime.hour < VOTING_DEADLINE_HOUR:
         # Antes de la hora límite - mostrar ganador de ayer
@@ -152,9 +149,6 @@ def is_voting_time_valid():
     # Obtener la hora actual en el timezone de Tailandia
     thailand_tz = pytz.timezone('Asia/Bangkok')
     current_time = datetime.now(thailand_tz)
-    
-    # Importamos la hora límite desde la configuración
-    from config import VOTING_DEADLINE_HOUR
     
     # Verificar si la hora actual es menor que la hora límite
     return current_time.hour < VOTING_DEADLINE_HOUR
