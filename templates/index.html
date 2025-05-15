@@ -69,11 +69,17 @@
     </div>
 </div>
 
+<!-- Modificar la sección del ganador MVP en index.html -->
 {% if daily_mvp %}
 <div class="card mvp-card mb-4 bounce-in">
     <div class="card-header mvp-header">
         <h3 class="mb-0 text-center">
-            <i class="fas fa-trophy me-2"></i>MVP DIARIO DEL DÍA
+            <i class="fas fa-trophy me-2"></i>MVP DIARIO
+            {% if daily_mvp.is_yesterday %}
+                DE AYER
+            {% else %}
+                DE HOY
+            {% endif %}
         </h3>
     </div>
     <div class="card-body p-0">
@@ -93,7 +99,13 @@
                         <i class="fas fa-crown mvp-crown"></i>
                     </div>
                     <p class="card-text mt-2">
-                        <small class="text-muted">Elegido por los compañeros de viaje como el más valioso del día</small>
+                        <small class="text-muted">
+                            {% if daily_mvp.is_yesterday %}
+                                Elegido el {{ daily_mvp.vote_date|format_date }} como el más valioso del día
+                            {% else %}
+                                Elegido por los compañeros de viaje como el más valioso del día
+                            {% endif %}
+                        </small>
                     </p>
                 </div>
             </div>

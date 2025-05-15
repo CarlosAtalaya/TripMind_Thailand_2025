@@ -63,10 +63,14 @@ def get_active_travelers_for_voting():
 
 def get_daily_mvp():
     """
-    Obtiene el ganador de la categoría 'MVP diario' 
+    Obtiene el ganador de la categoría 'MVP diario' para mostrar en la página principal
     
-    Si es antes de la hora límite, muestra el ganador del día anterior.
-    Si es después de la hora límite, muestra el ganador del día actual.
+    Lógica:
+    - Antes de la hora límite (10 PM): Muestra el ganador del día anterior
+    - Después de la hora límite (10 PM): Muestra el ganador del día actual
+    
+    Esto asegura que el ganador se determine después del cierre de votaciones
+    y permanezca visible durante todo el día siguiente hasta que se anuncie un nuevo ganador.
     
     Returns:
         dict: Información del ganador o None si no hay ganador
