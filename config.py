@@ -65,7 +65,7 @@ DAILY_PHOTOS_ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', '
 DAILY_PHOTOS_MAX_SIZE = 50 * 1024 * 1024  # 50 MB
 
 DAILY_DEADLINE_HOUR = 22  # 10 PM hora tailandesa
-VOTING_DEADLINE_HOUR = 22  # 10 PM hora tailandesa
+VOTING_DEADLINE_HOUR = 20  # 10 PM hora tailandesa
 
 THAILAND_TZ = 'Asia/Bangkok'
 

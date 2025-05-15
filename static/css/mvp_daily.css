@@ -24,48 +24,73 @@
     font-weight: bold;
 }
 
-.mvp-image {
-    height: 350px; /* Aumentar la altura */
+/* Nuevo estilo para imagen a pantalla completa */
+.mvp-image-full {
+    display: block;
+    max-height: 500px;
     object-fit: cover;
+    width: 100%;
     transition: transform 0.5s ease;
 }
 
-.mvp-card:hover .mvp-image {
-    transform: scale(1.05);
+
+.mvp-card:hover .mvp-image-full {
+    transform: scale(1.03);
 }
 
-.mvp-name {
-    font-size: 1.8rem; /* Reducir tamaño de fuente */
-    font-weight: bold;
-    margin-top: 0.5rem;
-    color: #212529;
-}
-
-.mvp-votes {
-    display: inline-block;
-    padding: 0.4rem 0.8rem; /* Reducir padding */
-    border-radius: 2rem;
-    background-color: #ffc107;
+/* Barra de información en la parte inferior */
+.mvp-info-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 193, 7, 0.9);
+    padding: 8px 12px;
     color: #212529;
     font-weight: bold;
-    margin: 0.5rem 0;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.1);
-    font-size: 0.9rem; /* Reducir tamaño */
 }
 
-.mvp-crown {
-    font-size: 2.5rem; /* Reducir tamaño */
-    color: #ffc107;
-    margin: 0.5rem 0;
-    filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.5));
-    animation: shine 2s infinite;
+/* Nombre compacto */
+.mvp-name-compact {
+    font-size: 1.1rem;
+    font-weight: bold;
 }
 
-@keyframes shine {
-    0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.5)); }
-    50% { transform: scale(1.1); filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.8)); }
-    100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.5)); }
+/* Votos compactos */
+.mvp-votes-compact {
+    font-size: 0.9rem;
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 4px 8px;
+    border-radius: 20px;
 }
+
+/* Estilos para móviles */
+@media (max-width: 768px) {
+    .mvp-image-full {
+        max-height: 350px;
+    }
+    
+    .mvp-name-compact {
+        font-size: 1rem;
+    }
+    
+    .mvp-votes-compact {
+        font-size: 0.8rem;
+    }
+}
+
+/* Animación de entrada */
+@keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
+.bounce-in {
+    animation: bounceIn 1s ease;
+}
+
 
 /* Animación de entrada */
 @keyframes bounceIn {
