@@ -69,6 +69,39 @@
     </div>
 </div>
 
+{% if daily_mvp %}
+<div class="card mvp-card mb-4 bounce-in">
+    <div class="card-header mvp-header">
+        <h3 class="mb-0 text-center">
+            <i class="fas fa-trophy me-2"></i>MVP DIARIO DEL DÍA
+        </h3>
+    </div>
+    <div class="card-body p-0">
+        <div class="row g-0">
+            <div class="col-md-5">
+                <img src="{{ url_for('static', filename='img/imagenes_graciosas_usuarios/' + daily_mvp.name + '.jpg') }}" 
+                     class="img-fluid mvp-image" alt="{{ daily_mvp.name }}"
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder-user.jpg') }}'">
+            </div>
+            <div class="col-md-7">
+                <div class="card-body text-center">
+                    <h2 class="mvp-name">¡{{ daily_mvp.name }}!</h2>
+                    <div class="mvp-votes">
+                        <i class="fas fa-vote-yea me-2"></i>{{ daily_mvp.votes }} votos
+                    </div>
+                    <div>
+                        <i class="fas fa-crown mvp-crown"></i>
+                    </div>
+                    <p class="card-text mt-2">
+                        <small class="text-muted">Elegido por los compañeros de viaje como el más valioso del día</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div id="overview" class="mb-5">
     <h1 class="display-5">{{ itinerary.title }}</h1>
     <p class="lead">{{ itinerary.description }}</p>

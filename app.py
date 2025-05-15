@@ -11,7 +11,7 @@ from votes import initialize_categories
 from models import db, User
 from auth import auth
 from files import files
-from votes import votes
+from votes import votes, get_daily_mvp
 from diary import diary
 from guides import guides
 from poop_counter import poop_counter
@@ -114,12 +114,14 @@ def index():
     
     # Reemplazar la lista de viajeros con solo los activos para la página principal
     itinerary['travelers'] = active_travelers
+    daily_mvp = get_daily_mvp()
     
     return render_template('index.html', 
                           itinerary=itinerary, 
                           current_date=current_date,
                           current_region=current_region,
-                          original_travelers=original_travelers)
+                          original_travelers=original_travelers,
+                          daily_mvp=daily_mvp)  # Pasar el ganador a la plantilla
 
 @app.route('/itinerary')
 def itinerary_view():

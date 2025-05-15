@@ -61,6 +61,62 @@ def get_active_travelers_for_voting():
     itinerary_travelers = get_travelers_from_itinerary()
     return get_active_travelers(itinerary_travelers)
 
+def get_daily_mvp():
+    """
+    Obtiene el ganador de la categoría 'MVP diario' para el día de hoy
+    
+    Returns:
+        dict: Información del ganador o None si no hay ganador
+    """
+    # Usar el timezone de Tailandia para consistencia con el resto de la aplicación
+    thailand_tz = pytz.timezone('Asia/Bangkok')
+    today = datetime.now(thailand_tz).date()
+    
+    # Obtener la categoría MVP diario
+    mvp_category = VoteCategory.query.filter_by(name="MVP diario").first()
+    if not mvp_category:
+        return None
+    
+    # Obtener todos los votos de hoy para esta categoría
+    votes = Vote.query.filter(
+        Vote.category_id == mvp_category.id,
+        Vote.date == today
+    ).all()
+    
+    if not votes:
+        return None
+    
+    # Contar votos por viajero
+    traveler_votes = {}
+    for vote in votes:
+        if vote.traveler_name not in traveler_votes:
+            traveler_votes[vote.traveler_name] = 0
+        traveler_votes[vote.traveler_name] += 1
+    
+    # Si no hay votos contabilizados, devolver None
+    if not traveler_votes:
+        return None
+    
+    # En caso de empate, elegimos aleatoriamente entre los que tengan más votos
+    max_votes = max(traveler_votes.values())
+    winners = [name for name, vote_count in traveler_votes.items() if vote_count == max_votes]
+    
+    # Elegir al ganador (aleatoriamente en caso de empate)
+    import random
+    winner_name = random.choice(winners)
+    
+    # Obtener información adicional del usuario ganador
+    winner_user = User.query.filter(
+        (User.username == winner_name) | (User.name == winner_name)
+    ).first()
+    
+    return {
+        'name': winner_name,
+        'votes': traveler_votes[winner_name],
+        'user': winner_user,
+        'total_voters': len(votes)
+    }
+
 def initialize_categories():
     """Inicializar las categorías de votación"""
     for cat in VOTE_CATEGORIES:
