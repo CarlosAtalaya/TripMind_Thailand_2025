@@ -1,7 +1,7 @@
 # votes.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from models import db, VoteCategory, Vote, User
+from models import db, VoteCategory, Vote, User, AppConfig
 from datetime import datetime, timedelta
 import yaml
 import os
@@ -146,6 +146,9 @@ def is_voting_time_valid():
     Returns:
         bool: True si todavía se pueden hacer votaciones, False si no
     """
+    voting_enabled = AppConfig.get_value('voting_enabled', 'true')
+    if voting_enabled.lower() != 'true':
+        return False
     # Obtener la hora actual en el timezone de Tailandia
     thailand_tz = pytz.timezone('Asia/Bangkok')
     current_time = datetime.now(thailand_tz)
@@ -417,6 +420,32 @@ def reset_all_votes():
             'success': False,
             'error': str(e)
         }), 500
+    
+@votes.route('/api/admin/voting/toggle', methods=['POST'])
+@login_required
+def toggle_voting():
+    """Activa o desactiva las votaciones"""
+    # Verificar que el usuario es administrador
+    if not current_user.is_admin:
+        return jsonify({
+            'success': False,
+            'error': 'Solo los administradores pueden activar/desactivar las votaciones'
+        }), 403
+    
+    # Obtener el estado deseado
+    data = request.get_json()
+    enable = data.get('enable', True)
+    
+    # Actualizar configuración
+    from models import AppConfig
+    AppConfig.set_value('voting_enabled', 'true' if enable else 'false', 
+                       'Habilitar/deshabilitar votaciones manualmente')
+    
+    return jsonify({
+        'success': True,
+        'message': f'Votaciones {"activadas" if enable else "desactivadas"} exitosamente',
+        'state': enable
+    })
     
 @votes.route('/api/categories')
 @login_required

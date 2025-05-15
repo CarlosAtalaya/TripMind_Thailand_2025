@@ -84,29 +84,23 @@
     </div>
     <div class="card-body p-0">
         <div class="row g-0">
-            <div class="col-md-5">
+            <!-- Aumentar el tamaño de la columna de la imagen -->
+            <div class="col-md-7">
                 <img src="{{ url_for('static', filename='img/imagenes_graciosas_usuarios/' + daily_mvp.name + '.jpg') }}" 
                      class="img-fluid mvp-image" alt="{{ daily_mvp.name }}"
                      onerror="this.src='{{ url_for('static', filename='img/placeholder-user.jpg') }}'">
             </div>
-            <div class="col-md-7">
+            <!-- Reducir el tamaño de la columna de información -->
+            <div class="col-md-5">
                 <div class="card-body text-center">
-                    <h2 class="mvp-name">¡{{ daily_mvp.name }}!</h2>
+                    <h3 class="mvp-name">¡{{ daily_mvp.name }}!</h3>
                     <div class="mvp-votes">
                         <i class="fas fa-vote-yea me-2"></i>{{ daily_mvp.votes }} votos
                     </div>
                     <div>
                         <i class="fas fa-crown mvp-crown"></i>
                     </div>
-                    <p class="card-text mt-2">
-                        <small class="text-muted">
-                            {% if daily_mvp.is_yesterday %}
-                                Elegido el {{ daily_mvp.vote_date|format_date }} como el más valioso del día
-                            {% else %}
-                                Elegido por los compañeros de viaje como el más valioso del día
-                            {% endif %}
-                        </small>
-                    </p>
+                    <!-- El mensaje informativo ha sido eliminado -->
                 </div>
             </div>
         </div>

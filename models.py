@@ -70,6 +70,38 @@ class Vote(db.Model):
         points_map = {1: 5, 2: 4, 3: 3, 4: 2, 5: 1}
         return points_map.get(self.position, 0)
     
+class AppConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    
+    @classmethod
+    def get_value(cls, key, default=None):
+        """Obtiene el valor de una configuración por su clave"""
+        config = cls.query.filter_by(key=key).first()
+        return config.value if config else default
+    
+    @classmethod
+    def set_value(cls, key, value, description=None):
+        """Establece el valor de una configuración"""
+        config = cls.query.filter_by(key=key).first()
+        if config:
+            config.value = value
+            if description:
+                config.description = description
+        else:
+            config = cls(key=key, value=value, description=description)
+            db.session.add(config)
+        
+        try:
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error al guardar configuración: {e}")
+            return False
+    
 class DiaryEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

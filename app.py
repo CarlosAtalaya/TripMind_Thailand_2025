@@ -18,7 +18,7 @@ from poop_counter import poop_counter
 from daily_photos import daily_photos  # Nuevo import
 import logging
 from logging.handlers import RotatingFileHandler
-from config import MAX_UPLOAD_SIZE
+from config import MAX_UPLOAD_SIZE, VOTING_DEADLINE_HOUR
 
 app = Flask(__name__)
 
@@ -197,6 +197,29 @@ def get_all_news():
     
     return jsonify({
         'articles': news_data
+    })
+
+@votes.route('/api/voting/status', methods=['GET'])
+@login_required
+def get_voting_status():
+    """Obtiene el estado actual de las votaciones"""
+    from models import AppConfig
+    
+    # Obtener estado configurado
+    voting_enabled = AppConfig.get_value('voting_enabled', 'true')
+    
+    # Verificar si estamos dentro del horario permitido
+    thailand_tz = pytz.timezone('Asia/Bangkok')
+    current_time = datetime.now(thailand_tz)
+
+    time_allowed = current_time.hour < VOTING_DEADLINE_HOUR
+    
+    return jsonify({
+        'success': True,
+        'enabled': voting_enabled.lower() == 'true',
+        'time_allowed': time_allowed,
+        'current_hour': current_time.hour,
+        'deadline_hour': VOTING_DEADLINE_HOUR
     })
 
 @app.route('/setup', methods=['GET', 'POST'])
