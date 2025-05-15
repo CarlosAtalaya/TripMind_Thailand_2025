@@ -3,6 +3,11 @@
 {% block title %}Votaciones - TravelBoard{% endblock %}
 
 {% block content %}
+<div class="alert alert-info mb-4">
+    <i class="fas fa-clock me-2"></i>
+    <strong>Horario de votación:</strong> Las votaciones están abiertas hasta las 10:00 PM hora de Tailandia.
+    <div id="voting-time-remaining" class="mt-1 fw-bold">Calculando tiempo restante...</div>
+</div>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="display-5">Votaciones del Viaje</h1>
     <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
@@ -86,6 +91,47 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Actualizar contador de tiempo restante para votar
+        function updateVotingTimeRemaining() {
+            // Crear fecha actual en Tailandia
+            const options = { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const timeInThailand = new Date().toLocaleString('es-ES', options);
+            
+            // Extraer horas, minutos y segundos
+            const timeParts = timeInThailand.split(':');
+            if (timeParts.length !== 3) return;
+            
+            const currentHour = parseInt(timeParts[0]);
+            const currentMinute = parseInt(timeParts[1]);
+            const currentSecond = parseInt(timeParts[2]);
+            
+            // Calcular tiempo restante hasta las 22:00
+            let hoursRemaining = 21 - currentHour;
+            let minutesRemaining = 59 - currentMinute;
+            let secondsRemaining = 59 - currentSecond;
+            
+            if (hoursRemaining < 0) {
+                // Ya pasó la hora límite
+                document.getElementById('voting-time-remaining').innerHTML = 
+                    '<span class="text-danger">El período de votación ha terminado por hoy</span>';
+                return;
+            }
+            
+            // Mostrar tiempo restante
+            document.getElementById('voting-time-remaining').innerHTML = 
+                `Tiempo restante: ${hoursRemaining}h ${minutesRemaining}m ${secondsRemaining}s`;
+        }
+        
+        // Si existe el elemento para mostrar tiempo restante
+        if (document.getElementById('voting-time-remaining')) {
+            // Actualizar cada segundo
+            updateVotingTimeRemaining();
+            setInterval(updateVotingTimeRemaining, 1000);
+        }
+    });
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Obtener el estado de subida de foto del usuario

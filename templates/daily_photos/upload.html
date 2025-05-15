@@ -12,7 +12,7 @@
 
 <div class="alert alert-info">
     <i class="fas fa-clock me-2"></i>
-    <strong>Hora límite:</strong> 8:00 PM hora de Tailandia
+    <strong>Hora límite:</strong> 10:00 PM hora de Tailandia
     {% if time_remaining.total_seconds() > 0 %}
         <br>
         <small>Tiempo restante: {{ time_remaining.total_seconds() // 3600 }}h {{ (time_remaining.total_seconds() % 3600) // 60 }}m</small>

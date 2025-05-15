@@ -63,7 +63,10 @@ ALLOWED_EXTENSIONS = {
 DAILY_PHOTOS_FOLDER = 'Dailys_photos'
 DAILY_PHOTOS_ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff', 'tif', 'svg', 'heic', 'heif'}
 DAILY_PHOTOS_MAX_SIZE = 50 * 1024 * 1024  # 50 MB
-DAILY_DEADLINE_HOUR = 20  # 8 PM hora tailandesa
+
+DAILY_DEADLINE_HOUR = 22  # 10 PM hora tailandesa
+VOTING_DEADLINE_HOUR = 22  # 10 PM hora tailandesa
+
 THAILAND_TZ = 'Asia/Bangkok'
 
 # Configuración de votaciones (votes.py)

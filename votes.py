@@ -63,24 +63,39 @@ def get_active_travelers_for_voting():
 
 def get_daily_mvp():
     """
-    Obtiene el ganador de la categoría 'MVP diario' para el día de hoy
+    Obtiene el ganador de la categoría 'MVP diario' 
+    
+    Si es antes de la hora límite, muestra el ganador del día anterior.
+    Si es después de la hora límite, muestra el ganador del día actual.
     
     Returns:
         dict: Información del ganador o None si no hay ganador
     """
-    # Usar el timezone de Tailandia para consistencia con el resto de la aplicación
+    # Usar el timezone de Tailandia para consistencia
     thailand_tz = pytz.timezone('Asia/Bangkok')
-    today = datetime.now(thailand_tz).date()
+    current_datetime = datetime.now(thailand_tz)
+    today = current_datetime.date()
+    
+    # Importar la hora límite desde la configuración
+    from config import VOTING_DEADLINE_HOUR
+    
+    # Determinar qué día usar para buscar el ganador
+    if current_datetime.hour < VOTING_DEADLINE_HOUR:
+        # Antes de la hora límite - mostrar ganador de ayer
+        target_date = today - timedelta(days=1)
+    else:
+        # Después de la hora límite - mostrar ganador de hoy
+        target_date = today
     
     # Obtener la categoría MVP diario
     mvp_category = VoteCategory.query.filter_by(name="MVP diario").first()
     if not mvp_category:
         return None
     
-    # Obtener todos los votos de hoy para esta categoría
+    # Obtener los votos para esta categoría en la fecha objetivo
     votes = Vote.query.filter(
         Vote.category_id == mvp_category.id,
-        Vote.date == today
+        Vote.date == target_date
     ).all()
     
     if not votes:
@@ -102,7 +117,10 @@ def get_daily_mvp():
     winners = [name for name, vote_count in traveler_votes.items() if vote_count == max_votes]
     
     # Elegir al ganador (aleatoriamente en caso de empate)
+    # Usamos una semilla basada en la fecha para que el resultado sea consistente durante todo el día
+    seed = int(target_date.strftime('%Y%m%d'))
     import random
+    random.seed(seed)
     winner_name = random.choice(winners)
     
     # Obtener información adicional del usuario ganador
@@ -110,12 +128,32 @@ def get_daily_mvp():
         (User.username == winner_name) | (User.name == winner_name)
     ).first()
     
+    # Incluir la fecha de votación en el resultado
     return {
         'name': winner_name,
         'votes': traveler_votes[winner_name],
         'user': winner_user,
-        'total_voters': len(votes)
+        'total_voters': len(votes),
+        'vote_date': target_date.strftime('%Y-%m-%d'),
+        'is_yesterday': current_datetime.hour < VOTING_DEADLINE_HOUR
     }
+
+def is_voting_time_valid():
+    """
+    Verifica si aún se pueden realizar votaciones (antes de la hora límite tailandesa)
+    
+    Returns:
+        bool: True si todavía se pueden hacer votaciones, False si no
+    """
+    # Obtener la hora actual en el timezone de Tailandia
+    thailand_tz = pytz.timezone('Asia/Bangkok')
+    current_time = datetime.now(thailand_tz)
+    
+    # Importamos la hora límite desde la configuración
+    from config import VOTING_DEADLINE_HOUR
+    
+    # Verificar si la hora actual es menor que la hora límite
+    return current_time.hour < VOTING_DEADLINE_HOUR
 
 def initialize_categories():
     """Inicializar las categorías de votación"""
@@ -163,6 +201,11 @@ def index():
 def vote_category(category_id):
     """Página para votar en una categoría específica"""
     category = VoteCategory.query.get_or_404(category_id)
+    
+    # Verificar si estamos dentro del horario permitido
+    if not is_voting_time_valid():
+        flash('El tiempo para votar ha terminado por hoy (después de las 10 PM hora tailandesa)', 'warning')
+        return redirect(url_for('votes.index'))
     
     # Si es la categoría de "Foto del día", redirigir a la página especial
     if category.name == "Foto del día":
@@ -214,6 +257,11 @@ def vote_category(category_id):
 def vote_photo_of_day():
     """Página especial para votar en la categoría Foto del día"""
     from daily_photos import get_all_daily_photos
+    
+    # Verificar si estamos dentro del horario permitido
+    if not is_voting_time_valid():
+        flash('El tiempo para votar ha terminado por hoy (después de las 10 PM hora tailandesa)', 'warning')
+        return redirect(url_for('votes.index'))
     
     # Obtener la categoría de "Foto del día"
     category = VoteCategory.query.filter_by(name="Foto del día").first()

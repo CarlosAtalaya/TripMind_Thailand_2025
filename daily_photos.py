@@ -12,10 +12,10 @@ from config import (
     DAILY_PHOTOS_ALLOWED_EXTENSIONS,
     DAILY_PHOTOS_MAX_SIZE,
     DAILY_DEADLINE_HOUR,
+    VOTING_DEADLINE_HOUR,
     THAILAND_TZ
 )
 from PIL import Image
-import uuid
 
 daily_photos = Blueprint('daily_photos', __name__)
 
@@ -74,9 +74,10 @@ def has_user_uploaded_today(user_id, user_name):
     return False
 
 def is_upload_time_valid():
-    """Verifica si aún se pueden subir fotos (antes de las 8 PM hora tailandesa)"""
+    """Verifica si aún se pueden subir fotos (antes de la hora límite tailandesa)"""
     current_time = datetime.now(THAILAND_TZ_OBJ)
-    return current_time.hour < DAILY_DEADLINE_HOUR
+    # En lugar de usar DAILY_DEADLINE_HOUR directamente, usamos la configuración global
+    return current_time.hour < VOTING_DEADLINE_HOUR
 
 def get_all_daily_photos(date=None):
     """Obtiene todas las fotos del día especificado"""
