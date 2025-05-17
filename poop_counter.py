@@ -39,6 +39,10 @@ def increment_counter():
     """Incrementa el contador de cacas del usuario actual"""
     counter = PoopCounter.query.filter_by(user_id=current_user.id).first()
     
+    # Obtener información adicional si está disponible
+    data = request.get_json() if request.is_json else {}
+    poop_quality = data.get('quality', 'good')  # Por defecto 'good' si no se especifica
+    
     if not counter:
         # Si no existe, crear uno nuevo
         counter = PoopCounter(user_id=current_user.id, count=0)
@@ -48,12 +52,16 @@ def increment_counter():
     counter.count += 1
     counter.last_updated = datetime.now()
     
+    # Opcionalmente, guardar calidad en un registro o log para futuras funcionalidades
+    # Esto podría expandirse para rastrear estadísticas por tipo de caca
+    
     try:
         db.session.commit()
         return jsonify({
             'success': True,
             'user_id': current_user.id,
-            'count': counter.count
+            'count': counter.count,
+            'quality': poop_quality
         })
     except Exception as e:
         db.session.rollback()

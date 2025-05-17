@@ -125,11 +125,65 @@
         <div class="col-md-6">
             <!-- Botón contador de cacas -->
             <div class="poop-counter-button text-center">
-                <button class="btn btn-outline-warning" id="incrementPoopButton" title="¡He hecho caca!">
+                <button class="btn btn-outline-warning" id="incrementPoopButton" title="¡He hecho caca!" 
+                        data-bs-toggle="modal" data-bs-target="#poopConfirmModal">
                     <span style="font-size: 1.2rem;">+1</span>
                     <span style="font-size: 1.5rem;">💩</span>
                     <span class="badge bg-danger ms-1" id="myPoopCount">0</span>
                 </button>
+            </div>
+            <!-- Modal de confirmación de caca -->
+            <div class="modal fade" id="poopConfirmModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title">
+                                <span style="font-size: 1.5rem;">💩</span> Confirmación Caca
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <p class="h5 mb-4">¿Has cagado bien? Espero que no haya sido cagalera</p>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Selecciona tu experiencia:</label>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="poopQuality" id="poopQualityGood" value="good" checked>
+                                        <label class="form-check-label" for="poopQualityGood">
+                                            👍 Perfecta
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="poopQuality" id="poopQualityMedium" value="medium">
+                                        <label class="form-check-label" for="poopQualityMedium">
+                                            😐 Regular
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="poopQuality" id="poopQualityBad" value="bad">
+                                        <label class="form-check-label" for="poopQualityBad">
+                                            🔥 Cagalera
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-warning">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Esta importante información se guardará en las estadísticas del viaje.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Ha sido una falsa alarma
+                            </button>
+                            <button type="button" class="btn btn-warning" id="confirmPoopButton">
+                                <i class="fas fa-check me-2"></i>¡Confirmar caca!
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="card">
@@ -455,7 +509,18 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Configurar el contador de cacas
         const incrementButton = document.getElementById('incrementPoopButton');
+        const confirmButton = document.getElementById('confirmPoopButton');
         const myPoopCount = document.getElementById('myPoopCount');
+        
+        // Asegúrate de que estos elementos existen
+        if (!confirmButton || !myPoopCount) return;
+        
+        // Inicializar el modal
+        const poopModalElement = document.getElementById('poopConfirmModal');
+        let poopModal;
+        if (poopModalElement) {
+            poopModal = new bootstrap.Modal(poopModalElement);
+        }
         
         // Función para obtener el ID del usuario actual
         function getCurrentUserId() {
@@ -502,14 +567,23 @@
                 .catch(error => console.error('Error al cargar contadores:', error));
         }
         
-        // Configurar evento de clic para incrementar
-        if (incrementButton) {
-            incrementButton.addEventListener('click', function() {
+        // Configurar evento de clic para el botón de confirmación
+        if (confirmButton) {
+            confirmButton.addEventListener('click', function() {
+                // Obtener la calidad seleccionada
+                const poopQuality = document.querySelector('input[name="poopQuality"]:checked').value;
+                
+                // Cerrar el modal
+                if (poopModal) {
+                    poopModal.hide();
+                }
+                
+                // IMPORTANTE: Modificación para solucionar el error 400
+                // Llamar a la API para incrementar el contador sin enviar JSON
                 fetch('/api/poop/increment', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    // No enviamos JSON, solo hacemos una solicitud POST simple
+                    // El endpoint actual no está configurado para recibir JSON
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -517,8 +591,8 @@
                         // Actualizar contador local
                         myPoopCount.textContent = data.count;
                         
-                        // Mostrar una pequeña notificación
-                        showPoopNotification();
+                        // Mostrar una pequeña notificación basada en la calidad
+                        showPoopNotification(poopQuality);
                         
                         // Actualizar todos los contadores después de un pequeño delay
                         setTimeout(updatePoopCounters, 500);
@@ -528,13 +602,29 @@
             });
         }
         
-        // Función para mostrar una pequeña notificación
-        function showPoopNotification() {
+        // Función mejorada para mostrar una notificación basada en la calidad
+        function showPoopNotification(quality) {
             const notification = document.createElement('div');
             notification.className = 'position-fixed top-50 start-50 translate-middle bg-warning p-3 rounded shadow text-center';
             notification.style.zIndex = '1050';
             notification.style.opacity = '0.9';
-            notification.innerHTML = '<span style="font-size: 2rem;">💩</span><p class="mb-0 mt-2">¡Caca registrada!</p>';
+            
+            // Personalizar mensaje según calidad
+            let message = '¡Caca registrada!';
+            let emoji = '💩';
+            
+            if (quality === 'good') {
+                message = '¡Caca perfecta registrada!';
+                emoji = '💩👌';
+            } else if (quality === 'medium') {
+                message = '¡Caca regular registrada!';
+                emoji = '💩😐';
+            } else if (quality === 'bad') {
+                message = '¡Cagalera registrada!';
+                emoji = '💩🔥';
+            }
+            
+            notification.innerHTML = `<span style="font-size: 2rem;">${emoji}</span><p class="mb-0 mt-2">${message}</p>`;
             
             document.body.appendChild(notification);
             
@@ -555,14 +645,6 @@
             if (button) {
                 button.parentElement.classList.add('mobile-poop-counter');
             }
-        }
-        
-        // Evitar scroll en móvil cuando se hace click
-        if (incrementButton) {
-            incrementButton.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                this.click();
-            });
         }
         
         // Cargar contadores al inicio

@@ -36,10 +36,6 @@
                                 <a href="{{ url_for('diary.edit_entry', entry_id=entry.id) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ entry.id }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
                             </div>
                         </div>
                         <p class="mb-0">{{ entry.content }}</p>
