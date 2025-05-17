@@ -115,21 +115,6 @@ def edit_entry(entry_id):
 @login_required
 def delete_entry(entry_id):
     """Eliminar una entrada"""
-    entry = DiaryEntry.query.get_or_404(entry_id)
-    
-    # Verificar que la entrada pertenece al usuario actual
-    if entry.user_id != current_user.id:
-        flash('No tienes permiso para eliminar esta entrada', 'danger')
-        return redirect(url_for('diary.index'))
-    
-    try:
-        db.session.delete(entry)
-        db.session.commit()
-        # Hacer backup en JSON
-        backup_entries_to_json()
-        flash('Entrada eliminada correctamente', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error al eliminar la entrada: {e}', 'danger')
-    
+    # Esta función está deshabilitada para evitar la eliminación de entradas
+    flash('La eliminación de entradas de diario ha sido deshabilitada', 'warning')
     return redirect(url_for('diary.index'))
