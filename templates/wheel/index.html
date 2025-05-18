@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Ruleta - TravelBoard{% endblock %}
+{% block title %}Ruleta del Destino - TravelBoard{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -20,14 +20,16 @@
         </div>
         
         <div class="wheel-container text-center">
-            <!-- Marcador -->
+            <!-- Marcador triangular -->
             <div class="wheel-marker">
-                <i class="fas fa-caret-down fa-2x text-danger"></i>
+                <i class="fas fa-caret-down fa-3x text-danger"></i>
             </div>
             
-            <!-- Ruleta -->
-            <div class="wheel" id="wheel">
-                <!-- Aquí se generarán dinámicamente los segmentos de la ruleta -->
+            <!-- Contenedor de la ruleta -->
+            <div id="canvasContainer">
+                <canvas id="canvas" width="434" height="434">
+                    Canvas no soportado, actualiza tu navegador.
+                </canvas>
             </div>
             
             <!-- Botón para girar -->
@@ -73,57 +75,26 @@
     /* Contenedor de la ruleta */
     .wheel-container {
         position: relative;
-        margin: 30px auto;
-        max-width: 400px;
+        margin: 60px auto 30px;
+        max-width: 434px;
     }
     
-    /* Marcador */
+    /* Marcador triangular */
     .wheel-marker {
         position: absolute;
-        top: -30px;
+        top: -40px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 10;
+        filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
     }
     
-    /* Ruleta */
-    .wheel {
+    /* Contenedor del canvas */
+    #canvasContainer {
         position: relative;
-        width: 300px;
-        height: 300px;
-        border-radius: 50%;
-        overflow: hidden;
+        width: 434px;
+        height: 434px;
         margin: 0 auto;
-        border: 10px solid #f8f9fa;
-        box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        transition: transform 6s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-    
-    /* Segmentos de la ruleta */
-    .segment {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        transform-origin: 50% 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    /* Nombre de usuario */
-    .segment-text {
-        position: absolute;
-        color: white;
-        font-weight: bold;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-        transform-origin: center;
-        text-align: center;
-        width: 140px;
-        padding: 0 5px;
-        font-size: 0.75rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
     
     /* Botón para girar */
@@ -132,26 +103,34 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
-        background-color: #0d6efd;
+        background: linear-gradient(145deg, #0d6efd, #0b5ed7);
         color: white;
-        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        font-weight: bold;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 5;
-        font-size: 0.9rem;
-        padding: 0;
+        z-index: 100;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
     }
     
     .spin-button:hover {
-        background-color: #0b5ed7;
+        transform: translate(-50%, -50%) scale(1.05);
+        box-shadow: 0 6px 12px rgba(13, 110, 253, 0.4);
+    }
+    
+    .spin-button:active {
+        transform: translate(-50%, -50%) scale(0.95);
     }
     
     .spin-button:disabled {
-        background-color: #6c757d;
+        background: linear-gradient(145deg, #6c757d, #5a6268);
         cursor: not-allowed;
     }
     
@@ -168,9 +147,14 @@
     
     /* Responsive */
     @media (max-width: 576px) {
-        .wheel {
-            width: 250px;
-            height: 250px;
+        #canvasContainer {
+            width: 320px;
+            height: 320px;
+        }
+        
+        #canvas {
+            width: 320px;
+            height: 320px;
         }
         
         .spin-button {
@@ -179,30 +163,30 @@
             font-size: 0.8rem;
         }
         
-        .segment-text {
-            width: 120px;
-            font-size: 0.7rem;
+        .wheel-container {
+            max-width: 320px;
         }
     }
 </style>
 {% endblock %}
 
 {% block extra_js %}
-<script type="text/javascript">
+<!-- Scripts adicionales -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/winwheel@1.0.1/dist/Winwheel.min.js"></script>
+
+<script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Elementos del DOM
-        const wheel = document.getElementById('wheel');
+        // Variables y elementos del DOM
+        let theWheel;
         const spinButton = document.getElementById('spin-button');
         const resultContainer = document.getElementById('result-container');
         const resultName = document.getElementById('result-name');
         const wheelTitle = document.getElementById('wheel-title');
+        let isSpinning = false;
+        let userSegments = []; // Array para mantener la correspondencia entre segmentos y usuarios
         
-        // Variables
-        let users = [];
-        let spinning = false;
-        let currentRotation = 0;
-        
-        // Colores para los segmentos
+        // Colores vibrantes para los segmentos
         const colors = [
             '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
             '#9966FF', '#FF9F40', '#8AC249', '#EA5F89',
@@ -227,113 +211,241 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.users.length > 0) {
-                    users = data.users;
-                    createWheel(users);
+                    initWheel(data.users);
                 } else {
                     // Usuarios de prueba
-                    users = [
-                        { id: 1, name: 'Usuario 1' },
-                        { id: 2, name: 'Usuario 2' },
-                        { id: 3, name: 'Usuario 3' },
-                        { id: 4, name: 'Usuario 4' },
-                        { id: 5, name: 'Usuario 5' },
-                        { id: 6, name: 'Usuario 6' }
+                    const fallbackUsers = [
+                        { id: 1, name: 'Maricristi_Batukada' },
+                        { id: 2, name: 'Marta_Boxing' },
+                        { id: 3, name: 'Marisa_Venenosa' },
+                        { id: 4, name: 'Ferson_Avionetas' },
+                        { id: 5, name: 'Luis_Keta' },
+                        { id: 6, name: 'Alfon_Marques' },
+                        { id: 7, name: 'Omar_Jeque' },
+                        { id: 8, name: 'Javi_Buceador' },
+                        { id: 9, name: 'Diego_Roman' },
+                        { id: 10, name: 'Angel_Garrapata' },
+                        { id: 11, name: 'Isidro_Patachula' },
+                        { id: 12, name: 'Nacho33' },
+                        { id: 13, name: 'Carlos_Pupas' }
                     ];
-                    createWheel(users);
+                    initWheel(fallbackUsers);
                 }
             })
             .catch(error => {
                 console.error('Error cargando usuarios:', error);
-                // Usuarios de respaldo
-                users = [
-                    { id: 1, name: 'Usuario 1' },
-                    { id: 2, name: 'Usuario 2' },
-                    { id: 3, name: 'Usuario 3' },
-                    { id: 4, name: 'Usuario 4' },
-                    { id: 5, name: 'Usuario 5' },
-                    { id: 6, name: 'Usuario 6' }
+                // Usuarios de respaldo en caso de error
+                const fallbackUsers = [
+                    { id: 1, name: 'Maricristi_Batukada' },
+                    { id: 2, name: 'Marta_Boxing' },
+                    { id: 3, name: 'Marisa_Venenosa' },
+                    { id: 4, name: 'Ferson_Avionetas' },
+                    { id: 5, name: 'Luis_Keta' },
+                    { id: 6, name: 'Alfon_Marques' },
+                    { id: 7, name: 'Omar_Jeque' },
+                    { id: 8, name: 'Javi_Buceador' },
+                    { id: 9, name: 'Diego_Roman' },
+                    { id: 10, name: 'Angel_Garrapata' },
+                    { id: 11, name: 'Isidro_Patachula' },
+                    { id: 12, name: 'Nacho33' },
+                    { id: 13, name: 'Carlos_Pupas' }
                 ];
-                createWheel(users);
+                initWheel(fallbackUsers);
             });
-        
-        // Función para crear la ruleta mejorada
-        function createWheel(users) {
-            wheel.innerHTML = '';
             
-            const segmentAngle = 360 / users.length;
+        // Función para obtener solo el primer nombre (antes del guion bajo)
+        function getFirstName(fullName) {
+            if (fullName.includes('_')) {
+                return fullName.split('_')[0];
+            }
+            return fullName;
+        }
+        
+        // Crear los segmentos para la ruleta
+        function createSegments(users) {
+            const segments = [];
+            userSegments = []; // Reiniciar el array de correspondencia
             
             users.forEach((user, index) => {
-                // Crear elemento de segmento
-                const segment = document.createElement('div');
-                segment.className = 'segment';
+                // Extraer solo el primer nombre
+                const firstName = getFirstName(user.name);
                 
-                // Crear elemento de fondo para cada segmento
-                const segmentBg = document.createElement('div');
-                segmentBg.style.position = 'absolute';
-                segmentBg.style.top = '0';
-                segmentBg.style.left = '0';
-                segmentBg.style.width = '100%';
-                segmentBg.style.height = '100%';
-                segmentBg.style.clipPath = `polygon(50% 50%, 50% 0, ${50 + 50 * Math.cos((index * segmentAngle + segmentAngle) * Math.PI / 180)}% ${50 - 50 * Math.sin((index * segmentAngle + segmentAngle) * Math.PI / 180)}%, 50% 50%)`;
-                segmentBg.style.backgroundColor = colors[index % colors.length];
+                // Guardar la correspondencia entre índice de segmento y nombre completo
+                userSegments.push(user.name);
                 
-                // Crear texto del segmento
-                const text = document.createElement('div');
-                text.className = 'segment-text';
-                text.textContent = user.name;
-                text.style.transform = `rotate(${index * segmentAngle + segmentAngle / 2}deg) translateY(-120px) rotate(90deg)`;
-                
-                segment.appendChild(segmentBg);
-                segment.appendChild(text);
-                wheel.appendChild(segment);
+                segments.push({
+                    'fillStyle': colors[index % colors.length],
+                    'text': firstName,
+                    'textFontFamily': 'Arial',
+                    'textFontSize': getFontSize(users.length),
+                    'textFillStyle': 'white',
+                    'textOrientation': 'vertical', // Orientación vertical para los nombres
+                    'textMargin': 15,              // Margen para el texto
+                    'textAlignment': 'inner'       // Alineación interna para mejor visibilidad
+                });
             });
+            
+            return segments;
+        }
+        
+        // Función para ajustar el tamaño de fuente según el número de usuarios
+        function getFontSize(numUsers) {
+            if (numUsers <= 6) return 18;
+            if (numUsers <= 10) return 16;
+            if (numUsers <= 15) return 14;
+            if (numUsers <= 20) return 12;
+            return 10;
+        }
+        
+        // Inicializar la ruleta con los usuarios
+        function initWheel(users) {
+            const segments = createSegments(users);
+            const canvas = document.getElementById('canvas');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Crear la ruleta
+            theWheel = new Winwheel({
+                'canvasId': 'canvas',
+                'numSegments': segments.length,
+                'segments': segments,
+                'outerRadius': centerX - 10,
+                'centerX': centerX,
+                'centerY': centerY,
+                'lineWidth': 3,
+                'textFontWeight': 'bold',
+                'pointerAngle': 0,  // El puntero está en la parte superior
+                'animation': {
+                    'type': 'spinToStop',
+                    'duration': 5,
+                    'spins': 8,
+                    'callbackFinished': finishSpin
+                }
+            });
+            
+            // Dibujar la ruleta
+            theWheel.draw();
+            console.log("Ruleta inicializada con " + users.length + " segmentos");
+        }
+        
+        // Función para manejar el final del giro
+        function finishSpin(indicatedSegment) {
+            console.log("Giro finalizado - Segmento indicado:", indicatedSegment);
+            
+            // Determinar el ganador basado en el segmento indicado
+            let winningSegmentNumber = 0;
+            
+            // Si hay un segmento indicado válido, usamos su número
+            if (indicatedSegment && typeof indicatedSegment.text !== 'undefined') {
+                // Buscar el índice del segmento en la ruleta
+                for (let i = 1; i < theWheel.segments.length; i++) {
+                    if (theWheel.segments[i] === indicatedSegment) {
+                        winningSegmentNumber = i;
+                        break;
+                    }
+                }
+            } else {
+                // Método alternativo: calcular el segmento basado en el ángulo de rotación
+                const normalizedAngle = theWheel.rotationAngle % 360;
+                const degreePerSegment = 360 / theWheel.segments.length;
+                winningSegmentNumber = Math.floor(normalizedAngle / degreePerSegment) + 1;
+                
+                // Asegurarse de que está dentro del rango válido
+                if (winningSegmentNumber >= theWheel.segments.length) {
+                    winningSegmentNumber = 1;
+                }
+            }
+            
+            // Asegurarse de que el winningSegmentNumber es válido
+            if (winningSegmentNumber >= userSegments.length) {
+                winningSegmentNumber = 0;
+            }
+            
+            // Obtener el nombre completo del ganador usando nuestro array de correspondencia
+            const winnerName = userSegments[winningSegmentNumber];
+            
+            console.log("Segmento ganador:", winningSegmentNumber);
+            console.log("Nombre del ganador:", winnerName);
+            
+            // Mostrar el resultado y resetear el estado
+            resultName.textContent = winnerName;
+            resultContainer.style.display = 'block';
+            resultContainer.classList.add('bounce');
+            
+            // Resetear el estado del giro y el botón
+            isSpinning = false;
+            spinButton.disabled = false;
+            spinButton.textContent = '¡MENEA!';
+            
+            // Quitar la animación de rebote después de 1 segundo
+            setTimeout(() => {
+                resultContainer.classList.remove('bounce');
+            }, 1000);
         }
         
         // Función para girar la ruleta
-        function spinWheel() {
-            if (spinning || users.length === 0) return;
+        function startSpin() {
+            if (isSpinning) return;
             
-            spinning = true;
-            spinButton.disabled = true;
+            isSpinning = true;
             resultContainer.style.display = 'none';
+            spinButton.disabled = true;
+            spinButton.textContent = 'Girando...';
             
-            // Mínimo 5 vueltas, máximo 10
-            const minSpins = 5;
-            const maxSpins = 10;
-            const baseSpins = minSpins + Math.floor(Math.random() * (maxSpins - minSpins));
-            const randomAngle = Math.floor(Math.random() * 360);
-            const spinAngle = baseSpins * 360 + randomAngle;
+            // Reset de la ruleta para una nueva vuelta
+            theWheel.stopAnimation(false);
+            theWheel.rotationAngle = 0;
+            theWheel.draw();
             
-            // Actualizar rotación actual (para seguir girando desde la posición actual)
-            currentRotation = (currentRotation + spinAngle) % 360;
+            // Generar un ángulo de parada aleatorio
+            const stopAngle = Math.floor(Math.random() * 360);
             
-            // Aplicar animación
-            wheel.style.transform = `rotate(${spinAngle}deg)`;
+            // Configurar la animación para que se detenga en el ángulo calculado
+            theWheel.animation.stopAngle = stopAngle;
             
-            // Calcular resultado
-            const segmentAngle = 360 / users.length;
-            const normalizedAngle = 360 - (randomAngle % 360); // Invertir para obtener el segmento correcto
-            const winningIndex = Math.floor(normalizedAngle / segmentAngle) % users.length;
-            
-            // Mostrar resultado después de la animación
-            setTimeout(() => {
-                spinning = false;
-                spinButton.disabled = false;
-                
-                // Mostrar el ganador
-                resultName.textContent = users[winningIndex].name;
-                resultContainer.style.display = 'block';
-                resultContainer.classList.add('bounce');
-                
-                // Quitar la animación después
-                setTimeout(() => {
-                    resultContainer.classList.remove('bounce');
-                }, 1000);
-            }, 6000); // Tiempo de la animación
+            // Iniciar la animación
+            theWheel.startAnimation();
+            console.log("Girando la ruleta hasta el ángulo: " + stopAngle);
         }
         
-        // Asociar evento al botón de girar
-        spinButton.addEventListener('click', spinWheel);
+        // Asignar evento al botón de girar
+        spinButton.addEventListener('click', startSpin);
+        
+        // Ajustar tamaño del canvas para dispositivos móviles
+        function resizeCanvas() {
+            const canvas = document.getElementById('canvas');
+            const container = document.getElementById('canvasContainer');
+            
+            if (window.innerWidth <= 576) {
+                canvas.width = 320;
+                canvas.height = 320;
+                container.style.width = '320px';
+                container.style.height = '320px';
+                
+                if (theWheel) {
+                    theWheel.centerX = 160;
+                    theWheel.centerY = 160;
+                    theWheel.outerRadius = 150;
+                    theWheel.draw();
+                }
+            } else {
+                canvas.width = 434;
+                canvas.height = 434;
+                container.style.width = '434px';
+                container.style.height = '434px';
+                
+                if (theWheel) {
+                    theWheel.centerX = 217;
+                    theWheel.centerY = 217;
+                    theWheel.outerRadius = 207;
+                    theWheel.draw();
+                }
+            }
+        }
+        
+        // Ajustar tamaño al cargar y al cambiar el tamaño de la ventana
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
     });
 </script>
 {% endblock %}
