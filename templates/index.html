@@ -68,6 +68,13 @@
         <p class="mb-0 h5" id="new-member-name"></p>
     </div>
 </div>
+<!-- Banner de mensaje personalizado -->
+<div id="custom-message-banner" style="display: none;">
+    <div class="alert alert-primary text-center mb-0 py-4" style="position: sticky; top: 56px; z-index: 1040;">
+        <h3 class="mb-2"><i class="fas fa-bullhorn me-2"></i>¡ATENCIÓN!</h3>
+        <p class="mb-0 h5" id="custom-message-text">Mensaje personalizado</p>
+    </div>
+</div>
 
 <!-- Modificar la sección del ganador MVP en index.html -->
 {% if daily_mvp %}
@@ -467,19 +474,31 @@
             .then(data => {
                 const countdownContainer = document.getElementById('countdown-container');
                 const newMemberBanner = document.getElementById('new-member-banner');
+                const customMessageBanner = document.getElementById('custom-message-banner');
                 
                 if (data.active) {
                     if (data.event_happened) {
-                        // Mostrar banner de nuevo miembro
+                        // Mostrar banner según el tipo de contador
                         countdownContainer.style.display = 'none';
-                        newMemberBanner.style.display = 'block';
-                        if (data.new_user) {
-                            document.getElementById('new-member-name').textContent = `¡Bienvenido ${data.new_user}!`;
+                        
+                        if (data.countdown_type === 'new_member') {
+                            // Banner de nuevo miembro
+                            newMemberBanner.style.display = 'block';
+                            customMessageBanner.style.display = 'none';
+                            if (data.new_user) {
+                                document.getElementById('new-member-name').textContent = `¡Bienvenido ${data.new_user}!`;
+                            }
+                        } else {
+                            // Banner de mensaje personalizado
+                            newMemberBanner.style.display = 'none';
+                            customMessageBanner.style.display = 'block';
+                            document.getElementById('custom-message-text').textContent = data.message;
                         }
                     } else {
                         // Mostrar contador
                         countdownContainer.style.display = 'block';
                         newMemberBanner.style.display = 'none';
+                        customMessageBanner.style.display = 'none';
                         
                         const days = Math.floor(data.time_remaining / (60 * 60 * 24));
                         const hours = Math.floor((data.time_remaining % (60 * 60 * 24)) / (60 * 60));
@@ -493,6 +512,7 @@
                 } else {
                     countdownContainer.style.display = 'none';
                     newMemberBanner.style.display = 'none';
+                    customMessageBanner.style.display = 'none';
                 }
             })
             .catch(error => console.error('Error al actualizar contador:', error));

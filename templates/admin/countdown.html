@@ -19,8 +19,14 @@
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>
                 Contador activo para: {{ countdown.event_datetime.strftime('%d/%m/%Y %H:%M') }}
-                {% if countdown.user_to_activate %}
+                {% if countdown.countdown_type == "new_member" and countdown.user_to_activate %}
                     <br>Usuario a activar: {{ countdown.user_to_activate.name }}
+                {% endif %}
+                {% if countdown.countdown_type == "custom" %}
+                    <br>Tipo: Mensaje personalizado
+                    <br>Mensaje: "{{ countdown.message }}"
+                {% else %}
+                    <br>Tipo: Nuevo miembro
                 {% endif %}
             </div>
             
@@ -34,6 +40,17 @@
             <form method="POST">
                 <input type="hidden" name="action" value="create">
                 
+                <!-- Selección del tipo de contador -->
+                <div class="mb-3">
+                    <label for="countdown_type" class="form-label">Tipo de contador</label>
+                    <select class="form-select" id="countdown_type" name="countdown_type" onchange="toggleCountdownFields()">
+                        <option value="new_member">Nuevo miembro</option>
+                        <option value="custom">Mensaje personalizado</option>
+                    </select>
+                    <div class="form-text">Selecciona el tipo de contador que deseas crear</div>
+                </div>
+                
+                <!-- Campos para ambos tipos de contador -->
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="event_date" class="form-label">Fecha del Evento</label>
@@ -45,21 +62,49 @@
                     </div>
                 </div>
                 
-                <div class="mb-3">
-                    <label for="user_id" class="form-label">Usuario a Activar (opcional)</label>
-                    <select class="form-select" id="user_id" name="user_id">
-                        <option value="">-- Ninguno --</option>
-                        {% for user in inactive_users %}
-                            <option value="{{ user.id }}">{{ user.name }} ({{ user.username }})</option>
-                        {% endfor %}
-                    </select>
-                    <div class="form-text">Selecciona el usuario que se activará cuando se complete el contador</div>
+                <!-- Sección para nuevo miembro (visible por defecto) -->
+                <div id="new_member_fields">
+                    <div class="mb-3">
+                        <label for="user_id" class="form-label">Usuario a Activar</label>
+                        <select class="form-select" id="user_id" name="user_id">
+                            <option value="">-- Ninguno --</option>
+                            {% for user in inactive_users %}
+                                <option value="{{ user.id }}">{{ user.name }} ({{ user.username }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Selecciona el usuario que se activará cuando se complete el contador</div>
+                    </div>
+                </div>
+                
+                <!-- Sección para mensaje personalizado (oculta por defecto) -->
+                <div id="custom_message_fields" style="display: none;">
+                    <div class="mb-3">
+                        <label for="custom_message" class="form-label">Mensaje personalizado</label>
+                        <textarea class="form-control" id="custom_message" name="custom_message" rows="3" placeholder="Introduce el mensaje que se mostrará cuando termine la cuenta atrás"></textarea>
+                        <div class="form-text">Este mensaje se mostrará cuando termine la cuenta atrás</div>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-play me-2"></i> Activar Contador
                 </button>
             </form>
+            
+            <script>
+                function toggleCountdownFields() {
+                    const countdownType = document.getElementById('countdown_type').value;
+                    const newMemberFields = document.getElementById('new_member_fields');
+                    const customMessageFields = document.getElementById('custom_message_fields');
+                    
+                    if (countdownType === 'new_member') {
+                        newMemberFields.style.display = 'block';
+                        customMessageFields.style.display = 'none';
+                    } else {
+                        newMemberFields.style.display = 'none';
+                        customMessageFields.style.display = 'block';
+                    }
+                }
+            </script>
         {% endif %}
     </div>
 </div>

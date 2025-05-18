@@ -133,6 +133,8 @@ class CountdownEvent(db.Model):
     user_to_activate_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     message = db.Column(db.String(200), default="UN NUEVO MIEMBRO SE HA UNIDO A LA EXPEDICIÓN!!!")
     created_at = db.Column(db.DateTime, default=datetime.now)
+    # Nuevo campo para indicar el tipo de contador: "new_member" o "custom"
+    countdown_type = db.Column(db.String(20), default="new_member")
     
     # Relación con el usuario a activar
     user_to_activate = db.relationship('User', foreign_keys=[user_to_activate_id])

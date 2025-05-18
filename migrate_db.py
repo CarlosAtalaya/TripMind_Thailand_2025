@@ -51,6 +51,17 @@ def migrate_database():
             print("✓ La tabla countdown_event ya existe")
             
         print("\n¡Migración completada exitosamente!")
+
+        cursor.execute("PRAGMA table_info(countdown_event)")
+        columns = [col[1] for col in cursor.fetchall()]
+        
+        if 'countdown_type' not in columns:
+            print("Añadiendo columna countdown_type a la tabla countdown_event...")
+            cursor.execute("ALTER TABLE countdown_event ADD COLUMN countdown_type VARCHAR(20) DEFAULT 'new_member'")
+            conn.commit()
+            print("✓ Columna countdown_type añadida")
+        else:
+            print("✓ La columna countdown_type ya existe")
         
     except Exception as e:
         print(f"Error durante la migración: {e}")

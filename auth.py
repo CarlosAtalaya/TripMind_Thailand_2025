@@ -187,7 +187,7 @@ def manage_countdown():
         if action == 'create':
             event_date = request.form.get('event_date')
             event_time = request.form.get('event_time')
-            user_id = request.form.get('user_id')
+            countdown_type = request.form.get('countdown_type', 'new_member')
             
             try:
                 # Combinar fecha y hora
@@ -196,15 +196,25 @@ def manage_countdown():
                 # Crear o actualizar el evento
                 if countdown:
                     countdown.event_datetime = event_datetime
-                    countdown.user_to_activate_id = user_id if user_id else None
                     countdown.is_active = True
+                    countdown.countdown_type = countdown_type
                 else:
                     countdown = CountdownEvent(
                         event_datetime=event_datetime,
-                        user_to_activate_id=user_id if user_id else None,
-                        is_active=True
+                        is_active=True,
+                        countdown_type=countdown_type
                     )
                     db.session.add(countdown)
+                
+                # Configuración específica según el tipo de contador
+                if countdown_type == 'new_member':
+                    user_id = request.form.get('user_id')
+                    countdown.user_to_activate_id = user_id if user_id else None
+                    countdown.message = "UN NUEVO MIEMBRO SE HA UNIDO A LA EXPEDICIÓN!!!"
+                else:  # custom
+                    custom_message = request.form.get('custom_message')
+                    countdown.message = custom_message if custom_message else "¡ATENCIÓN! ¡MENSAJE IMPORTANTE!"
+                    countdown.user_to_activate_id = None  # No se activa ningún usuario
                 
                 db.session.commit()
                 flash('Contador activado correctamente', 'success')
@@ -240,9 +250,9 @@ def countdown_status():
             time_diff = (now - event_time).total_seconds()
             
             if time_diff <= 3600:  # 1 hora = 3600 segundos
-                # Activar el usuario si existe y aún no está activado
+                # Si es de tipo nuevo miembro, activar el usuario
                 user_name = None
-                if countdown.user_to_activate_id:
+                if countdown.countdown_type == 'new_member' and countdown.user_to_activate_id:
                     user = User.query.get(countdown.user_to_activate_id)
                     if user:
                         user_name = user.name
@@ -254,7 +264,8 @@ def countdown_status():
                     'active': True,
                     'event_happened': True,
                     'message': countdown.message,
-                    'new_user': user_name
+                    'new_user': user_name if countdown.countdown_type == 'new_member' else None,
+                    'countdown_type': countdown.countdown_type
                 })
             else:
                 # Desactivar el contador después de 1 hora
@@ -269,7 +280,8 @@ def countdown_status():
             'active': True,
             'event_happened': False,
             'time_remaining': int(time_remaining),
-            'event_datetime': event_time.isoformat()
+            'event_datetime': event_time.isoformat(),
+            'countdown_type': countdown.countdown_type
         })
         
     except Exception as e:
