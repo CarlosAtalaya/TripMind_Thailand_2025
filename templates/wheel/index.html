@@ -20,11 +20,20 @@
         </div>
         
         <div class="wheel-container text-center position-relative">
-            <!-- Canvas para la ruleta -->
-            <div id="wheel-canvas" style="position: relative; margin: 0 auto; width: 300px; height: 300px;"></div>
+            <!-- Marcador triangular -->
+            <div class="wheel-marker">
+                <i class="fas fa-caret-down fa-3x text-danger"></i>
+            </div>
+            
+            <!-- Contenedor de la ruleta -->
+            <div id="canvasContainer">
+                <canvas id="canvas" width="300" height="300">
+                    Canvas no soportado, actualiza tu navegador.
+                </canvas>
+            </div>
             
             <!-- Botón para girar -->
-            <button id="spin-button" class="btn btn-primary btn-lg mt-3">
+            <button id="spin-button" class="btn btn-primary btn-lg spin-button">
                 ¡MENEA!
             </button>
         </div>
@@ -61,233 +70,74 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Variables y elementos del DOM
-        const spinButton = document.getElementById('spin-button');
-        const resultContainer = document.getElementById('result-container');
-        const resultName = document.getElementById('result-name');
-        const wheelTitle = document.getElementById('wheel-title');
-        const wheelCanvas = document.getElementById('wheel-canvas');
-        
-        // Array para almacenar los nombres reales
-        let fullNames = [];
-        
-        // Cargar título personalizado
-        fetch('/api/wheel/title')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.title) {
-                    wheelTitle.textContent = data.title;
-                }
-            })
-            .catch(error => {
-                console.error('Error cargando título:', error);
-            });
-        
-        // Cargar usuarios
-        fetch('/api/wheel/users')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.users.length > 0) {
-                    initWheel(data.users);
-                } else {
-                    // Usuarios de prueba
-                    const fallbackUsers = [
-                        { id: 1, name: 'Maricristi_Batukada' },
-                        { id: 2, name: 'Marta_Boxing' },
-                        { id: 3, name: 'Marisa_Venenosa' },
-                        { id: 4, name: 'Ferson_Avionetas' },
-                        { id: 5, name: 'Luis_Keta' },
-                        { id: 6, name: 'Alfon_Marques' },
-                        { id: 7, name: 'Omar_Jeque' },
-                        { id: 8, name: 'Javi_Buceador' },
-                        { id: 9, name: 'Diego_Roman' },
-                        { id: 10, name: 'Angel_Garrapata' },
-                        { id: 11, name: 'Isidro_Patachula' },
-                        { id: 12, name: 'Nacho33' },
-                        { id: 13, name: 'Carlos_Pupas' }
-                    ];
-                    initWheel(fallbackUsers);
-                }
-            })
-            .catch(error => {
-                console.error('Error cargando usuarios:', error);
-                // Usuarios de respaldo en caso de error
-                const fallbackUsers = [
-                    { id: 1, name: 'Maricristi_Batukada' },
-                    { id: 2, name: 'Marta_Boxing' },
-                    { id: 3, name: 'Marisa_Venenosa' },
-                    { id: 4, name: 'Ferson_Avionetas' },
-                    { id: 5, name: 'Luis_Keta' },
-                    { id: 6, name: 'Alfon_Marques' },
-                    { id: 7, name: 'Omar_Jeque' },
-                    { id: 8, name: 'Javi_Buceador' },
-                    { id: 9, name: 'Diego_Roman' },
-                    { id: 10, name: 'Angel_Garrapata' },
-                    { id: 11, name: 'Isidro_Patachula' },
-                    { id: 12, name: 'Nacho33' },
-                    { id: 13, name: 'Carlos_Pupas' }
-                ];
-                initWheel(fallbackUsers);
-            });
-        
-        // Función para obtener solo el primer nombre (antes del guion bajo)
-        function getFirstName(fullName) {
-            if (fullName.includes('_')) {
-                return fullName.split('_')[0];
-            }
-            return fullName;
-        }
-        
-        // Crear la ruleta de manera simple
-        function initWheel(users) {
-            // Limpiar el canvas
-            wheelCanvas.innerHTML = '';
-            
-            // Crear un array de nombres cortos
-            const shortNames = users.map(user => getFirstName(user.name));
-            
-            // Guardar los nombres completos
-            fullNames = users.map(user => user.name);
-            
-            // Crear colores para los segmentos
-            const colors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
-                '#9966FF', '#FF9F40', '#8AC249', '#EA5F89',
-                '#00BFFF', '#FFA07A', '#20B2AA', '#FF6347',
-                '#9370DB', '#32CD32', '#FFD700', '#87CEFA'
-            ];
-            
-            // Crear la ruleta mediante un div circular dividido en segmentos
-            const numSegments = users.length;
-            const segmentAngle = 360 / numSegments;
-            
-            // Crear el contenedor de la ruleta
-            const wheel = document.createElement('div');
-            wheel.className = 'wheel';
-            wheel.style.width = '100%';
-            wheel.style.height = '100%';
-            wheel.style.borderRadius = '50%';
-            wheel.style.position = 'relative';
-            wheel.style.overflow = 'hidden';
-            wheel.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.2, 1)';
-            
-            // Crear los segmentos
-            for (let i = 0; i < numSegments; i++) {
-                const segment = document.createElement('div');
-                segment.className = 'segment';
-                segment.style.position = 'absolute';
-                segment.style.width = '50%';
-                segment.style.height = '50%';
-                segment.style.left = '50%';
-                segment.style.top = '0';
-                segment.style.transformOrigin = 'bottom left';
-                segment.style.transform = `rotate(${i * segmentAngle}deg)`;
-                
-                // Crear el contenido del segmento (triángulo coloreado)
-                const content = document.createElement('div');
-                content.style.position = 'absolute';
-                content.style.width = '100%';
-                content.style.height = '100%';
-                content.style.transformOrigin = 'bottom left';
-                content.style.clipPath = 'polygon(0 0, 100% 0, 0 100%)';
-                content.style.backgroundColor = colors[i % colors.length];
-                
-                // Añadir el texto
-                const text = document.createElement('div');
-                text.textContent = shortNames[i];
-                text.style.position = 'absolute';
-                text.style.left = '30%';
-                text.style.top = '25%';
-                text.style.transform = 'rotate(-45deg)';
-                text.style.color = 'white';
-                text.style.fontWeight = 'bold';
-                text.style.fontSize = '12px';
-                text.style.textShadow = '1px 1px 2px rgba(0,0,0,0.7)';
-                
-                content.appendChild(text);
-                segment.appendChild(content);
-                wheel.appendChild(segment);
-            }
-            
-            // Añadir el marcador
-            const marker = document.createElement('div');
-            marker.className = 'marker';
-            marker.style.position = 'absolute';
-            marker.style.top = '0';
-            marker.style.left = '50%';
-            marker.style.transform = 'translateX(-50%)';
-            marker.style.width = '20px';
-            marker.style.height = '20px';
-            marker.style.zIndex = '100';
-            
-            const markerIcon = document.createElement('i');
-            markerIcon.className = 'fas fa-caret-down';
-            markerIcon.style.color = 'red';
-            markerIcon.style.fontSize = '30px';
-            
-            marker.appendChild(markerIcon);
-            
-            // Añadir la ruleta y el marcador al canvas
-            wheelCanvas.appendChild(wheel);
-            wheelCanvas.appendChild(marker);
-            
-            // Evento para el botón de girar
-            spinButton.addEventListener('click', function() {
-                spinWheel(wheel);
-            });
-        }
-        
-        // Función para girar la ruleta
-        function spinWheel(wheel) {
-            // Deshabilitar el botón
-            spinButton.disabled = true;
-            spinButton.textContent = 'Girando...';
-            
-            // Ocultar el resultado
-            resultContainer.style.display = 'none';
-            
-            // Generar un ángulo aleatorio para la rotación
-            const randomSpins = 5 + Math.random() * 5; // Entre 5 y 10 vueltas
-            const randomAngle = Math.floor(Math.random() * 360);
-            const totalRotation = randomSpins * 360 + randomAngle;
-            
-            // Aplicar la rotación
-            wheel.style.transform = `rotate(${totalRotation}deg)`;
-            
-            // Después de que termine la animación, mostrar el resultado
-            setTimeout(function() {
-                // Determinar el segmento ganador
-                const numSegments = fullNames.length;
-                const segmentAngle = 360 / numSegments;
-                
-                // El segmento ganador es el que está en la posición 0 después de la rotación
-                // Tenemos que hacer un poco de matemáticas para determinar cuál es
-                const normalizedAngle = totalRotation % 360;
-                const winningIndex = Math.floor(normalizedAngle / segmentAngle);
-                const adjustedIndex = (numSegments - winningIndex) % numSegments;
-                
-                // Mostrar el ganador
-                const winner = fullNames[adjustedIndex];
-                resultName.textContent = winner;
-                resultContainer.style.display = 'block';
-                
-                // Habilitar el botón
-                spinButton.disabled = false;
-                spinButton.textContent = '¡MENEA!';
-            }, 5000); // 5 segundos (tiempo de la animación)
-        }
-    });
-</script>
-{% endblock %}
-
 {% block extra_css %}
 <style>
+    /* Contenedor de la ruleta */
     .wheel-container {
-        margin: 40px auto;
-        max-width: 320px;
+        position: relative;
+        margin: 60px auto 30px;
+        max-width: 300px;
+    }
+    
+    /* Marcador triangular */
+    .wheel-marker {
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+    
+    /* Contenedor del canvas */
+    #canvasContainer {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        margin: 0 auto;
+    }
+    
+    /* Botón para girar */
+    .spin-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #0d6efd, #0b5ed7);
+        color: white;
+        font-weight: bold;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+    
+    .spin-button:hover {
+        transform: translate(-50%, -50%) scale(1.05);
+        box-shadow: 0 6px 20px rgba(13, 110, 253, 0.5);
+    }
+    
+    /* Mejor visualización del resultado */
+    #result-container {
+        background-color: rgba(40, 167, 69, 0.9);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    #result-name {
+        font-size: 1.5rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     }
     
     /* Animación del resultado */
@@ -300,5 +150,274 @@
     .bounce {
         animation: bounce 1s;
     }
+    
+    /* Estilos para la pulsación del botón */
+    .spin-button:active {
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+    
+    .spin-button:disabled {
+        background: linear-gradient(145deg, #6c757d, #5a6268);
+        cursor: not-allowed;
+    }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Scripts adicionales -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/winwheel@1.0.1/dist/Winwheel.min.js"></script>
+
+<script>
+    // Script de depuración inicial
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM cargado correctamente");
+        
+        // Verificar elementos
+        const canvas = document.getElementById('canvas');
+        console.log("Canvas encontrado:", canvas);
+        
+        const canvasContainer = document.getElementById('canvasContainer');
+        console.log("Contenedor del canvas encontrado:", canvasContainer);
+        
+        const spinButton = document.getElementById('spin-button');
+        console.log("Botón encontrado:", spinButton);
+        
+        const resultContainer = document.getElementById('result-container');
+        console.log("Contenedor de resultados encontrado:", resultContainer);
+        
+        const resultName = document.getElementById('result-name');
+        
+        // Verificar biblioteca
+        console.log("Winwheel disponible:", typeof Winwheel);
+        
+        // Variables principales
+        let theWheel;
+        let isSpinning = false;
+        let userSegments = []; // Nombres de usuario
+        
+        // Colores para los segmentos
+        const colors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+            '#9966FF', '#FF9F40', '#8AC249', '#EA5F89',
+            '#00BFFF', '#FFA07A', '#20B2AA', '#FF6347',
+            '#9370DB', '#32CD32', '#FFD700', '#87CEFA'
+        ];
+        
+        // Función para obtener solo el primer nombre (antes del guion bajo)
+        function getFirstName(fullName) {
+            if (fullName.includes('_')) {
+                return fullName.split('_')[0];
+            }
+            return fullName;
+        }
+        
+        // Función para ajustar el tamaño de fuente según el número de usuarios
+        function getFontSize(numUsers) {
+            if (numUsers <= 6) return 18;
+            if (numUsers <= 10) return 16;
+            if (numUsers <= 15) return 14;
+            if (numUsers <= 20) return 12;
+            return 10;
+        }
+        
+        // Crear los segmentos para la ruleta
+        function createSegments(users) {
+            const segments = [];
+            userSegments = []; // Reiniciar el array
+            
+            users.forEach((user, index) => {
+                // Extraer solo el primer nombre para mostrar
+                const firstName = getFirstName(user.name);
+                
+                // Guardar el nombre completo para el resultado
+                userSegments.push(user.name);
+                
+                segments.push({
+                    'fillStyle': colors[index % colors.length],
+                    'text': firstName,
+                    'textFontFamily': 'Arial',
+                    'textFontSize': getFontSize(users.length),
+                    'textFillStyle': 'white',
+                    'textOrientation': 'vertical',  // Cambio a vertical para que el texto vaya a lo largo del radio
+                    'textMargin': 15,  // Ajustar margen para texto vertical
+                    'strokeStyle': '#ffffff',
+                    'lineWidth': 1
+                });
+            });
+            
+            return segments;
+        }
+        
+        // Inicializar la ruleta con los usuarios
+        function initWheel(users) {
+            console.log("Inicializando ruleta con", users.length, "usuarios");
+            
+            // Crear segmentos
+            const segments = createSegments(users);
+            
+            // Verificar que el canvas existe
+            if (!canvas) {
+                console.error("El elemento canvas no se encontró");
+                return;
+            }
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            console.log("Dimensiones del canvas:", width, "x", height);
+            
+            // Crear la ruleta
+            try {
+                theWheel = new Winwheel({
+                    'canvasId': 'canvas',
+                    'numSegments': segments.length,
+                    'segments': segments,
+                    'outerRadius': centerX - 10,
+                    'centerX': centerX,
+                    'centerY': centerY,
+                    'lineWidth': 1,
+                    'textFontWeight': 'bold',
+                    'animation': {
+                        'type': 'spinToStop',
+                        'duration': 5,
+                        'spins': 8,
+                        'callbackFinished': function(indicatedSegment) {
+                            finishSpin(indicatedSegment);
+                        }
+                    }
+                });
+                
+                console.log("Ruleta creada correctamente:", theWheel);
+                theWheel.draw();
+                console.log("Ruleta dibujada");
+            } catch (error) {
+                console.error("Error al crear la ruleta:", error);
+            }
+        }
+        
+        // Función para manejar el final del giro
+        function finishSpin(indicatedSegment) {
+            console.log("Giro finalizado - Segmento indicado:", indicatedSegment);
+            
+            // Determinar el ganador
+            let winnerName = "Desconocido";
+            let winnerIndex = -1;
+            
+            if (indicatedSegment && indicatedSegment.text) {
+                // Buscar el índice del segmento
+                for (let i = 1; i < theWheel.segments.length; i++) {
+                    if (theWheel.segments[i] === indicatedSegment) {
+                        winnerIndex = i - 1;
+                        break;
+                    }
+                }
+                
+                if (winnerIndex >= 0 && winnerIndex < userSegments.length) {
+                    winnerName = userSegments[winnerIndex];
+                }
+            }
+            
+            console.log("Índice ganador:", winnerIndex);
+            console.log("Nombre del ganador:", winnerName);
+            
+            // Mostrar el resultado
+            resultName.textContent = winnerName;
+            resultContainer.style.display = 'block';
+            resultContainer.classList.add('bounce');
+            
+            // Resetear el estado
+            isSpinning = false;
+            spinButton.disabled = false;
+            spinButton.textContent = '¡MENEA!';
+            
+            // Quitar la animación después de un tiempo
+            setTimeout(() => {
+                resultContainer.classList.remove('bounce');
+            }, 1000);
+        }
+        
+        // Función para girar la ruleta
+        function startSpin() {
+            if (isSpinning || !theWheel) return;
+            
+            console.log("Iniciando giro de la ruleta");
+            isSpinning = true;
+            resultContainer.style.display = 'none';
+            spinButton.disabled = true;
+            spinButton.textContent = 'Girando...';
+            
+            // Configurar el giro
+            theWheel.stopAnimation(false);
+            theWheel.rotationAngle = 0;
+            theWheel.draw();
+            
+            // Ángulo aleatorio para la parada
+            const stopAngle = Math.floor(Math.random() * 360);
+            theWheel.animation.stopAngle = stopAngle;
+            
+            // Iniciar animación
+            theWheel.startAnimation();
+            console.log("Ruleta girando hasta:", stopAngle);
+        }
+        
+        // Asignar evento al botón
+        if (spinButton) {
+            spinButton.addEventListener('click', startSpin);
+        }
+        
+        // Cargar usuarios de la API
+        fetch('/api/wheel/users')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.users.length > 0) {
+                    console.log("Usuarios cargados de la API:", data.users);
+                    initWheel(data.users);
+                } else {
+                    console.log("Usando usuarios de respaldo");
+                    const fallbackUsers = [
+                        { id: 1, name: 'Maricristi' },
+                        { id: 2, name: 'Marta' },
+                        { id: 3, name: 'Marisa' },
+                        { id: 4, name: 'Ferson' },
+                        { id: 5, name: 'Luis' },
+                        { id: 6, name: 'Alfon' },
+                        { id: 7, name: 'Omar' },
+                        { id: 8, name: 'Javi' }
+                    ];
+                    initWheel(fallbackUsers);
+                }
+            })
+            .catch(error => {
+                console.error("Error al cargar usuarios:", error);
+                // Usuarios de respaldo en caso de error
+                const fallbackUsers = [
+                    { id: 1, name: 'Maricristi' },
+                    { id: 2, name: 'Marta' },
+                    { id: 3, name: 'Marisa' },
+                    { id: 4, name: 'Ferson' },
+                    { id: 5, name: 'Luis' },
+                    { id: 6, name: 'Alfon' },
+                    { id: 7, name: 'Omar' },
+                    { id: 8, name: 'Javi' }
+                ];
+                initWheel(fallbackUsers);
+            });
+        
+        // Cargar título personalizado
+        const wheelTitle = document.getElementById('wheel-title');
+        fetch('/api/wheel/title')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.title) {
+                    wheelTitle.textContent = data.title;
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando título:', error);
+            });
+    });
+</script>
 {% endblock %}
