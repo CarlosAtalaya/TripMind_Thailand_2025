@@ -51,6 +51,25 @@
     .poop-counter-button {
         margin: 1rem 0;
     }
+    .wheel-button {
+        animation: pulse-button 1.5s infinite alternate;
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
+        transition: all 0.3s ease;
+        position: relative;
+        padding: 10px 20px;
+        font-weight: bold;
+        border-radius: 20px;
+    }
+    
+    .wheel-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px rgba(13, 110, 253, 0.6);
+    }
+    
+    @keyframes pulse-button {
+        from { box-shadow: 0 0 5px rgba(13, 110, 253, 0.5); }
+        to { box-shadow: 0 0 15px rgba(13, 110, 253, 0.8); }
+    }
 </style>
 {% endblock %}
 <!-- Contador de evento especial -->
@@ -112,7 +131,6 @@
 
 <div id="overview" class="mb-5">
     <h1 class="display-5">{{ itinerary.title }}</h1>
-    <p class="lead">{{ itinerary.description }}</p>
     
     <div class="row mb-4 mt-5">
         <div class="col-md-6">
@@ -254,16 +272,11 @@
         </div>
     </div>
     
-    <div class="progress position-relative mb-5">
-        {% set total_days = (itinerary.end_date - itinerary.start_date).days + 1 %}
-        {% set days_passed = (current_date - itinerary.start_date).days %}
-        {% set progress = (days_passed / total_days * 100)|int if days_passed > 0 else 0 %}
-        {% set progress = 100 if progress > 100 else progress %}
-        
-        <div class="progress-bar" role="progressbar" style="width: {{ progress }}%"></div>
-        <small class="justify-content-center d-flex position-absolute w-100">
-            {{ progress }}% del viaje completado
-        </small>
+    <!-- Botón para ir a la ruleta -->
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('wheel.index') }}" class="btn btn-primary wheel-button">
+            <i class="fas fa-dharmachakra me-2"></i> Ruleta del Destino
+        </a>
     </div>
 </div>
 

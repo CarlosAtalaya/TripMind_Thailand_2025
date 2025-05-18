@@ -14,6 +14,7 @@ from files import files
 from votes import votes, get_daily_mvp
 from diary import diary
 from guides import guides
+from wheel import wheel
 from poop_counter import poop_counter
 from daily_photos import daily_photos  # Nuevo import
 import logging
@@ -65,6 +66,7 @@ app.register_blueprint(diary, url_prefix='/diary')
 app.register_blueprint(poop_counter)
 app.register_blueprint(daily_photos)
 app.register_blueprint(guides)
+app.register_blueprint(wheel)
 
 @login_manager.user_loader
 def load_user(user_id):
