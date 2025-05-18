@@ -164,35 +164,16 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Scripts adicionales -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+<!-- Incluir TweenMax (gsap) para las animaciones de Winwheel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/winwheel@1.0.1/dist/Winwheel.min.js"></script>
 
 <script>
-    // Script de depuración inicial
     document.addEventListener('DOMContentLoaded', function() {
-        console.log("DOM cargado correctamente");
-        
-        // Verificar elementos
-        const canvas = document.getElementById('canvas');
-        console.log("Canvas encontrado:", canvas);
-        
-        const canvasContainer = document.getElementById('canvasContainer');
-        console.log("Contenedor del canvas encontrado:", canvasContainer);
-        
-        const spinButton = document.getElementById('spin-button');
-        console.log("Botón encontrado:", spinButton);
-        
-        const resultContainer = document.getElementById('result-container');
-        console.log("Contenedor de resultados encontrado:", resultContainer);
-        
-        const resultName = document.getElementById('result-name');
-        
-        // Verificar biblioteca
-        console.log("Winwheel disponible:", typeof Winwheel);
+        console.log("DOM cargado - Iniciando configuración de la ruleta");
         
         // Variables principales
-        let theWheel;
+        let theWheel = null;
         let isSpinning = false;
         let userSegments = []; // Nombres de usuario
         
@@ -204,11 +185,17 @@
             '#9370DB', '#32CD32', '#FFD700', '#87CEFA'
         ];
         
-        // Función para obtener solo el primer nombre (antes del guion bajo)
+        // Función para obtener solo el primer nombre
         function getFirstName(fullName) {
-            if (fullName.includes('_')) {
+            // Si contiene espacio, toma solo el primer nombre
+            if (fullName.includes(' ')) {
+                return fullName.split(' ')[0];
+            }
+            // Si contiene guion bajo, usa la lógica para nombres con guion bajo
+            else if (fullName.includes('_')) {
                 return fullName.split('_')[0];
             }
+            // Si no hay separadores, devuelve el nombre completo
             return fullName;
         }
         
@@ -227,8 +214,9 @@
             userSegments = []; // Reiniciar el array
             
             users.forEach((user, index) => {
-                // Extraer solo el primer nombre para mostrar
+                // Extraer solo el primer nombre para mostrar en la ruleta
                 const firstName = getFirstName(user.name);
+                console.log(`Usuario: ${user.name}, Primer nombre: ${firstName}`);
                 
                 // Guardar el nombre completo para el resultado
                 userSegments.push(user.name);
@@ -239,14 +227,92 @@
                     'textFontFamily': 'Arial',
                     'textFontSize': getFontSize(users.length),
                     'textFillStyle': 'white',
-                    'textOrientation': 'vertical',  // Cambio a vertical para que el texto vaya a lo largo del radio
-                    'textMargin': 15,  // Ajustar margen para texto vertical
-                    'strokeStyle': '#ffffff',
-                    'lineWidth': 1
+                    'textOrientation': 'horizontal', // Texto horizontal (leerá normalmente)
+                    'textAlignment': 'outer', // Alineado hacia fuera
+                    'textMargin': 10 // Margen suficiente para que se vea bien
                 });
             });
             
             return segments;
+        }
+        
+        // Implementación directa para simular el giro sin usar la animación de Winwheel
+        function spinWheel() {
+            if (isSpinning || !theWheel) return;
+            
+            // Cambiar el estado
+            isSpinning = true;
+            const resultContainer = document.getElementById('result-container');
+            const spinButton = document.getElementById('spin-button');
+            
+            if (resultContainer) resultContainer.style.display = 'none';
+            if (spinButton) {
+                spinButton.disabled = true;
+                spinButton.textContent = 'Girando...';
+            }
+            
+            // Obtener un índice aleatorio para el ganador
+            const randomIndex = Math.floor(Math.random() * userSegments.length);
+            const winnerName = userSegments[randomIndex];
+            
+            // Simular el giro visualmente
+            let rotationAngle = 0;
+            const totalRotation = 360 * 5 + (360 / userSegments.length) * randomIndex;
+            const duration = 5000; // 5 segundos
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Función de aceleración para dar efecto realista
+                const easeOut = function(t) {
+                    return 1 - Math.pow(1 - t, 3);
+                };
+                
+                rotationAngle = totalRotation * easeOut(progress);
+                theWheel.rotationAngle = rotationAngle;
+                theWheel.draw();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Animación completada
+                    console.log("Animación completada - Mostrando resultado");
+                    showResult(winnerName);
+                }
+            }
+            
+            // Iniciar la animación
+            animate();
+        }
+        
+        // Función para mostrar el resultado
+        function showResult(winnerName) {
+            console.log("Mostrando resultado:", winnerName);
+            
+            // Mostrar el resultado
+            const resultName = document.getElementById('result-name');
+            const resultContainer = document.getElementById('result-container');
+            
+            if (resultName && resultContainer) {
+                resultName.textContent = winnerName;
+                resultContainer.style.display = 'block';
+                resultContainer.classList.add('bounce');
+                
+                // Quitar la animación después de un tiempo
+                setTimeout(() => {
+                    resultContainer.classList.remove('bounce');
+                }, 1000);
+            }
+            
+            // Resetear el estado
+            isSpinning = false;
+            const spinButton = document.getElementById('spin-button');
+            if (spinButton) {
+                spinButton.disabled = false;
+                spinButton.textContent = '¡MENEA!';
+            }
         }
         
         // Inicializar la ruleta con los usuarios
@@ -256,9 +322,9 @@
             // Crear segmentos
             const segments = createSegments(users);
             
-            // Verificar que el canvas existe
+            const canvas = document.getElementById('canvas');
             if (!canvas) {
-                console.error("El elemento canvas no se encontró");
+                console.error("Canvas no encontrado");
                 return;
             }
             
@@ -267,116 +333,46 @@
             const centerX = width / 2;
             const centerY = height / 2;
             
-            console.log("Dimensiones del canvas:", width, "x", height);
-            
-            // Crear la ruleta
-            try {
-                theWheel = new Winwheel({
-                    'canvasId': 'canvas',
-                    'numSegments': segments.length,
-                    'segments': segments,
-                    'outerRadius': centerX - 10,
-                    'centerX': centerX,
-                    'centerY': centerY,
-                    'lineWidth': 1,
-                    'textFontWeight': 'bold',
-                    'animation': {
-                        'type': 'spinToStop',
-                        'duration': 5,
-                        'spins': 8,
-                        'callbackFinished': function(indicatedSegment) {
-                            finishSpin(indicatedSegment);
-                        }
-                    }
-                });
-                
-                console.log("Ruleta creada correctamente:", theWheel);
-                theWheel.draw();
-                console.log("Ruleta dibujada");
-            } catch (error) {
-                console.error("Error al crear la ruleta:", error);
-            }
-        }
-        
-        // Función para manejar el final del giro
-        function finishSpin(indicatedSegment) {
-            console.log("Giro finalizado - Segmento indicado:", indicatedSegment);
-            
-            // Determinar el ganador
-            let winnerName = "Desconocido";
-            let winnerIndex = -1;
-            
-            if (indicatedSegment && indicatedSegment.text) {
-                // Buscar el índice del segmento
-                for (let i = 1; i < theWheel.segments.length; i++) {
-                    if (theWheel.segments[i] === indicatedSegment) {
-                        winnerIndex = i - 1;
-                        break;
-                    }
+            // Crear la ruleta sin animación
+            theWheel = new Winwheel({
+                'canvasId': 'canvas',
+                'numSegments': segments.length,
+                'segments': segments,
+                'outerRadius': centerX - 10,
+                'textFontSize': getFontSize(users.length),
+                'textOrientation': 'horizontal',
+                'textAlignment': 'outer',
+                'textMargin': 10,
+                'animation': {
+                    'type': 'spinToStop',
+                    'duration': 5,
+                    'spins': 8
                 }
-                
-                if (winnerIndex >= 0 && winnerIndex < userSegments.length) {
-                    winnerName = userSegments[winnerIndex];
-                }
-            }
+            });
             
-            console.log("Índice ganador:", winnerIndex);
-            console.log("Nombre del ganador:", winnerName);
-            
-            // Mostrar el resultado
-            resultName.textContent = winnerName;
-            resultContainer.style.display = 'block';
-            resultContainer.classList.add('bounce');
-            
-            // Resetear el estado
-            isSpinning = false;
-            spinButton.disabled = false;
-            spinButton.textContent = '¡MENEA!';
-            
-            // Quitar la animación después de un tiempo
-            setTimeout(() => {
-                resultContainer.classList.remove('bounce');
-            }, 1000);
-        }
-        
-        // Función para girar la ruleta
-        function startSpin() {
-            if (isSpinning || !theWheel) return;
-            
-            console.log("Iniciando giro de la ruleta");
-            isSpinning = true;
-            resultContainer.style.display = 'none';
-            spinButton.disabled = true;
-            spinButton.textContent = 'Girando...';
-            
-            // Configurar el giro
-            theWheel.stopAnimation(false);
-            theWheel.rotationAngle = 0;
+            console.log("Ruleta creada correctamente");
             theWheel.draw();
-            
-            // Ángulo aleatorio para la parada
-            const stopAngle = Math.floor(Math.random() * 360);
-            theWheel.animation.stopAngle = stopAngle;
-            
-            // Iniciar animación
-            theWheel.startAnimation();
-            console.log("Ruleta girando hasta:", stopAngle);
         }
         
-        // Asignar evento al botón
+        // Asignar evento al botón - usar nuestra propia implementación en lugar de theWheel.startAnimation()
+        const spinButton = document.getElementById('spin-button');
         if (spinButton) {
-            spinButton.addEventListener('click', startSpin);
+            spinButton.addEventListener('click', spinWheel);
+            console.log("Evento click asignado al botón");
+        } else {
+            console.error("Botón de giro no encontrado");
         }
         
         // Cargar usuarios de la API
+        console.log("Cargando usuarios desde la API...");
         fetch('/api/wheel/users')
             .then(response => response.json())
             .then(data => {
-                if (data.success && data.users.length > 0) {
-                    console.log("Usuarios cargados de la API:", data.users);
+                if (data.success && data.users && data.users.length > 0) {
+                    console.log("Usuarios cargados exitosamente:", data.users.length);
                     initWheel(data.users);
                 } else {
-                    console.log("Usando usuarios de respaldo");
+                    console.warn("No se pudieron cargar usuarios de la API, usando respaldo");
                     const fallbackUsers = [
                         { id: 1, name: 'Maricristi' },
                         { id: 2, name: 'Marta' },
@@ -408,16 +404,19 @@
         
         // Cargar título personalizado
         const wheelTitle = document.getElementById('wheel-title');
-        fetch('/api/wheel/title')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.title) {
-                    wheelTitle.textContent = data.title;
-                }
-            })
-            .catch(error => {
-                console.error('Error cargando título:', error);
-            });
+        if (wheelTitle) {
+            fetch('/api/wheel/title')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.title) {
+                        wheelTitle.textContent = data.title;
+                        console.log("Título personalizado cargado:", data.title);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cargando título:', error);
+                });
+        }
     });
 </script>
 {% endblock %}
