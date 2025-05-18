@@ -175,7 +175,8 @@
         // Variables principales
         let theWheel = null;
         let isSpinning = false;
-        let userSegments = []; // Nombres de usuario
+        let userSegments = []; // Nombres de usuario completos
+        let firstNames = [];   // Solo primeros nombres
         
         // Colores para los segmentos
         const colors = [
@@ -208,18 +209,26 @@
             return 10;
         }
         
+        // Función para calcular el ángulo central de un segmento
+        function getSegmentAngle(index, numSegments) {
+            const segmentSize = 360 / numSegments;
+            return index * segmentSize + (segmentSize / 2);
+        }
+        
         // Crear los segmentos para la ruleta
         function createSegments(users) {
             const segments = [];
-            userSegments = []; // Reiniciar el array
+            userSegments = []; // Reiniciar el array de nombres completos
+            firstNames = [];   // Reiniciar array de primeros nombres
             
             users.forEach((user, index) => {
                 // Extraer solo el primer nombre para mostrar en la ruleta
                 const firstName = getFirstName(user.name);
                 console.log(`Usuario: ${user.name}, Primer nombre: ${firstName}`);
                 
-                // Guardar el nombre completo para el resultado
+                // Guardar el nombre completo y los primeros nombres
                 userSegments.push(user.name);
+                firstNames.push(firstName);
                 
                 segments.push({
                     'fillStyle': colors[index % colors.length],
@@ -236,7 +245,17 @@
             return segments;
         }
         
-        // Implementación directa para simular el giro sin usar la animación de Winwheel
+        // Función para determinar qué segmento está en un ángulo específico
+        function determineSegmentFromAngle(angle, numSegments) {
+            // Convertir el ángulo a un formato de 0-360 (0 en la parte superior y aumenta en sentido horario)
+            const normalizedAngle = (360 - angle) % 360;
+            // Calcular el tamaño de cada segmento
+            const segmentSize = 360 / numSegments;
+            // Determinar el índice del segmento
+            return Math.floor(normalizedAngle / segmentSize);
+        }
+        
+        // Implementación directa para simular el giro
         function spinWheel() {
             if (isSpinning || !theWheel) return;
             
@@ -254,10 +273,24 @@
             // Obtener un índice aleatorio para el ganador
             const randomIndex = Math.floor(Math.random() * userSegments.length);
             const winnerName = userSegments[randomIndex];
+            const numSegments = userSegments.length;
+            
+            // Calcular el ángulo final para que la flecha apunte correctamente al centro del segmento
+            // Nota: Los ángulos en Winwheel giran en sentido horario desde la parte superior
+            const segmentSize = 360 / numSegments;
+            const segmentMiddle = 360 - getSegmentAngle(randomIndex, numSegments);
+            // Añadimos una pequeña variación aleatoria dentro del segmento para que no parezca manipulado
+            const randomOffset = Math.random() * (segmentSize * 0.5) - (segmentSize * 0.25);
+            const finalAngle = segmentMiddle + randomOffset;
+            
+            // Calcular rotación total (vueltas completas + ángulo final)
+            const spinRevolutions = 5; // Número de vueltas completas
+            const totalRotation = (360 * spinRevolutions) + finalAngle;
+            
+            console.log(`Índice ganador: ${randomIndex}, Ángulo final: ${finalAngle}, Rotación total: ${totalRotation}`);
             
             // Simular el giro visualmente
             let rotationAngle = 0;
-            const totalRotation = 360 * 5 + (360 / userSegments.length) * randomIndex;
             const duration = 5000; // 5 segundos
             const startTime = Date.now();
             
@@ -271,15 +304,27 @@
                 };
                 
                 rotationAngle = totalRotation * easeOut(progress);
-                theWheel.rotationAngle = rotationAngle;
+                theWheel.rotationAngle = rotationAngle % 360; // Normalizar a 0-360 grados
                 theWheel.draw();
                 
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
                     // Animación completada
-                    console.log("Animación completada - Mostrando resultado");
-                    showResult(winnerName);
+                    console.log("Animación completada - Ganador: " + winnerName);
+                    // Verificar que el puntero apunta al ganador correcto
+                    const currentAngle = theWheel.rotationAngle % 360;
+                    const expectedIndex = determineSegmentFromAngle(currentAngle, numSegments);
+                    console.log(`Ángulo final: ${currentAngle}, Segmento apuntado: ${expectedIndex}, Nombre: ${expectedIndex < firstNames.length ? firstNames[expectedIndex] : 'Desconocido'}`);
+                    
+                    // Mostrar el ganador que coincide con el segmento al que está apuntando el marcador
+                    if (expectedIndex >= 0 && expectedIndex < userSegments.length) {
+                        // Usar el nombre completo del segmento apuntado
+                        showResult(userSegments[expectedIndex]);
+                    } else {
+                        // En caso de error, mostrar el ganador original
+                        showResult(winnerName);
+                    }
                 }
             }
             
@@ -333,7 +378,7 @@
             const centerX = width / 2;
             const centerY = height / 2;
             
-            // Crear la ruleta sin animación
+            // Crear la ruleta sin el modo de dibujo personalizado que causaba problemas
             theWheel = new Winwheel({
                 'canvasId': 'canvas',
                 'numSegments': segments.length,
@@ -342,19 +387,14 @@
                 'textFontSize': getFontSize(users.length),
                 'textOrientation': 'horizontal',
                 'textAlignment': 'outer',
-                'textMargin': 10,
-                'animation': {
-                    'type': 'spinToStop',
-                    'duration': 5,
-                    'spins': 8
-                }
+                'textMargin': 10
             });
             
             console.log("Ruleta creada correctamente");
             theWheel.draw();
         }
         
-        // Asignar evento al botón - usar nuestra propia implementación en lugar de theWheel.startAnimation()
+        // Asignar evento al botón - usar nuestra propia implementación
         const spinButton = document.getElementById('spin-button');
         if (spinButton) {
             spinButton.addEventListener('click', spinWheel);
