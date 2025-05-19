@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}Encuesta: {{ survey.title }} - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">{{ survey.title }}</h1>
+    <a href="{{ url_for('survey.index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i> Volver a Encuestas
+    </a>
+</div>
+
+{% if survey.description %}
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ survey.description }}
+    </div>
+{% endif %}
+
+<!-- Mostrar resultados si la encuesta está cerrada o el usuario ya votó -->
+{% if is_closed or existing_response %}
+    <div class="card">
+        <div class="card-header bg-{{ 'secondary' if is_closed else 'success' }} text-white">
+            <h5 class="mb-0">
+                {% if is_closed %}
+                    <i class="fas fa-lock me-2"></i>Encuesta Cerrada
+                {% else %}
+                    <i class="fas fa-check-circle me-2"></i>Has Respondido
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if existing_response %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check me-2"></i>
+                    Has votado por: <strong>{{ existing_response.option.text }}</strong>
+                </div>
+            {% endif %}
+            
+            {% if results %}
+                <h4 class="mb-3">Resultados</h4>
+                <div id="results-container">
+                    <p class="text-center">
+                        <strong>Total de respuestas:</strong> {{ results.total }}
+                    </p>
+                    
+                    {% for option in results.options %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>{{ option.text }}</span>
+                                <span class="badge bg-primary">{{ option.count }} votos ({{ option.percentage }}%)</span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ option.percentage }}%;" 
+                                     aria-valuenow="{{ option.percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ option.percentage }}%
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Gráfico de resultados -->
+                <div class="mt-4">
+                    <h5>Distribución de Votos</h5>
+                    <canvas id="resultsChart" width="400" height="250"></canvas>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No hay resultados disponibles aún.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    <!-- Formulario de votación -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-vote-yea me-2"></i>Tu Voto</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('survey.respond_to_survey', survey_id=survey.id) }}">
+                <div class="mb-4">
+                    <label class="form-label"><strong>Selecciona una opción:</strong></label>
+                    
+                    {% for option in survey.options|sort(attribute='order') %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="option" 
+                                   id="option{{ option.id }}" value="{{ option.id }}" required>
+                            <label class="form-check-label" for="option{{ option.id }}">
+                                {{ option.text }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i> Enviar Respuesta
+                    </button>
+                    <a href="{{ url_for('survey.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer">
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-2"></i>
+                Solo podrás votar una vez. Tu respuesta no podrá ser cambiada posteriormente.
+            </small>
+            {% if survey.auto_close_after %}
+                <div class="mt-2">
+                    <i class="fas fa-clock me-2"></i>
+                    <span id="countdown-timer" data-created="{{ survey.created_at.isoformat() }}" 
+                         data-hours="{{ survey.auto_close_after }}">
+                        Calculando tiempo restante...
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+{% if current_user.is_admin %}
+    <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Administración</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('survey.edit_survey', survey_id=survey.id) }}" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i> Editar Encuesta
+                </a>
+                
+                {% if survey.is_active %}
+                    <form method="POST" action="{{ url_for('survey.toggle_survey', survey_id=survey.id) }}" class="d-inline">
+                        <input type="hidden" name="action" value="close">
+                        <button type="submit" class="btn btn-warning" onclick="return confirm('¿Estás seguro de cerrar esta encuesta?')">
+                            <i class="fas fa-lock me-2"></i> Cerrar Encuesta
+                        </button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="{{ url_for('survey.toggle_survey', survey_id=survey.id) }}" class="d-inline">
+                        <input type="hidden" name="action" value="reopen">
+                        <button type="submit" class="btn btn-success" onclick="return confirm('¿Estás seguro de reabrir esta encuesta?')">
+                            <i class="fas fa-lock-open me-2"></i> Reabrir Encuesta
+                        </button>
+                    </form>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('survey.delete_survey', survey_id=survey.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta encuesta? Esta acción no se puede deshacer.')">
+                        <i class="fas fa-trash me-2"></i> Eliminar Encuesta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar gráfico de resultados si hay datos
+        {% if results %}
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            
+            // Extraer datos para el gráfico
+            const labels = [
+                {% for option in results.options %}
+                    "{{ option.text }}",
+                {% endfor %}
+            ];
+            
+            const data = [
+                {% for option in results.options %}
+                    {{ option.count }},
+                {% endfor %}
+            ];
+            
+            // Generar colores dinámicamente
+            const backgroundColors = [
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(255, 206, 86, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(255, 159, 64, 0.7)',
+                'rgba(201, 203, 207, 0.7)',
+                'rgba(138, 194, 73, 0.7)',
+                'rgba(234, 95, 137, 0.7)',
+                'rgba(0, 191, 255, 0.7)'
+            ];
+            
+            // Crear el gráfico
+            const chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Votos',
+                        data: data,
+                        backgroundColor: backgroundColors.slice(0, labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} votos (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Actualizar el gráfico cada 30 segundos en encuestas activas
+            {% if not is_closed %}
+                setInterval(function() {
+                    updateResults();
+                }, 30000);
+            {% endif %}
+        {% endif %}
+        
+        // Función para actualizar resultados en tiempo real
+        function updateResults() {
+            fetch('/api/encuestas/{{ survey.id }}/resultados')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.results) {
+                        // Actualizar el HTML de resultados
+                        updateResultsHTML(data.results);
+                        
+                        // Actualizar el gráfico
+                        updateChart(data.results);
+                    }
+                })
+                .catch(error => console.error('Error al actualizar resultados:', error));
+        }
+        
+        // Función para actualizar el HTML de resultados
+        function updateResultsHTML(results) {
+            const container = document.getElementById('results-container');
+            if (!container) return;
+            
+            let html = `
+                <p class="text-center">
+                    <strong>Total de respuestas:</strong> ${results.total}
+                </p>
+            `;
+            
+            for (const option of results.options) {
+                html += `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>${option.text}</span>
+                            <span class="badge bg-primary">${option.count} votos (${option.percentage}%)</span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: ${option.percentage}%;" 
+                                 aria-valuenow="${option.percentage}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                ${option.percentage}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // Función para actualizar el gráfico
+        function updateChart(results) {
+            const chartElement = Chart.getChart('resultsChart');
+            if (!chartElement) return;
+            
+            // Actualizar datos
+            chartElement.data.labels = results.options.map(option => option.text);
+            chartElement.data.datasets[0].data = results.options.map(option => option.count);
+            
+            // Actualizar el gráfico
+            chartElement.update();
+        }
+        
+        // Actualizar contador de tiempo restante si existe
+        const countdownElement = document.getElementById('countdown-timer');
+        if (countdownElement) {
+            const createdDate = new Date(countdownElement.dataset.created);
+            const hoursToClose = parseInt(countdownElement.dataset.hours);
+            
+            // Calcular fecha de cierre
+            const closeDate = new Date(createdDate.getTime() + (hoursToClose * 60 * 60 * 1000));
+            
+            // Actualizar contador cada segundo
+            const countdownInterval = setInterval(function() {
+                const now = new Date();
+                const timeRemaining = closeDate - now;
+                
+                if (timeRemaining <= 0) {
+                    // Si ya pasó el tiempo de cierre
+                    clearInterval(countdownInterval);
+                    countdownElement.innerHTML = 'La encuesta ha sido cerrada automáticamente';
+                    countdownElement.classList.add('text-danger');
+                    
+                    // Recargar la página después de 2 segundos
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    // Calcular horas, minutos y segundos restantes
+                    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                    
+                    // Actualizar texto del contador
+                    countdownElement.innerHTML = `Tiempo restante: ${hours}h ${minutes}m ${seconds}s`;
+                    
+                    // Agregar clase de alerta si queda poco tiempo
+                    if (timeRemaining < 300000) { // Menos de 5 minutos
+                        countdownElement.classList.add('text-danger');
+                        countdownElement.classList.add('fw-bold');
+                    }
+                }
+            }, 1000);
+        }
+    });
+</script>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información</h5>
+    </div>
+    <div class="card-body">
+        <p>En esta página puedes participar en la encuesta <strong>"{{ survey.title }}"</strong>.</p>
+        
+        {% if not existing_response and not is_closed %}
+            <h6 class="mt-3">¿Cómo participar?</h6>
+            <ol>
+                <li>Lee atentamente las opciones disponibles</li>
+                <li>Selecciona la opción que prefieras</li>
+                <li>Haz clic en "Enviar Respuesta"</li>
+            </ol>
+            
+            <div class="alert alert-warning mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Recuerda:</strong> Solo puedes votar una vez. Tu elección no podrá ser modificada.
+            </div>
+        {% else %}
+            <h6 class="mt-3">Resultados</h6>
+            <p>Los resultados muestran el número de votos y el porcentaje para cada opción.</p>
+            
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-sync-alt me-2"></i>
+                <strong>Nota:</strong> Los resultados se actualizan automáticamente si la encuesta sigue activa.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

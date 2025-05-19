@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Encuestas - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">Encuestas</h1>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
+    </a>
+</div>
+
+{% if active_surveys %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-poll me-2"></i>Encuestas Activas</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for survey in active_surveys %}
+                    <a href="{{ url_for('survey.view_survey', survey_id=survey.id) }}" 
+                       class="list-group-item list-group-item-action {% if survey.id in responded_surveys %}list-group-item-success{% endif %}">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ survey.title }}</h5>
+                            {% if survey.id in responded_surveys %}
+                                <span class="badge bg-success">Respondido</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pendiente</span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-1">{{ survey.description }}</p>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i> Creada: {{ survey.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            {% if survey.auto_close_after %}
+                                | <i class="fas fa-clock me-1"></i> Cierre automático en {{ survey.auto_close_after }} horas
+                            {% endif %}
+                        </small>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        No hay encuestas activas para ti en este momento.
+    </div>
+{% endif %}
+
+{% if current_user.is_admin and all_surveys %}
+    <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Todas las Encuestas (Vista de Administrador)</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for survey in all_surveys %}
+                    <a href="{{ url_for('survey.view_survey', survey_id=survey.id) }}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ survey.title }}</h5>
+                            <span class="badge bg-{{ 'success' if survey.is_active else 'danger' }}">
+                                {{ 'Activa' if survey.is_active else 'Cerrada' }}
+                            </span>
+                        </div>
+                        <p class="mb-1">{{ survey.description }}</p>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i> Creada: {{ survey.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            {% if survey.closed_at %}
+                                | <i class="fas fa-lock me-1"></i> Cerrada: {{ survey.closed_at.strftime('%d/%m/%Y %H:%M') }}
+                            {% endif %}
+                            | <i class="fas fa-users me-1"></i> {{ survey.authorized_users|length }} usuarios autorizados
+                        </small>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="card-footer">
+            <a href="{{ url_for('survey.create_survey') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i> Crear Nueva Encuesta
+            </a>
+            <a href="{{ url_for('survey.admin_surveys') }}" class="btn btn-secondary">
+                <i class="fas fa-cog me-2"></i> Administrar Encuestas
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información</h5>
+    </div>
+    <div class="card-body">
+        <p>Esta sección te permite participar en encuestas creadas por los administradores del viaje.</p>
+        
+        <h6 class="mt-3">¿Cómo funciona?</h6>
+        <ul>
+            <li>Haz clic en una encuesta activa para responderla</li>
+            <li>Las encuestas pueden tener tiempo límite para responder</li>
+            <li>Una vez cerrada la encuesta, podrás ver los resultados</li>
+        </ul>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Consejo:</strong> Responde a las encuestas lo antes posible para ayudar a tomar decisiones grupales.
+        </div>
+    </div>
+</div>
+{% endblock %}

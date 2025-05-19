@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Administración de Encuestas - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">Administración de Encuestas</h1>
+    <div>
+        <a href="{{ url_for('survey.create_survey') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i> Nueva Encuesta
+        </a>
+        <a href="{{ url_for('auth.admin_panel') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-arrow-left me-2"></i> Panel Admin
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-poll me-2"></i>Todas las Encuestas</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if surveys %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Título</th>
+                            <th>Creada</th>
+                            <th>Estado</th>
+                            <th>Usuarios</th>
+                            <th>Respuestas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for survey in surveys %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('survey.view_survey', survey_id=survey.id) }}">
+                                        {{ survey.title }}
+                                    </a>
+                                    {% if survey.description %}
+                                        <br>
+                                        <small class="text-muted">{{ survey.description }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ survey.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>
+                                    {% if survey.is_active %}
+                                        <span class="badge bg-success">Activa</span>
+                                        {% if survey.auto_close_after %}
+                                            <br>
+                                            <small class="text-muted">Cierre: {{ (survey.created_at + timedelta(hours=survey.auto_close_after)).strftime('%d/%m/%Y %H:%M') }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-danger">Cerrada</span>
+                                        {% if survey.closed_at %}
+                                            <br>
+                                            <small class="text-muted">{{ survey.closed_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ survey.authorized_users|length }}</span>
+                                    <button class="btn btn-sm btn-outline-secondary ms-1" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#usersModal{{ survey.id }}">
+                                        <i class="fas fa-users"></i>
+                                    </button>
+                                    
+                                    <!-- Modal para ver usuarios -->
+                                    <div class="modal fade" id="usersModal{{ survey.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Usuarios Autorizados</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    {% if survey.authorized_users %}
+                                                        <ul class="list-group">
+                                                            {% for user in survey.authorized_users %}
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    {{ user.name }}
+                                                                    <span class="badge bg-primary">{{ user.username }}</span>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="text-center text-muted">
+                                                            No hay usuarios asignados a esta encuesta.
+                                                        </p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% set response_count = survey.responses|length if survey.responses is defined else 0 %}
+                                    <span class="badge bg-primary">{{ response_count }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('survey.edit_survey', survey_id=survey.id) }}" 
+                                           class="btn btn-outline-primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        
+                                        <a href="{{ url_for('survey.view_survey', survey_id=survey.id) }}" 
+                                           class="btn btn-outline-info" title="Ver">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        {% if survey.is_active %}
+                                            <form method="POST" action="{{ url_for('survey.toggle_survey', survey_id=survey.id) }}">
+                                                <input type="hidden" name="action" value="close">
+                                                <button type="submit" class="btn btn-outline-warning" 
+                                                        title="Cerrar" 
+                                                        onclick="return confirm('¿Cerrar encuesta? Los usuarios no podrán responder más.')">
+                                                    <i class="fas fa-lock"></i>
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form method="POST" action="{{ url_for('survey.toggle_survey', survey_id=survey.id) }}">
+                                                <input type="hidden" name="action" value="reopen">
+                                                <button type="submit" class="btn btn-outline-success" 
+                                                        title="Reabrir" 
+                                                        onclick="return confirm('¿Reabrir encuesta? Los usuarios podrán responder de nuevo.')">
+                                                    <i class="fas fa-lock-open"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        
+                                        <form method="POST" action="{{ url_for('survey.delete_survey', survey_id=survey.id) }}">
+                                            <button type="submit" class="btn btn-outline-danger" 
+                                                    title="Eliminar" 
+                                                    onclick="return confirm('¿Eliminar encuesta? Esta acción no se puede deshacer.')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info m-3">
+                <i class="fas fa-info-circle me-2"></i>
+                Aún no hay encuestas creadas. ¡Crea la primera!
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Panel de Administración</h5>
+    </div>
+    <div class="card-body">
+        <p>Desde aquí puedes gestionar todas las encuestas del sistema.</p>
+        
+        <h6 class="mt-3">Características:</h6>
+        <ul>
+            <li>Crear nuevas encuestas</li>
+            <li>Editar encuestas existentes</li>
+            <li>Cerrar encuestas activas</li>
+            <li>Reabrir encuestas cerradas</li>
+            <li>Ver usuarios autorizados</li>
+            <li>Eliminar encuestas innecesarias</li>
+        </ul>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Consejo:</strong> Las encuestas pueden cerrarse manualmente en cualquier momento o configurarse para cierre automático.
+        </div>
+        
+        <div class="mt-3">
+            <a href="{{ url_for('survey.create_survey') }}" class="btn btn-primary w-100">
+                <i class="fas fa-plus me-2"></i> Crear Nueva Encuesta
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

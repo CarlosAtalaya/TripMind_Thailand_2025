@@ -272,8 +272,13 @@
         </div>
     </div>
     
-    <!-- Botón para ir a la ruleta -->
+    <!-- Botones para encuestas y ruleta -->
     <div class="mt-4 text-center">
+        {% if show_surveys_button %}
+            <a href="{{ url_for('survey.index') }}" class="btn btn-info me-3" style="padding: 10px 20px; font-weight: bold; border-radius: 20px;">
+                <i class="fas fa-poll me-2"></i> Encuestas Privadas
+            </a>
+        {% endif %}
         <a href="{{ url_for('wheel.index') }}" class="btn btn-primary wheel-button">
             <i class="fas fa-dharmachakra me-2"></i> Ruleta del Destino
         </a>

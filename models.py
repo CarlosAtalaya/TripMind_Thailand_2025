@@ -138,3 +138,45 @@ class CountdownEvent(db.Model):
     
     # Relación con el usuario a activar
     user_to_activate = db.relationship('User', foreign_keys=[user_to_activate_id])
+
+class Survey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    closed_at = db.Column(db.DateTime, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    auto_close_after = db.Column(db.Integer, nullable=True)  # Time in hours before auto-close
+    
+    # Relationships
+    creator = db.relationship('User', backref=db.backref('created_surveys', lazy=True))
+    options = db.relationship('SurveyOption', backref='survey', lazy=True, cascade="all, delete-orphan")
+    authorized_users = db.relationship('User', secondary='survey_permissions')
+
+class SurveyOption(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    survey_id = db.Column(db.Integer, db.ForeignKey('survey.id'), nullable=False)
+    text = db.Column(db.String(200), nullable=False)
+    order = db.Column(db.Integer, default=0)  # For ordering options
+
+class SurveyResponse(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    survey_id = db.Column(db.Integer, db.ForeignKey('survey.id'), nullable=False)
+    option_id = db.Column(db.Integer, db.ForeignKey('survey_option.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    survey = db.relationship('Survey')
+    option = db.relationship('SurveyOption')
+    user = db.relationship('User')
+    
+    # Unique constraint to ensure one vote per user per survey
+    __table_args__ = (db.UniqueConstraint('survey_id', 'user_id'),)
+
+# Many-to-many association table for user permissions
+survey_permissions = db.Table('survey_permissions',
+    db.Column('survey_id', db.Integer, db.ForeignKey('survey.id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+)

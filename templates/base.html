@@ -50,6 +50,14 @@
                                         <i class="fas fa-trophy me-2"></i> Votaciones
                                     </a>
                                 </li>
+                                <!-- Nuevo elemento para Encuestas -->
+                                {% if current_user.is_authenticated and (current_user.is_admin or has_active_surveys) %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('survey.index') }}">
+                                        <i class="fas fa-poll me-2"></i> Encuestas
+                                    </a>
+                                </li>
+                                {% endif %}
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('diary.index') }}">
                                         <i class="fas fa-book me-2"></i> Mi Diario
@@ -174,6 +182,13 @@
             <i class="fas fa-trophy"></i>
             <span>Votos</span>
         </a>
+        <!-- Nuevo elemento para Encuestas -->
+        {% if current_user.is_authenticated and (current_user.is_admin or has_active_surveys) %}
+        <a href="{{ url_for('survey.index') }}" class="nav-item {% if request.blueprint == 'survey' %}active{% endif %}">
+            <i class="fas fa-poll"></i>
+            <span>Encuestas</span>
+        </a>
+        {% endif %}
         <a href="{{ url_for('diary.index') }}" class="nav-item {% if request.blueprint == 'diary' %}active{% endif %}">
             <i class="fas fa-book"></i>
             <span>Diario</span>

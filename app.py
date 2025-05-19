@@ -16,7 +16,8 @@ from diary import diary
 from guides import guides
 from wheel import wheel
 from poop_counter import poop_counter
-from daily_photos import daily_photos  # Nuevo import
+from daily_photos import daily_photos
+from survey import survey
 import logging
 from logging.handlers import RotatingFileHandler
 from config import MAX_UPLOAD_SIZE
@@ -67,6 +68,7 @@ app.register_blueprint(poop_counter)
 app.register_blueprint(daily_photos)
 app.register_blueprint(guides)
 app.register_blueprint(wheel)
+app.register_blueprint(survey)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -118,12 +120,29 @@ def index():
     itinerary['travelers'] = active_travelers
     daily_mvp = get_daily_mvp()
     
+    # NUEVO: Determinar si se debe mostrar el botón de encuestas para el usuario actual
+    show_surveys_button = False
+    if current_user.is_authenticated:
+        # Para administradores, siempre mostrar el botón
+        if current_user.is_admin:
+            show_surveys_button = True
+        else:
+            # Para usuarios normales, verificar si tienen encuestas disponibles
+            from models import Survey
+            active_surveys = Survey.query.filter(
+                Survey.is_active == True,
+                Survey.authorized_users.any(id=current_user.id)
+            ).count()
+            
+            show_surveys_button = active_surveys > 0
+    
     return render_template('index.html', 
                           itinerary=itinerary, 
                           current_date=current_date,
                           current_region=current_region,
                           original_travelers=original_travelers,
-                          daily_mvp=daily_mvp)  # Pasar el ganador a la plantilla
+                          daily_mvp=daily_mvp,
+                          show_surveys_button=show_surveys_button)
 
 @app.route('/itinerary')
 def itinerary_view():

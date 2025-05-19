@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Encuesta - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">Editar Encuesta</h1>
+    <a href="{{ url_for('survey.admin_surveys') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i> Volver
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Editar: {{ survey.title }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" id="surveyForm">
+            <!-- Información básica -->
+            <h5 class="mb-3">Información Básica</h5>
+            <div class="mb-3">
+                <label for="title" class="form-label">Título <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" 
+                       value="{{ survey.title }}" required>
+                <div class="form-text">Un título claro para la encuesta (ej. "¿Qué quieres cenar hoy?")</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Descripción</label>
+                <textarea class="form-control" id="description" name="description" rows="3">{{ survey.description }}</textarea>
+                <div class="form-text">Una breve descripción o contexto adicional para la encuesta</div>
+            </div>
+            
+            <!-- Configuración de cierre -->
+            <h5 class="mb-3 mt-4">Configuración de Cierre</h5>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="auto_close" name="auto_close"
+                       {{ 'checked' if survey.auto_close_after else '' }}>
+                <label class="form-check-label" for="auto_close">Cerrar automáticamente después de:</label>
+            </div>
+            
+            <div class="mb-4" id="auto_close_time" style="display: {{ 'block' if survey.auto_close_after else 'none' }};">
+                <div class="input-group">
+                    <input type="number" class="form-control" id="auto_close_hours" name="auto_close_hours" 
+                           value="{{ survey.auto_close_after or 2 }}" min="1" max="48">
+                    <span class="input-group-text">horas</span>
+                </div>
+                <div class="form-text">La encuesta se cerrará automáticamente después de este tiempo</div>
+            </div>
+            
+            <!-- Opciones de la encuesta -->
+            <h5 class="mb-3 mt-4">Opciones de Respuesta <span class="text-danger">*</span></h5>
+            <div class="mb-3">
+                <div id="optionsContainer">
+                    {% for option in survey.options|sort(attribute='order') %}
+                        <div class="option-item mb-2 d-flex">
+                            <input type="hidden" name="option_ids[]" value="{{ option.id }}">
+                            <input type="text" class="form-control me-2" name="options[]" 
+                                   placeholder="Opción {{ loop.index }}" value="{{ option.text }}" required>
+                            <button type="button" class="btn btn-danger remove-option" {{ 'disabled' if loop.length <= 2 }}>
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <button type="button" class="btn btn-outline-primary mt-2" id="addOptionBtn">
+                    <i class="fas fa-plus me-2"></i> Añadir Opción
+                </button>
+                <div class="form-text">Debes agregar al menos 2 opciones. Máximo 10 opciones.</div>
+            </div>
+            
+            <!-- Usuarios autorizados -->
+            <h5 class="mb-3 mt-4">Usuarios Autorizados</h5>
+            <div class="mb-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Selecciona quiénes pueden responder a esta encuesta</span>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllUsers">
+                                    Seleccionar Todos
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllUsers">
+                                    Deseleccionar Todos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for user in users %}
+                                <div class="list-group-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input user-checkbox" type="checkbox" 
+                                               name="authorized_users[]" value="{{ user.id }}" 
+                                               id="user{{ user.id }}"
+                                               {{ 'checked' if user.id in authorized_user_ids else '' }}>
+                                        <label class="form-check-label" for="user{{ user.id }}">
+                                            <strong>{{ user.name }}</strong>
+                                            <small class="text-muted ms-2">({{ user.username }})</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Solo los usuarios seleccionados podrán ver y responder a esta encuesta.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Información adicional si hay respuestas -->
+            {% set response_count = survey.responses|length if survey.responses is defined else 0 %}
+            {% if response_count > 0 %}
+                <div class="alert alert-warning mb-4">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atención:</strong> Esta encuesta ya tiene {{ response_count }} respuesta(s).
+                    <ul class="mb-0 mt-2">
+                        <li>Puedes editar el título y la descripción</li>
+                        <li>Puedes añadir nuevas opciones</li>
+                        <li>Puedes modificar las opciones sin respuestas</li>
+                        <li>No puedes eliminar opciones que ya tengan respuestas</li>
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i> Guardar Cambios
+                </button>
+                <a href="{{ url_for('survey.admin_surveys') }}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Manejar checkbox de cierre automático
+        const autoCloseCheckbox = document.getElementById('auto_close');
+        const autoCloseTimeDiv = document.getElementById('auto_close_time');
+        
+        autoCloseCheckbox.addEventListener('change', function() {
+            autoCloseTimeDiv.style.display = this.checked ? 'block' : 'none';
+        });
+        
+        // Manejar botón de agregar opción
+        const optionsContainer = document.getElementById('optionsContainer');
+        const addOptionBtn = document.getElementById('addOptionBtn');
+        
+        addOptionBtn.addEventListener('click', function() {
+            // Verificar si ya hay 10 opciones
+            if (optionsContainer.children.length >= 10) {
+                alert('Has alcanzado el máximo de 10 opciones');
+                return;
+            }
+            
+            // Crear nueva opción
+            const newOption = document.createElement('div');
+            newOption.className = 'option-item mb-2 d-flex';
+            newOption.innerHTML = `
+                <input type="hidden" name="option_ids[]" value="">
+                <input type="text" class="form-control me-2" name="options[]" 
+                       placeholder="Opción ${optionsContainer.children.length + 1}" required>
+                <button type="button" class="btn btn-danger remove-option">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // Agregar al contenedor
+            optionsContainer.appendChild(newOption);
+            
+            // Actualizar estado de los botones de eliminación
+            updateRemoveButtons();
+        });
+        
+        // Manejar eliminación de opciones
+        optionsContainer.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-option')) {
+                e.target.closest('.option-item').remove();
+                
+                // Actualizar placeholders
+                updateOptionPlaceholders();
+                
+                // Actualizar estado de los botones de eliminación
+                updateRemoveButtons();
+            }
+        });
+        
+        // Función para actualizar placeholders
+        function updateOptionPlaceholders() {
+            const options = optionsContainer.querySelectorAll('.option-item input[name="options[]"]');
+            options.forEach((input, index) => {
+                input.placeholder = `Opción ${index + 1}`;
+            });
+        }
+        
+        // Función para actualizar estado de botones de eliminación
+        function updateRemoveButtons() {
+            const removeButtons = optionsContainer.querySelectorAll('.remove-option');
+            
+            // Habilitar todos los botones
+            removeButtons.forEach(button => {
+                button.disabled = false;
+            });
+            
+            // Si hay solo 2 opciones, deshabilitar ambos botones
+            if (removeButtons.length <= 2) {
+                removeButtons.forEach(button => {
+                    button.disabled = true;
+                });
+            }
+        }
+        
+        // Manejar selección de todos los usuarios
+        const selectAllBtn = document.getElementById('selectAllUsers');
+        const deselectAllBtn = document.getElementById('deselectAllUsers');
+        const userCheckboxes = document.querySelectorAll('.user-checkbox');
+        
+        selectAllBtn.addEventListener('click', function() {
+            userCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+        
+        deselectAllBtn.addEventListener('click', function() {
+            userCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        });
+        
+        // Validar formulario antes de enviar
+        const surveyForm = document.getElementById('surveyForm');
+        surveyForm.addEventListener('submit', function(e) {
+            const options = document.querySelectorAll('input[name="options[]"]');
+            const validOptions = Array.from(options).filter(option => option.value.trim());
+            
+            if (validOptions.length < 2) {
+                e.preventDefault();
+                alert('Debes agregar al menos 2 opciones válidas');
+                return;
+            }
+            
+            const activeUsers = document.querySelectorAll('input[name="authorized_users[]"]:checked');
+            if (activeUsers.length === 0) {
+                e.preventDefault();
+                alert('Debes seleccionar al menos un usuario autorizado');
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Instrucciones</h5>
+    </div>
+    <div class="card-body">
+        <p>Modifica los detalles de la encuesta según necesites.</p>
+        
+        <h6 class="mt-3">Opciones disponibles:</h6>
+        <ul>
+            <li>Cambiar título y descripción</li>
+            <li>Añadir nuevas opciones de respuesta</li>
+            <li>Modificar usuarios con acceso</li>
+            <li>Configurar cierre automático</li>
+        </ul>
+        
+        {% set response_count = survey.responses|length if survey.responses is defined else 0 %}
+        {% if response_count > 0 %}
+            <div class="alert alert-warning mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Atención:</strong> Esta encuesta ya tiene respuestas. Algunas modificaciones están limitadas para preservar la integridad de los datos.
+            </div>
+        {% else %}
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Información:</strong> Esta encuesta aún no tiene respuestas, por lo que puedes modificarla completamente.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
