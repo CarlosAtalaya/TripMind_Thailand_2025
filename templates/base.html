@@ -51,12 +51,11 @@
                                     </a>
                                 </li>
                                 <!-- Nuevo elemento para Encuestas -->
-                                {% if current_user.is_authenticated and (current_user.is_admin or has_active_surveys) %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('survey.index') }}">
-                                        <i class="fas fa-poll me-2"></i> Encuestas
-                                    </a>
-                                </li>
+                                {% if current_user.is_authenticated and current_user.is_admin %}
+                                <a href="{{ url_for('survey.index') }}" class="nav-item {% if request.blueprint == 'survey' %}active{% endif %}">
+                                    <i class="fas fa-poll"></i>
+                                    <span>Encuestas</span>
+                                </a>
                                 {% endif %}
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('diary.index') }}">

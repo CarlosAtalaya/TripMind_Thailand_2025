@@ -3,7 +3,6 @@ from flask_login import login_required, current_user
 from models import db, Survey, SurveyOption, SurveyResponse, User
 from auth import admin_required
 from datetime import datetime, timedelta
-import json
 
 survey = Blueprint('survey', __name__)
 
@@ -46,12 +45,17 @@ def view_survey(survey_id):
     # Obtener la encuesta
     survey_data = Survey.query.get_or_404(survey_id)
     
-    # Verificar si el usuario está autorizado para ver esta encuesta
-    if not current_user.is_admin and current_user not in survey_data.authorized_users:
+    # Verificar acceso
+    is_authorized = current_user.is_admin or current_user in survey_data.authorized_users
+    
+    if not is_authorized:
         flash('No tienes permiso para acceder a esta encuesta', 'danger')
         return redirect(url_for('survey.index'))
     
-    # Verificar si el usuario ya respondió
+    # Verificar si el usuario puede responder (está en la lista de autorizados)
+    can_respond = current_user in survey_data.authorized_users
+    
+    # Verificar si el usuario ya respondió - buscar SOLO respuestas reales
     existing_response = SurveyResponse.query.filter_by(
         survey_id=survey_id,
         user_id=current_user.id
@@ -71,7 +75,7 @@ def view_survey(survey_id):
             survey_data.is_active = False
             db.session.commit()
     
-    # Obtener resultados si la encuesta está cerrada o ya respondió
+    # Obtener resultados SOLO si la encuesta está cerrada o el usuario ya respondió
     results = None
     if is_closed or existing_response:
         results = get_survey_results(survey_id)
@@ -80,6 +84,7 @@ def view_survey(survey_id):
                           survey=survey_data,
                           existing_response=existing_response,
                           is_closed=is_closed,
+                          can_respond=can_respond,
                           results=results)
 
 @survey.route('/encuestas/<int:survey_id>/responder', methods=['POST'])
@@ -89,10 +94,10 @@ def respond_to_survey(survey_id):
     # Obtener la encuesta
     survey_data = Survey.query.get_or_404(survey_id)
     
-    # Verificar si el usuario está autorizado
-    if not current_user.is_admin and current_user not in survey_data.authorized_users:
+    # Verificar si el usuario está autorizado para responder (no solo para ver)
+    if current_user not in survey_data.authorized_users:
         flash('No tienes permiso para responder a esta encuesta', 'danger')
-        return redirect(url_for('survey.index'))
+        return redirect(url_for('survey.view_survey', survey_id=survey_id))
     
     # Verificar si la encuesta está activa
     if not survey_data.is_active or survey_data.closed_at:
@@ -146,7 +151,7 @@ def admin_surveys():
     """Panel de administración de encuestas"""
     surveys = Survey.query.order_by(Survey.created_at.desc()).all()
     
-    return render_template('survey/admin.html', surveys=surveys)
+    return render_template('survey/admin.html', surveys=surveys, timedelta=timedelta)
 
 @survey.route('/admin/encuestas/nueva', methods=['GET', 'POST'])
 @login_required
@@ -285,7 +290,8 @@ def edit_survey(survey_id):
     return render_template('survey/edit.html', 
                           survey=survey_data,
                           users=users,
-                          authorized_user_ids=authorized_user_ids)
+                          authorized_user_ids=authorized_user_ids,
+                          timedelta=timedelta)
 
 @survey.route('/admin/encuestas/<int:survey_id>/toggle', methods=['POST'])
 @login_required
@@ -347,7 +353,7 @@ def api_survey_results(survey_id):
             'error': 'No tienes permiso para ver estos resultados'
         }), 403
     
-    # Obtener resultados
+    # Obtener resultados reales (no fantasma)
     results = get_survey_results(survey_id)
     
     return jsonify({
@@ -360,7 +366,7 @@ def get_survey_results(survey_id):
     # Obtener todas las opciones de la encuesta
     options = SurveyOption.query.filter_by(survey_id=survey_id).order_by(SurveyOption.order).all()
     
-    # Obtener todas las respuestas
+    # Obtener SOLO respuestas reales de la base de datos
     responses = SurveyResponse.query.filter_by(survey_id=survey_id).all()
     
     # Contar respuestas por opción
@@ -368,6 +374,7 @@ def get_survey_results(survey_id):
     for option in options:
         option_counts[option.id] = 0
     
+    # Contar SOLO respuestas reales guardadas en la base de datos
     for response in responses:
         if response.option_id in option_counts:
             option_counts[response.option_id] += 1

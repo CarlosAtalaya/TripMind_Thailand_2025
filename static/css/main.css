@@ -230,3 +230,15 @@ html {
         max-height: 400px;
     }
 }
+
+/* Mejora la alineación de botones en la página principal */
+.mt-4.text-center .btn {
+    margin: 0 10px;  /* Añade margen horizontal para separar los botones */
+    vertical-align: middle;  /* Alinea verticalmente los botones */
+}
+
+/* Mejora específica para botones en panel de administración de encuestas */
+.card-footer .btn {
+    margin-right: 8px;  /* Espacio entre botones */
+    vertical-align: middle;
+}

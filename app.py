@@ -4,7 +4,7 @@ from flask_login import LoginManager, current_user
 from services.itinerary import load_itinerary, get_current_region
 from services.weather import get_weather_for_region
 from services.news import get_filtered_news
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from services import format_date
 from votes import initialize_categories
@@ -23,6 +23,13 @@ from logging.handlers import RotatingFileHandler
 from config import MAX_UPLOAD_SIZE
 
 app = Flask(__name__)
+
+@app.context_processor
+def utility_processor():
+    """Añadir utilidades comunes a todas las plantillas"""
+    return {
+        'timedelta': timedelta
+    }
 
 # Configuración básica
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_for_mvp')

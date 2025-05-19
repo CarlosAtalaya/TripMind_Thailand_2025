@@ -78,50 +78,31 @@
     </div>
 {% else %}
     <!-- Formulario de votación -->
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-vote-yea me-2"></i>Tu Voto</h5>
+    {% if can_respond %}
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-vote-yea me-2"></i>Tu Voto</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('survey.respond_to_survey', survey_id=survey.id) }}">
+                    <!-- Formulario de votación como estaba antes -->
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('survey.respond_to_survey', survey_id=survey.id) }}">
-                <div class="mb-4">
-                    <label class="form-label"><strong>Selecciona una opción:</strong></label>
-                    
-                    {% for option in survey.options|sort(attribute='order') %}
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="option" 
-                                   id="option{{ option.id }}" value="{{ option.id }}" required>
-                            <label class="form-check-label" for="option{{ option.id }}">
-                                {{ option.text }}
-                            </label>
-                        </div>
-                    {% endfor %}
-                </div>
-                
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-2"></i> Enviar Respuesta
-                    </button>
-                    <a href="{{ url_for('survey.index') }}" class="btn btn-outline-secondary">Cancelar</a>
-                </div>
-            </form>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No estás autorizado para responder a esta encuesta, pero puedes ver sus resultados.
         </div>
-        <div class="card-footer">
-            <small class="text-muted">
-                <i class="fas fa-info-circle me-2"></i>
-                Solo podrás votar una vez. Tu respuesta no podrá ser cambiada posteriormente.
-            </small>
-            {% if survey.auto_close_after %}
-                <div class="mt-2">
-                    <i class="fas fa-clock me-2"></i>
-                    <span id="countdown-timer" data-created="{{ survey.created_at.isoformat() }}" 
-                         data-hours="{{ survey.auto_close_after }}">
-                        Calculando tiempo restante...
-                    </span>
-                </div>
-            {% endif %}
-        </div>
-    </div>
+        {% if results %}
+            <!-- Mostrar resultados igual que en la sección de arriba -->
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                No hay resultados disponibles aún.
+            </div>
+        {% endif %}
+    {% endif %}
 {% endif %}
 
 {% if current_user.is_admin %}

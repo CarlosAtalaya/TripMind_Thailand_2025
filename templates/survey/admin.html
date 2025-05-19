@@ -63,39 +63,6 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-info">{{ survey.authorized_users|length }}</span>
-                                    <button class="btn btn-sm btn-outline-secondary ms-1" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#usersModal{{ survey.id }}">
-                                        <i class="fas fa-users"></i>
-                                    </button>
-                                    
-                                    <!-- Modal para ver usuarios -->
-                                    <div class="modal fade" id="usersModal{{ survey.id }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Usuarios Autorizados</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    {% if survey.authorized_users %}
-                                                        <ul class="list-group">
-                                                            {% for user in survey.authorized_users %}
-                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                                    {{ user.name }}
-                                                                    <span class="badge bg-primary">{{ user.username }}</span>
-                                                                </li>
-                                                            {% endfor %}
-                                                        </ul>
-                                                    {% else %}
-                                                        <p class="text-center text-muted">
-                                                            No hay usuarios asignados a esta encuesta.
-                                                        </p>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </td>
                                 <td>
                                     {% set response_count = survey.responses|length if survey.responses is defined else 0 %}
@@ -106,11 +73,6 @@
                                         <a href="{{ url_for('survey.edit_survey', survey_id=survey.id) }}" 
                                            class="btn btn-outline-primary" title="Editar">
                                             <i class="fas fa-edit"></i>
-                                        </a>
-                                        
-                                        <a href="{{ url_for('survey.view_survey', survey_id=survey.id) }}" 
-                                           class="btn btn-outline-info" title="Ver">
-                                            <i class="fas fa-eye"></i>
                                         </a>
                                         
                                         {% if survey.is_active %}
