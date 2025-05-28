@@ -185,3 +185,19 @@ class SurveyResponse(db.Model):
 
 # IMPORTANTE: Configurar correctamente la relación bidireccional
 Survey.responses = db.relationship('SurveyResponse', back_populates='survey', lazy=True, cascade="all, delete-orphan")
+
+class ChecklistItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    item_id = db.Column(db.String(50), nullable=False)  # ID único del item
+    is_checked = db.Column(db.Boolean, default=False)
+    checked_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relación con el usuario
+    user = db.relationship('User', backref=db.backref('checklist_items', lazy=True))
+    
+    # Constraint para evitar duplicados
+    __table_args__ = (db.UniqueConstraint('user_id', 'item_id'),)
+    
+    def __repr__(self):
+        return f'<ChecklistItem {self.user.name} - {self.item_id}: {self.is_checked}>'

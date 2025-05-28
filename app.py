@@ -18,6 +18,7 @@ from wheel import wheel
 from poop_counter import poop_counter
 from daily_photos import daily_photos
 from survey import survey
+from checklist import checklist
 import logging
 from logging.handlers import RotatingFileHandler
 from config import MAX_UPLOAD_SIZE
@@ -76,6 +77,7 @@ app.register_blueprint(daily_photos)
 app.register_blueprint(guides)
 app.register_blueprint(wheel)
 app.register_blueprint(survey)
+app.register_blueprint(checklist, url_prefix='/checklist')
 
 @login_manager.user_loader
 def load_user(user_id):

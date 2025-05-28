@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Checklist de Viaje - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">
+        <i class="fas fa-clipboard-check me-2"></i>Mi Checklist para Tailandia
+    </h1>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
+    </a>
+</div>
+
+<!-- Barra de progreso -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-pie me-2"></i>Progreso del Checklist
+            </h5>
+            <div>
+                <button id="resetBtn" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-undo me-1"></i> Resetear Todo
+                </button>
+            </div>
+        </div>
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                 role="progressbar" 
+                 style="width: {{ progress_percentage }}%;" 
+                 aria-valuenow="{{ progress_percentage }}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100"
+                 id="progressBar">
+                {{ "%.1f"|format(progress_percentage) }}%
+            </div>
+        </div>
+        <div class="mt-2 text-center">
+            <span id="progressText" class="badge bg-primary fs-6">
+                {{ checked_count }} de {{ total_items }} elementos completados
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Categorías del checklist -->
+<div class="row g-4">
+    {% for category_id, category in checklist_items.items() %}
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-{{ category.color }} text-white">
+                    <h5 class="mb-0">
+                        <i class="{{ category.icon }} me-2"></i>
+                        {{ category.name }}
+                        <span class="badge bg-light text-dark ms-2" id="badge-{{ category_id }}">
+                            {% set category_checked = checked_items.values() | selectattr('item_id', 'in', category.items.keys()) | selectattr('is_checked') | list | length %}
+                            {{ category_checked }}/{{ category.items | length }}
+                        </span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for item_id, item_name in category.items.items() %}
+                            {% set is_checked = checked_items.get(item_id) and checked_items.get(item_id).is_checked %}
+                            <div class="list-group-item checklist-item" data-item-id="{{ item_id }}"
+                                 data-category="{{ category_id }}">
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input me-3" 
+                                           type="checkbox" 
+                                           id="check-{{ item_id }}"
+                                           {{ 'checked' if is_checked else '' }}
+                                           onchange="toggleItem('{{ item_id }}', '{{ category_id }}')">
+                                    <label class="form-check-label flex-grow-1 {{ 'text-decoration-line-through text-muted' if is_checked else '' }}" 
+                                           for="check-{{ item_id }}"
+                                           id="label-{{ item_id }}">
+                                        {{ item_name }}
+                                    </label>
+                                    {% if is_checked %}
+                                        <small class="text-success ms-2">
+                                            <i class="fas fa-check-circle"></i>
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Consejos adicionales -->
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-lightbulb me-2"></i>Consejos Adicionales para Tailandia
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="fas fa-thermometer-three-quarters text-danger me-2"></i>Clima</h6>
+                <ul>
+                    <li>Temperaturas de 25-35°C todo el año</li>
+                    <li>Humedad muy alta (70-90%)</li>
+                    <li>Temporada de lluvias: Mayo-Octubre</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-bug text-warning me-2"></i>Precauciones</h6>
+                <ul>
+                    <li>Usar repelente constantemente</li>
+                    <li>Ropa larga por las noches</li>
+                    <li>Cuidado con el agua del grifo</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleItem(itemId, categoryId) {
+        fetch('/api/checklist/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Actualizar progreso general
+                updateProgress(data.checked_count, data.total_items, data.progress_percentage);
+                
+                // Actualizar estilo del label
+                const label = document.getElementById(`label-${itemId}`);
+                const checkbox = document.getElementById(`check-${itemId}`);
+                const listItem = checkbox.closest('.checklist-item');
+                
+                if (data.is_checked) {
+                    label.classList.add('text-decoration-line-through', 'text-muted');
+                    listItem.innerHTML += '<small class="text-success ms-2"><i class="fas fa-check-circle"></i></small>';
+                    
+                    // Animación de éxito
+                    listItem.style.backgroundColor = '#d4edda';
+                    setTimeout(() => {
+                        listItem.style.backgroundColor = '';
+                    }, 1000);
+                } else {
+                    label.classList.remove('text-decoration-line-through', 'text-muted');
+                    const checkIcon = listItem.querySelector('.text-success');
+                    if (checkIcon) checkIcon.remove();
+                }
+                
+                // Actualizar contador de categoría
+                updateCategoryBadge(categoryId);
+                
+            } else {
+                alert('Error al actualizar el item: ' + data.error);
+                // Revertir el checkbox
+                checkbox.checked = !checkbox.checked;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión');
+            // Revertir el checkbox
+            const checkbox = document.getElementById(`check-${itemId}`);
+            checkbox.checked = !checkbox.checked;
+        });
+    }
+    
+    function updateProgress(checkedCount, totalItems, percentage) {
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        
+        progressBar.style.width = percentage + '%';
+        progressBar.setAttribute('aria-valuenow', percentage);
+        progressBar.textContent = percentage.toFixed(1) + '%';
+        
+        progressText.textContent = `${checkedCount} de ${totalItems} elementos completados`;
+        
+        // Cambiar color según el progreso
+        progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+        if (percentage >= 100) {
+            progressBar.classList.add('bg-success');
+        } else if (percentage >= 75) {
+            progressBar.classList.add('bg-info');
+        } else if (percentage >= 50) {
+            progressBar.classList.add('bg-warning');
+        } else {
+            progressBar.classList.add('bg-danger');
+        }
+    }
+    
+    function updateCategoryBadge(categoryId) {
+        const badge = document.getElementById(`badge-${categoryId}`);
+        const categoryItems = document.querySelectorAll(`[data-category="${categoryId}"]`);
+        
+        let checkedCount = 0;
+        let totalCount = 0;
+        
+        categoryItems.forEach(item => {
+            totalCount++;
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox && checkbox.checked) {
+                checkedCount++;
+            }
+        });
+        
+        badge.textContent = `${checkedCount}/${totalCount}`;
+    }
+    
+    // Botón de reset
+    document.getElementById('resetBtn').addEventListener('click', function() {
+        if (confirm('¿Estás seguro de que quieres resetear todo tu checklist? Esta acción no se puede deshacer.')) {
+            fetch('/api/checklist/reset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error al resetear: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error de conexión');
+            });
+        }
+    });
+    
+    // Efectos visuales mejorados
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animar elementos al cargar
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información</h5>
+    </div>
+    <div class="card-body">
+        <p>Esta es tu lista personalizada de elementos esenciales para el viaje a Tailandia.</p>
+        
+        <h6 class="mt-3">¿Cómo usar el checklist?</h6>
+        <ul>
+            <li>Marca los elementos que ya tienes preparados</li>
+            <li>El progreso se guarda automáticamente</li>
+            <li>Cada categoría tiene su propio contador</li>
+            <li>Puedes resetear todo si es necesario</li>
+        </ul>
+        
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Recuerda:</strong> Este checklist está pensado específicamente para Tailandia, con su clima tropical y características especiales.
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Consejo:</strong> Revisa la sección de <a href="{{ url_for('guides.index') }}" class="alert-link">Guías</a> para más información sobre animales peligrosos, comida y cultura tailandesa.
+        </div>
+    </div>
+</div>
+{% endblock %}
