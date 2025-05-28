@@ -242,3 +242,41 @@ html {
     margin-right: 8px;  /* Espacio entre botones */
     vertical-align: middle;
 }
+
+/* Estilos para botones de Google Maps en alojamientos */
+.accommodation-maps-btn {
+    transition: all 0.2s ease-in-out;
+    border-radius: 20px;
+    padding: 0.375rem 0.75rem;
+}
+
+.accommodation-maps-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Mejoras para la sección de alojamientos */
+.accommodation-item {
+    transition: background-color 0.2s ease-in-out;
+}
+
+.accommodation-item:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Responsive para botones de Google Maps */
+@media (max-width: 768px) {
+    .accommodation-maps-btn {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .accommodation-maps-btn i {
+        margin: 0 !important;
+    }
+}

@@ -74,6 +74,7 @@ regions:
         check_in: "2025-06-20"
         check_out: "2025-06-21"
         booking_ref: "EASYKHAO01"
+        maps_url: "https://maps.google.com/?q=Easy+Sunday+Khaosan+Beds,+10+Ram+Buttri+Aly,+Chana+Songkhram,+Phra+Nakhon,+Bangkok+10200"
     activities:
       - date: "2025-06-20"
         time: "Día completo"
@@ -108,6 +109,7 @@ regions:
         check_in: "2025-06-21"
         check_out: "2025-06-24"
         booking_ref: "MOONHOUSE01"
+        maps_url: "https://maps.google.com/?q=The+Moon+House,+79/4+Arak+Rd,+Tambon+Phra+Sing,+Chiang+Mai+50200"
     activities:
       - date: "2025-06-21"
         time: "Día completo"
@@ -171,6 +173,7 @@ regions:
         check_in: "2025-06-24"
         check_out: "2025-06-26"
         booking_ref: "PALMVIEW01"
+        maps_url: "https://maps.google.com/?q=Khao+Sok+Palm+View+Resort,+234+Amphur+Phanom,+Khlong+Sok,+Phanom+District,+Surat+Thani+84250"
     activities:
       - date: "2025-06-24"
         time: "11:00-15:00"
@@ -223,11 +226,12 @@ regions:
     latitude: 8.0863
     longitude: 98.9062
     accommodations:
-      - name: "Hotel en Krabi"
-        address: "Por confirmar"
+      - name: "Hotel en Krabi - Ao Nang Beach"
+        address: "Klong Hang Soi 2 100/1 Moo 3, 81180 Ao Nang Beach, Tailandia"
         check_in: "2025-06-26"
         check_out: "2025-06-28"
         booking_ref: "KRABI01"
+        maps_url: "https://maps.google.com/?q=Klong+Hang+Soi+2+100/1+Moo+3,+81180+Ao+Nang+Beach,+Tailandia"
     activities:
       - date: "2025-06-26"
         time: "Mañana"
@@ -266,11 +270,12 @@ regions:
     latitude: 7.8804
     longitude: 98.3923
     accommodations:
-      - name: "Hotel en Phuket"
-        address: "Por confirmar"
+      - name: "Hotel en Phuket - Patong Beach"
+        address: "5/41-51 Patong Beach Road, Patong Beach, 83150 Patong Beach, Tailandia"
         check_in: "2025-06-28"
         check_out: "2025-06-29"
         booking_ref: "PHUKET01"
+        maps_url: "https://maps.google.com/?q=5/41-51+Patong+Beach+Road,+Patong+Beach,+83150+Patong+Beach,+Tailandia"
     activities:
       - date: "2025-06-28"
         time: "Día completo"
@@ -296,11 +301,12 @@ regions:
     latitude: 9.7300
     longitude: 100.0300
     accommodations:
-      - name: "Hotel en Koh Phangan"
-        address: "Por confirmar"
+      - name: "Hotel en Koh Phangan - Hinkong"
+        address: "22/8 Moo 6, Baan Hin Kong, Koh Phangan, 84280 Hinkong, Tailandia"
         check_in: "2025-06-29"
         check_out: "2025-07-01"
         booking_ref: "PHANGAN01"
+        maps_url: "https://maps.google.com/?q=22/8+Moo+6,+Baan+Hin+Kong,+Koh+Phangan,+84280+Hinkong,+Tailandia"
     activities:
       - date: "2025-06-29"
         time: "Día completo"
@@ -332,11 +338,12 @@ regions:
     latitude: 9.5120
     longitude: 100.0135
     accommodations:
-      - name: "Hotel en Koh Samui"
-        address: "Por confirmar"
+      - name: "Hotel en Koh Samui - Chaweng"
+        address: "Chaweng Chaweng Noi, Ko Samui District, Surat Thani 84320, Thailand"
         check_in: "2025-07-01"
         check_out: "2025-07-04"
         booking_ref: "SAMUI01"
+        maps_url: "https://maps.google.com/?q=Chaweng+Chaweng+Noi,+Ko+Samui+District,+Surat+Thani+84320,+Thailand"
     activities:
       - date: "2025-07-01"
         time: "Día completo"
@@ -399,6 +406,7 @@ regions:
         check_in: "2025-07-04"
         check_out: "2025-07-07"
         booking_ref: "EASYKHAO02"
+        maps_url: "https://maps.google.com/?q=Easy+Sunday+Khaosan+Beds,+10+Ram+Buttri+Aly,+Chana+Songkhram,+Phra+Nakhon,+Bangkok+10200"
     activities:
       - date: "2025-07-04"
         time: "Tarde"

@@ -34,15 +34,34 @@
                     <ul class="list-group mb-4">
                         {% for accommodation in region.accommodations %}
                             <li class="list-group-item">
-                                <div>{{ accommodation.name }}</div>
-                                <small class="text-muted">{{ accommodation.address }}</small>
-                                <div class="mt-1">
-                                    <span class="badge bg-primary">Check-in: {{ accommodation.check_in }}</span>
-                                    <span class="badge bg-danger">Check-out: {{ accommodation.check_out }}</span>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">{{ accommodation.name }}</div>
+                                        <small class="text-muted d-block">{{ accommodation.address }}</small>
+                                        {% if accommodation.phone %}
+                                            <small class="text-muted d-block">
+                                                <i class="fas fa-phone me-1"></i>{{ accommodation.phone }}
+                                            </small>
+                                        {% endif %}
+                                        <div class="mt-2">
+                                            <span class="badge bg-primary">Check-in: {{ accommodation.check_in }}</span>
+                                            <span class="badge bg-danger">Check-out: {{ accommodation.check_out }}</span>
+                                        </div>
+                                        {% if accommodation.booking_ref %}
+                                            <small class="d-block mt-1"><strong>Ref:</strong> {{ accommodation.booking_ref }}</small>
+                                        {% endif %}
+                                    </div>
+                                    {% if accommodation.maps_url %}
+                                        <div class="ms-3">
+                                            <a href="{{ accommodation.maps_url }}" target="_blank" 
+                                               class="btn btn-outline-primary btn-sm" 
+                                               title="Ver en Google Maps">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                <span class="d-none d-md-inline">Maps</span>
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                {% if accommodation.booking_ref %}
-                                    <small class="d-block mt-1"><strong>Ref:</strong> {{ accommodation.booking_ref }}</small>
-                                {% endif %}
                             </li>
                         {% endfor %}
                     </ul>
