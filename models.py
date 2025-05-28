@@ -152,6 +152,7 @@ class Survey(db.Model):
     # Relationships
     creator = db.relationship('User', backref=db.backref('created_surveys', lazy=True))
     options = db.relationship('SurveyOption', backref='survey', lazy=True, cascade="all, delete-orphan")
+    responses = db.relationship('SurveyResponse', backref='survey', lazy=True, cascade="all, delete-orphan")  # ← AÑADIR ESTA LÍNEA
     authorized_users = db.relationship('User', secondary='survey_permissions')
 
 class SurveyOption(db.Model):

@@ -15,9 +15,60 @@
     </div>
 </div>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Estadísticas rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-poll fa-2x mb-2"></i>
+                <h3>{{ surveys|length }}</h3>
+                <p class="mb-0">Total Encuestas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h3>{{ surveys|selectattr('is_active')|list|length }}</h3>
+                <p class="mb-0">Activas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-lock fa-2x mb-2"></i>
+                <h3>{{ surveys|rejectattr('is_active')|list|length }}</h3>
+                <p class="mb-0">Cerradas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-vote-yea fa-2x mb-2"></i>
+                <h3>{{ surveys|sum(attribute='response_count') }}</h3>
+                <p class="mb-0">Total Respuestas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="fas fa-poll me-2"></i>Todas las Encuestas</h5>
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Todas las Encuestas</h5>
     </div>
     <div class="card-body p-0">
         {% if surveys %}
@@ -26,8 +77,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>Título</th>
-                            <th>Creada</th>
                             <th>Estado</th>
+                            <th>Creada</th>
                             <th>Usuarios</th>
                             <th>Respuestas</th>
                             <th>Acciones</th>
@@ -37,46 +88,68 @@
                         {% for survey in surveys %}
                             <tr>
                                 <td>
-                                    <a href="{{ url_for('survey.view_survey', survey_id=survey.id) }}">
-                                        {{ survey.title }}
+                                    <a href="{{ url_for('survey.view_survey', survey_id=survey.id) }}" class="text-decoration-none">
+                                        <strong>{{ survey.title }}</strong>
                                     </a>
                                     {% if survey.description %}
                                         <br>
-                                        <small class="text-muted">{{ survey.description }}</small>
+                                        <small class="text-muted">{{ survey.description[:100] }}{% if survey.description|length > 100 %}...{% endif %}</small>
                                     {% endif %}
                                 </td>
-                                <td>{{ survey.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                                 <td>
                                     {% if survey.is_active %}
-                                        <span class="badge bg-success">Activa</span>
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-play me-1"></i>Activa
+                                        </span>
                                         {% if survey.auto_close_after %}
                                             <br>
-                                            <small class="text-muted">Cierre: {{ (survey.created_at + timedelta(hours=survey.auto_close_after)).strftime('%d/%m/%Y %H:%M') }}</small>
+                                            <small class="text-muted">
+                                                {% set close_time = survey.created_at + timedelta(hours=survey.auto_close_after) %}
+                                                Auto-cierre: {{ close_time.strftime('%d/%m %H:%M') }}
+                                            </small>
                                         {% endif %}
                                     {% else %}
-                                        <span class="badge bg-danger">Cerrada</span>
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-stop me-1"></i>Cerrada
+                                        </span>
                                         {% if survey.closed_at %}
                                             <br>
-                                            <small class="text-muted">{{ survey.closed_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                            <small class="text-muted">{{ survey.closed_at.strftime('%d/%m %H:%M') }}</small>
                                         {% endif %}
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge bg-info">{{ survey.authorized_users|length }}</span>
+                                    {{ survey.created_at.strftime('%d/%m/%Y') }}
+                                    <br>
+                                    <small class="text-muted">{{ survey.created_at.strftime('%H:%M') }}</small>
                                 </td>
                                 <td>
-                                    {% set response_count = survey.responses|length if survey.responses is defined else 0 %}
-                                    <span class="badge bg-primary">{{ response_count }}</span>
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-users me-1"></i>{{ survey.authorized_users|length }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">autorizados</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-vote-yea me-1"></i>{{ survey.response_count }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">respuestas</small>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('survey.view_survey', survey_id=survey.id) }}" 
+                                           class="btn btn-outline-info" title="Ver">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                         <a href="{{ url_for('survey.edit_survey', survey_id=survey.id) }}" 
                                            class="btn btn-outline-primary" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         
                                         {% if survey.is_active %}
-                                            <form method="POST" action="{{ url_for('survey.toggle_survey', survey_id=survey.id) }}">
+                                            <form method="POST" action="{{ url_for('survey.toggle_survey', survey_id=survey.id) }}" class="d-inline">
                                                 <input type="hidden" name="action" value="close">
                                                 <button type="submit" class="btn btn-outline-warning" 
                                                         title="Cerrar" 
@@ -85,7 +158,7 @@
                                                 </button>
                                             </form>
                                         {% else %}
-                                            <form method="POST" action="{{ url_for('survey.toggle_survey', survey_id=survey.id) }}">
+                                            <form method="POST" action="{{ url_for('survey.toggle_survey', survey_id=survey.id) }}" class="d-inline">
                                                 <input type="hidden" name="action" value="reopen">
                                                 <button type="submit" class="btn btn-outline-success" 
                                                         title="Reabrir" 
@@ -95,13 +168,11 @@
                                             </form>
                                         {% endif %}
                                         
-                                        <form method="POST" action="{{ url_for('survey.delete_survey', survey_id=survey.id) }}">
-                                            <button type="submit" class="btn btn-outline-danger" 
-                                                    title="Eliminar" 
-                                                    onclick="return confirm('¿Eliminar encuesta? Esta acción no se puede deshacer.')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-outline-danger" 
+                                                title="Eliminar" 
+                                                onclick="confirmDelete({{ survey.id }}, '{{ survey.title }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -110,13 +181,78 @@
                 </table>
             </div>
         {% else %}
-            <div class="alert alert-info m-3">
-                <i class="fas fa-info-circle me-2"></i>
-                Aún no hay encuestas creadas. ¡Crea la primera!
+            <div class="text-center py-5">
+                <i class="fas fa-poll fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay encuestas creadas</h4>
+                <p class="text-muted">¡Crea la primera encuesta para empezar!</p>
+                <a href="{{ url_for('survey.create_survey') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i> Crear Primera Encuesta
+                </a>
             </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar la encuesta <strong id="deleteTitle"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atención:</strong> Esta acción eliminará:
+                    <ul class="mb-0 mt-2">
+                        <li>La encuesta y todas sus opciones</li>
+                        <li>Todas las respuestas de los usuarios</li>
+                        <li>Los datos estadísticos asociados</li>
+                    </ul>
+                </div>
+                <p class="text-danger mb-0"><strong>Esta acción no se puede deshacer.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Eliminar Encuesta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(surveyId, surveyTitle) {
+        document.getElementById('deleteTitle').textContent = surveyTitle;
+        document.getElementById('deleteForm').action = `/admin/encuestas/${surveyId}/eliminar`;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+    
+    // Auto-refresh para encuestas activas cada 30 segundos
+    setInterval(function() {
+        // Solo actualizar si hay encuestas activas
+        const activeCount = {{ surveys|selectattr('is_active')|list|length }};
+        if (activeCount > 0) {
+            // Actualizar solo el número de respuestas sin recargar la página completa
+            updateResponseCounts();
+        }
+    }, 30000);
+    
+    function updateResponseCounts() {
+        // Aquí podrías implementar una actualización AJAX de los contadores
+        // Por ahora, simplemente registramos que se está actualizando
+        console.log('Actualizando contadores de respuestas...');
+    }
+</script>
 {% endblock %}
 
 {% block sidebar %}
@@ -131,15 +267,20 @@
         <ul>
             <li>Crear nuevas encuestas</li>
             <li>Editar encuestas existentes</li>
-            <li>Cerrar encuestas activas</li>
-            <li>Reabrir encuestas cerradas</li>
-            <li>Ver usuarios autorizados</li>
+            <li>Cerrar/reabrir encuestas</li>
+            <li>Ver resultados en tiempo real</li>
+            <li>Gestionar usuarios autorizados</li>
             <li>Eliminar encuestas innecesarias</li>
         </ul>
         
         <div class="alert alert-info mt-3">
             <i class="fas fa-lightbulb me-2"></i>
-            <strong>Consejo:</strong> Las encuestas pueden cerrarse manualmente en cualquier momento o configurarse para cierre automático.
+            <strong>Consejo:</strong> Las encuestas con tiempo limitado generan más participación. Considera usar el cierre automático.
+        </div>
+        
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Importante:</strong> Los administradores pueden votar en todas las encuestas, independientemente de si están en la lista de usuarios autorizados.
         </div>
         
         <div class="mt-3">
