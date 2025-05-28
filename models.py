@@ -139,6 +139,12 @@ class CountdownEvent(db.Model):
     # Relación con el usuario a activar
     user_to_activate = db.relationship('User', foreign_keys=[user_to_activate_id])
 
+# Many-to-many association table for user permissions
+survey_permissions = db.Table('survey_permissions',
+    db.Column('survey_id', db.Integer, db.ForeignKey('survey.id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+)
+
 class Survey(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -149,10 +155,11 @@ class Survey(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     auto_close_after = db.Column(db.Integer, nullable=True)  # Time in hours before auto-close
     
-    # Relationships
+    # Relationships - CORREGIDO: Eliminamos el backref conflictivo
     creator = db.relationship('User', backref=db.backref('created_surveys', lazy=True))
     options = db.relationship('SurveyOption', backref='survey', lazy=True, cascade="all, delete-orphan")
-    responses = db.relationship('SurveyResponse', backref='survey', lazy=True, cascade="all, delete-orphan")  # ← AÑADIR ESTA LÍNEA
+    # CAMBIO: Eliminamos el backref aquí para evitar conflicto
+    responses = db.relationship('SurveyResponse', lazy=True, cascade="all, delete-orphan")
     authorized_users = db.relationship('User', secondary='survey_permissions')
 
 class SurveyOption(db.Model):
@@ -168,16 +175,13 @@ class SurveyResponse(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
     
-    # Relationships
-    survey = db.relationship('Survey')
+    # Relationships - CORREGIDO: Definimos explícitamente la relación de vuelta
+    survey = db.relationship('Survey', back_populates='responses')
     option = db.relationship('SurveyOption')
     user = db.relationship('User')
     
     # Unique constraint to ensure one vote per user per survey
     __table_args__ = (db.UniqueConstraint('survey_id', 'user_id'),)
 
-# Many-to-many association table for user permissions
-survey_permissions = db.Table('survey_permissions',
-    db.Column('survey_id', db.Integer, db.ForeignKey('survey.id'), primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
-)
+# IMPORTANTE: Configurar correctamente la relación bidireccional
+Survey.responses = db.relationship('SurveyResponse', back_populates='survey', lazy=True, cascade="all, delete-orphan")
