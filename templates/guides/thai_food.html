@@ -2,12 +2,130 @@
 
 {% block title %}Comida Tailandesa - TravelBoard{% endblock %}
 
+{% block extra_css %}
+<style>
+    .compact-converter {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 0.9rem;
+    }
+
+    .currency-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .currency-input {
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 0.9rem;
+        text-align: center;
+        width: 80px;
+        background: white;
+    }
+
+    .currency-input:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    }
+
+    .currency-label {
+        font-weight: 600;
+        color: #495057;
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
+    .swap-btn {
+        background: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .swap-btn:hover {
+        background: #dee2e6;
+        transform: rotate(180deg);
+    }
+
+    .rate-info {
+        font-size: 0.75rem;
+        color: #6c757d;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        .compact-converter {
+            padding: 10px 12px;
+            gap: 8px;
+        }
+        
+        .currency-group {
+            min-width: 100px;
+        }
+        
+        .currency-input {
+            width: 70px;
+            font-size: 0.85rem;
+        }
+        
+        .rate-info {
+            width: 100%;
+            text-align: center;
+            margin-top: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="display-5">Comida Tailandesa</h1>
     <a href="{{ url_for('guides.index') }}" class="btn btn-outline-primary">
         <i class="fas fa-arrow-left me-2"></i> Volver
     </a>
+</div>
+<!-- Mini Calculadora de Divisas -->
+<div class="compact-converter">
+    <div class="currency-group">
+        <span class="currency-label">🇪🇺 EUR</span>
+        <input type="number" class="currency-input" id="euroInput" placeholder="0" step="0.01" min="0">
+    </div>
+    
+    <button class="swap-btn" id="swapButton" title="Intercambiar">
+        <i class="fas fa-exchange-alt" style="font-size: 0.8rem;"></i>
+    </button>
+    
+    <div class="currency-group">
+        <span class="currency-label">🇹🇭 THB</span>
+        <input type="number" class="currency-input" id="bahtInput" placeholder="0" step="0.01" min="0">
+    </div>
+    
+    <div class="rate-info">
+        <span id="rateDisplay">1 EUR = 0.00 THB</span>
+        <br>
+        <small id="lastUpdate">Cargando...</small>
+    </div>
 </div>
 
 <div class="alert alert-info mb-4">
@@ -107,6 +225,173 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class CompactCurrencyConverter {
+    constructor() {
+        this.currentRate = 0;
+        this.lastFetchDate = null;
+        this.euroInput = document.getElementById('euroInput');
+        this.bahtInput = document.getElementById('bahtInput');
+        this.swapButton = document.getElementById('swapButton');
+        this.rateDisplay = document.getElementById('rateDisplay');
+        this.lastUpdate = document.getElementById('lastUpdate');
+        
+        // Evitar bucles infinitos en la conversión
+        this.isUpdating = false;
+        
+        this.init();
+    }
+    
+    async init() {
+        await this.fetchExchangeRate();
+        this.setupEventListeners();
+        this.updateDisplay();
+        
+        // Verificar actualizaciones cada hora
+        setInterval(() => {
+            this.checkAndUpdateRate();
+        }, 60 * 60 * 1000); // Cada hora
+    }
+    
+    async fetchExchangeRate() {
+        try {
+            console.log('Obteniendo tipo de cambio...');
+            const response = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
+            const data = await response.json();
+            
+            this.currentRate = data.rates.THB;
+            this.lastFetchDate = new Date().toDateString();
+            
+            // Guardar en localStorage para cache
+            localStorage.setItem('eurToThbRate', this.currentRate);
+            localStorage.setItem('rateDate', this.lastFetchDate);
+            
+            this.lastUpdate.textContent = `Actualizado: ${new Date().toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}`;
+            
+            console.log(`Tasa actualizada: 1 EUR = ${this.currentRate} THB`);
+        } catch (error) {
+            console.error('Error al obtener el tipo de cambio:', error);
+            
+            // Intentar usar cache local
+            const cachedRate = localStorage.getItem('eurToThbRate');
+            if (cachedRate) {
+                this.currentRate = parseFloat(cachedRate);
+                this.lastUpdate.textContent = 'Usando datos guardados';
+            } else {
+                // Fallback con tasa aproximada actualizada
+                this.currentRate = 37.8; // Tasa aproximada actual EUR a THB (mayo 2025)
+                this.lastUpdate.textContent = 'Tasa aproximada';
+            }
+        }
+    }
+    
+    async checkAndUpdateRate() {
+        const today = new Date().toDateString();
+        if (this.lastFetchDate !== today) {
+            await this.fetchExchangeRate();
+            this.updateDisplay();
+            
+            // Recalcular valores si hay alguno activo
+            if (this.euroInput.value) {
+                this.calculateFromEuros();
+            } else if (this.bahtInput.value) {
+                this.calculateFromBaht();
+            }
+        }
+    }
+    
+    setupEventListeners() {
+        // Conversión desde euros
+        this.euroInput.addEventListener('input', () => {
+            if (!this.isUpdating) {
+                this.calculateFromEuros();
+            }
+        });
+        
+        // Conversión desde baht
+        this.bahtInput.addEventListener('input', () => {
+            if (!this.isUpdating) {
+                this.calculateFromBaht();
+            }
+        });
+        
+        // Botón de intercambio
+        this.swapButton.addEventListener('click', () => {
+            this.swapValues();
+        });
+        
+        // Limpiar el otro campo cuando se borra uno
+        this.euroInput.addEventListener('keyup', (e) => {
+            if (e.target.value === '') {
+                this.isUpdating = true;
+                this.bahtInput.value = '';
+                this.isUpdating = false;
+            }
+        });
+        
+        this.bahtInput.addEventListener('keyup', (e) => {
+            if (e.target.value === '') {
+                this.isUpdating = true;
+                this.euroInput.value = '';
+                this.isUpdating = false;
+            }
+        });
+    }
+    
+    calculateFromEuros() {
+        const euroValue = parseFloat(this.euroInput.value);
+        if (!isNaN(euroValue) && euroValue >= 0) {
+            this.isUpdating = true;
+            const bahtValue = (euroValue * this.currentRate).toFixed(2);
+            this.bahtInput.value = bahtValue;
+            this.isUpdating = false;
+        }
+    }
+    
+    calculateFromBaht() {
+        const bahtValue = parseFloat(this.bahtInput.value);
+        if (!isNaN(bahtValue) && bahtValue >= 0) {
+            this.isUpdating = true;
+            const euroValue = (bahtValue / this.currentRate).toFixed(2);
+            this.euroInput.value = euroValue;
+            this.isUpdating = false;
+        }
+    }
+    
+    swapValues() {
+        const euroValue = this.euroInput.value;
+        const bahtValue = this.bahtInput.value;
+        
+        this.isUpdating = true;
+        this.euroInput.value = bahtValue ? (parseFloat(bahtValue) / this.currentRate).toFixed(2) : '';
+        this.bahtInput.value = euroValue ? (parseFloat(euroValue) * this.currentRate).toFixed(2) : '';
+        this.isUpdating = false;
+        
+        // Animación del botón
+        this.swapButton.style.transform = 'rotate(180deg)';
+        setTimeout(() => {
+            this.swapButton.style.transform = 'rotate(0deg)';
+        }, 300);
+    }
+    
+    updateDisplay() {
+        this.rateDisplay.textContent = `1 EUR = ${this.currentRate.toFixed(2)} THB`;
+    }
+}
+
+// Inicializar cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    new CompactCurrencyConverter();
+});
+</script>
 {% endblock %}
 
 {% block sidebar %}
