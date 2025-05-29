@@ -54,14 +54,19 @@
                         <i class="{{ category.icon }} me-2"></i>
                         {{ category.name }}
                         <span class="badge bg-light text-dark ms-2" id="badge-{{ category_id }}">
-                            {% set category_checked = checked_items.values() | selectattr('item_id', 'in', category.items.keys()) | selectattr('is_checked') | list | length %}
-                            {{ category_checked }}/{{ category.items | length }}
+                            {% set category_checked = 0 %}
+                            {% for item_id, item_name in category['items'].items() %}
+                                {% if checked_items.get(item_id) and checked_items.get(item_id).is_checked %}
+                                    {% set category_checked = category_checked + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ category_checked }}/{{ category['items'] | length }}
                         </span>
                     </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
-                        {% for item_id, item_name in category.items.items() %}
+                        {% for item_id, item_name in category['items'].items() %}
                             {% set is_checked = checked_items.get(item_id) and checked_items.get(item_id).is_checked %}
                             <div class="list-group-item checklist-item" data-item-id="{{ item_id }}"
                                  data-category="{{ category_id }}">
@@ -124,7 +129,7 @@
 {% block extra_js %}
 <script>
     function toggleItem(itemId, categoryId) {
-        fetch('/api/checklist/toggle', {
+        fetch('/checklist/api/checklist/toggle', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -221,7 +226,7 @@
     // Botón de reset
     document.getElementById('resetBtn').addEventListener('click', function() {
         if (confirm('¿Estás seguro de que quieres resetear todo tu checklist? Esta acción no se puede deshacer.')) {
-            fetch('/api/checklist/reset', {
+            fetch('/checklist/api/checklist/reset', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
