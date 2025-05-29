@@ -252,56 +252,354 @@ CHECKLIST_ITEMS = {
 }
 
 # Configuracion para guías
-DANGEROUS_ANIMALS = [
+# Reptiles peligrosos de Tailandia
+DANGEROUS_REPTILES = [
     {
         'name': 'Cobra Rey',
         'thai_name': 'งูจงอาง (Ngu Chong Ang)',
-        'image': 'cobra.jpg',
-        'description': 'Una de las serpientes más venenosas de Tailandia. Puede alcanzar hasta 6 metros de longitud. Si la ves, mantén distancia y no la provoques.',
+        'image': 'cobra_rey.jpg',
+        'description': 'La serpiente venenosa más larga del mundo. Puede alcanzar hasta 6 metros de longitud. Su veneno es altamente neurotóxico y puede ser mortal en 30 minutos.',
         'danger_level': 'Extremo',
-        'areas': ['Kanchanaburi', 'Khao Yai', 'Areas rurales']
+        'areas': ['Kanchanaburi', 'Khao Yai', 'Áreas rurales', 'Parques nacionales'],
+        'habitat': 'Selvas, bambuzales, cerca de agua',
+        'behavior': 'Agresiva cuando protege su nido, se yergue hasta 1/3 de su longitud'
     },
     {
-        'name': 'Escorpión Negro',
-        'thai_name': 'แมงป่อง (Maeng Pong)',
-        'image': 'scorpion.jpg',
-        'description': 'Común en áreas rocosas y bajo troncos. Su picadura es dolorosa pero raramente mortal. Sacude zapatos antes de ponértelos.',
+        'name': 'Cobra Siamés',
+        'thai_name': 'งูเห่า (Ngu Hao)',
+        'image': 'cobra_siames.jpg',
+        'description': 'Cobra altamente venenosa con capucha distintiva. Puede escupir veneno hasta 3 metros de distancia, causando ceguera temporal.',
+        'danger_level': 'Extremo',
+        'areas': ['Bangkok', 'Chiang Mai', 'Áreas urbanas', 'Campos de arroz'],
+        'habitat': 'Zonas habitadas, jardines, edificios abandonados',
+        'behavior': 'Escupe veneno cuando se siente amenazada, muy territorial'
+    },
+    {
+        'name': 'Víbora de Russell',
+        'thai_name': 'งูสามเหลี่ยม (Ngu Sam Liam)',
+        'image': 'vibora_russell.jpg',
+        'description': 'Una de las serpientes más peligrosas de Asia. Responsable de la mayoría de mordeduras fatales. Su veneno causa hemorragias severas.',
+        'danger_level': 'Extremo',
+        'areas': ['Todo el país', 'Campos agrícolas', 'Áreas rurales'],
+        'habitat': 'Campos abiertos, plantaciones, cerca de asentamientos humanos',
+        'behavior': 'Agresiva y territorial, se camufla muy bien'
+    },
+    {
+        'name': 'Krait Rayado',
+        'thai_name': 'งูสวาดลาย (Ngu Sawad Lai)',
+        'image': 'krait_rayado.jpg',
+        'description': 'Serpiente extremadamente venenosa, activa de noche. Su mordedura es casi indolora pero puede causar parálisis respiratoria.',
+        'danger_level': 'Extremo',
+        'areas': ['Todo el país', 'Especialmente sur de Tailandia'],
+        'habitat': 'Casas, debajo de camas, espacios oscuros',
+        'behavior': 'Nocturna, busca refugio en casas durante el día'
+    },
+    {
+        'name': 'Pitón Reticulada',
+        'thai_name': 'งูเหลือม (Ngu Lhuam)',
+        'image': 'piton_reticulada.jpg',
+        'description': 'Una de las serpientes más largas del mundo, puede superar los 8 metros. No venenosa pero mata por constricción.',
+        'danger_level': 'Alto',
+        'areas': ['Parques nacionales', 'Selvas', 'Cerca de agua'],
+        'habitat': 'Árboles, cerca de ríos y lagos',
+        'behavior': 'Embosca a sus presas, excelente nadadora'
+    },
+    {
+        'name': 'Cocodrilo de Agua Salada',
+        'thai_name': 'จระเข้น้ำเค็ม (Jorakhe Nam Khem)',
+        'image': 'cocodrilo_agua_salada.jpg',
+        'description': 'El reptil más grande y peligroso de Tailandia. Puede crecer hasta 7 metros. Extremadamente agresivo y territorial.',
+        'danger_level': 'Extremo',
+        'areas': ['Krabi', 'Phuket', 'Manglares del sur'],
+        'habitat': 'Estuarios, manglares, ríos costeros',
+        'behavior': 'Emboscadas desde el agua, death roll mortal'
+    },
+    {
+        'name': 'Cocodrilo Siamés',
+        'thai_name': 'จระเข้น้ำจืด (Jorakhe Nam Jued)',
+        'image': 'cocodrilo_siames.jpg',
+        'description': 'Cocodrilo de agua dulce en peligro de extinción. Menos agresivo que su primo de agua salada pero igualmente peligroso.',
+        'danger_level': 'Alto',
+        'areas': ['Parques nacionales', 'Ríos del interior'],
+        'habitat': 'Ríos, lagos, pantanos de agua dulce',
+        'behavior': 'Más tímido, pero protege agresivamente su territorio'
+    },
+    {
+        'name': 'Gecko Tokay',
+        'thai_name': 'ตุ๊กแก (Tuk Gae)',
+        'image': 'gecko_tokay.jpg',
+        'description': 'Lagarto grande con mordedura muy fuerte. No venenoso pero su mordida puede infectarse fácilmente. Muy territorial.',
         'danger_level': 'Moderado',
-        'areas': ['Todo el país', 'Especialmente en zonas rurales']
-    },
+        'areas': ['Todo el país', 'Casas', 'Hoteles'],
+        'habitat': 'Techos, paredes, espacios urbanos',
+        'behavior': 'Nocturno, territorial, mordedura muy dolorosa'
+    }
+]
+
+# Insectos y arácnidos peligrosos de Tailandia
+DANGEROUS_INSECTS = [
     {
-        'name': 'Medusa Caja',
-        'thai_name': 'แมงกะพรุนกล่อง (Maeng Kaprun Klong)',
-        'image': 'jellyfish.jpg',
-        'description': 'Extremadamente venenosa, habita en aguas costeras. Su picadura puede ser mortal. Evitar nadar en temporada de medusas.',
-        'danger_level': 'Extremo',
-        'areas': ['Phuket', 'Krabi', 'Koh Samui', 'Koh Phangan']
+        'name': 'Escorpión Negro Asiático',
+        'thai_name': 'แมงป่องดำ (Maeng Pong Dam)',
+        'image': 'escorpion_negro.jpg',
+        'description': 'Escorpión altamente venenoso. Su picadura causa dolor extremo, convulsiones y puede ser mortal para niños y ancianos.',
+        'danger_level': 'Alto',
+        'areas': ['Todo el país', 'Zonas rocosas', 'Bosques'],
+        'habitat': 'Debajo de piedras, troncos, zapatos',
+        'behavior': 'Nocturno, se esconde durante el día'
     },
     {
         'name': 'Ciempiés Gigante',
-        'thai_name': 'ตะขาบ (Takhap)',
-        'image': 'centipede.jpg',
-        'description': 'Puede crecer hasta 20 cm. Su mordedura es muy dolorosa y puede causar infección. Se esconde en lugares húmedos.',
+        'thai_name': 'ตะขาบยักษ์ (Takhap Yak)',
+        'image': 'ciempies_gigante.jpg',
+        'description': 'Puede crecer hasta 30 cm. Su mordedura inyecta veneno que causa dolor severo, hinchazón y necrosis local.',
         'danger_level': 'Alto',
-        'areas': ['Todo el país', 'Especialmente en zonas húmedas']
+        'areas': ['Todo el país', 'Zonas húmedas'],
+        'habitat': 'Debajo de troncos, hojarasca, baños húmedos',
+        'behavior': 'Nocturno, muy agresivo cuando se ve amenazado'
     },
     {
-        'name': 'Mono Macaco',
-        'thai_name': 'ลิง (Ling)',
-        'image': 'macaque.jpg',
-        'description': 'Aunque parezcan amigables, pueden morder y transmitir rabia. No alimentes ni toques a los monos.',
-        'danger_level': 'Moderado',
-        'areas': ['Lopburi', 'Templos', 'Parques nacionales']
+        'name': 'Araña Viuda Negra',
+        'thai_name': 'แมงมุมแม่ม่าย (Maeng Mum Mae Mai)',
+        'image': 'viuda_negra.jpg',
+        'description': 'Araña altamente venenosa con marca roja distintiva. Su mordedura puede causar latrodectismo, potencialmente mortal.',
+        'danger_level': 'Alto',
+        'areas': ['Todo el país', 'Espacios oscuros'],
+        'habitat': 'Rincones oscuros, cobertizos, baños',
+        'behavior': 'Tímida pero agresiva si se ve amenazada'
     },
     {
         'name': 'Araña de Saco Amarillo',
-        'thai_name': 'แมงมุมถุงเหลือง',
-        'image': 'spider.jpg',
-        'description': 'Pequeña pero venenosa. Su mordedura causa dolor e hinchazón. Común en casas y hoteles.',
-        'danger_level': 'Bajo-Moderado',
-        'areas': ['Áreas urbanas', 'Hoteles', 'Casas']
+        'thai_name': 'แมงมุมถุงเหลือง (Maeng Mum Tung Lhuang)',
+        'image': 'araña_saco_amarillo.jpg',
+        'description': 'Pequeña pero venenosa. Su mordedura causa dolor, hinchazón y necrosis. Común en hoteles y casas.',
+        'danger_level': 'Moderado',
+        'areas': ['Áreas urbanas', 'Hoteles', 'Casas'],
+        'habitat': 'Esquinas de techos, cortinas, ropa',
+        'behavior': 'Construye sacos de seda, activa de noche'
+    },
+    {
+        'name': 'Avispa Gigante Asiática',
+        'thai_name': 'ต่อนรก (Ton Narok)',
+        'image': 'avispa_gigante.jpg',
+        'description': 'La avispa más grande del mundo. Su picadura es extremadamente dolorosa y puede causar shock anafiláctico.',
+        'danger_level': 'Alto',
+        'areas': ['Montañas del norte', 'Bosques'],
+        'habitat': 'Nidos en árboles, tierra',
+        'behavior': 'Extremadamente agresiva, ataca en grupo'
+    },
+    {
+        'name': 'Hormiga Bala',
+        'thai_name': 'มดกระสุน (Mot Krasun)',
+        'image': 'hormiga_bala.jpg',
+        'description': 'Su picadura es considerada una de las más dolorosas del reino animal. El dolor puede durar hasta 24 horas.',
+        'danger_level': 'Alto',
+        'areas': ['Selvas del sur', 'Parques nacionales'],
+        'habitat': 'Árboles, selva tropical',
+        'behavior': 'Muy territorial, ataca sin provocación'
+    },
+    {
+        'name': 'Mosquito Dengue',
+        'thai_name': 'ยุงลาย (Yung Lai)',
+        'image': 'mosquito_dengue.jpg',
+        'description': 'Vector del dengue, chikungunya y Zika. Activo durante el día. Las enfermedades que transmite pueden ser mortales.',
+        'danger_level': 'Alto',
+        'areas': ['Todo el país', 'Especialmente áreas urbanas'],
+        'habitat': 'Agua estancada, recipientes',
+        'behavior': 'Pica durante el día, especialmente al amanecer y atardecer'
+    },
+    {
+        'name': 'Araña Lobo',
+        'thai_name': 'แมงมุมหมาป่า (Maeng Mum Ma Pa)',
+        'image': 'araña_lobo.jpg',
+        'description': 'Araña cazadora agresiva. Su mordedura causa dolor, hinchazón y puede infectarse. No construye telarañas.',
+        'danger_level': 'Moderado',
+        'areas': ['Todo el país', 'Jardines', 'Casas'],
+        'habitat': 'Suelo, jardines, espacios abiertos',
+        'behavior': 'Cazadora activa, salta sobre sus presas'
     }
 ]
+
+# Mamíferos peligrosos de Tailandia
+DANGEROUS_MAMMALS = [
+    {
+        'name': 'Elefante Asiático',
+        'thai_name': 'ช้างเอเชีย (Chang Asia)',
+        'image': 'elefante_asiatico.jpg',
+        'description': 'Pueden ser impredecibles y extremadamente peligrosos. Los machos en temporada de apareamiento son especialmente agresivos.',
+        'danger_level': 'Extremo',
+        'areas': ['Chiang Mai', 'Parques nacionales', 'Santuarios'],
+        'habitat': 'Selvas, santuarios, campamentos turísticos',
+        'behavior': 'Pueden cargar sin aviso, especialmente machos en musth'
+    },
+    {
+        'name': 'Búfalo de Agua',
+        'thai_name': 'ควาย (Kwai)',
+        'image': 'bufalo_agua.jpg',
+        'description': 'Animal muy territorial y agresivo. Sus cuernos pueden atravesar un cuerpo humano. Responsable de muchas muertes anuales.',
+        'danger_level': 'Alto',
+        'areas': ['Campos de arroz', 'Áreas rurales', 'Todo el país'],
+        'habitat': 'Campos inundados, cerca de agua',
+        'behavior': 'Extremadamente territorial, carga directamente'
+    },
+    {
+        'name': 'Mono Macaco',
+        'thai_name': 'ลิงแสม (Ling Saem)',
+        'image': 'macaco_tailandes.jpg',
+        'description': 'Pueden morder y transmitir rabia, hepatitis B y herpes B. Muy agresivos cuando protegen comida o crías.',
+        'danger_level': 'Moderado',
+        'areas': ['Lopburi', 'Templos', 'Parques nacionales'],
+        'habitat': 'Templos, áreas urbanas, bosques',
+        'behavior': 'Roban comida, muerden si se sienten amenazados'
+    },
+    {
+        'name': 'Jabalí',
+        'thai_name': 'หมูป่า (Mu Pa)',
+        'image': 'jabali_tailandes.jpg',
+        'description': 'Muy agresivos y territoriales. Sus colmillos pueden causar heridas profundas. Cargan en línea recta.',
+        'danger_level': 'Alto',
+        'areas': ['Parques nacionales', 'Bosques', 'Norte de Tailandia'],
+        'habitat': 'Bosques densos, áreas montañosas',
+        'behavior': 'Carga directamente cuando se siente amenazado'
+    },
+    {
+        'name': 'Oso Malayo',
+        'thai_name': 'หมีควาย (Mi Kwai)',
+        'image': 'oso_malayo.jpg',
+        'description': 'El oso más pequeño pero muy agresivo. Sus garras pueden causar heridas mortales. Ataca sin provocación.',
+        'danger_level': 'Extremo',
+        'areas': ['Parques nacionales', 'Selvas del sur'],
+        'habitat': 'Selvas densas, áreas montañosas',
+        'behavior': 'Impredecible, puede atacar sin aviso'
+    },
+    {
+        'name': 'Perro Callejero',
+        'thai_name': 'หมาจรจัด (Ma Jorajat)',
+        'image': 'perro_callejero.jpg',
+        'description': 'Vector principal de la rabia en Tailandia. Pueden atacar en manadas, especialmente de noche.',
+        'danger_level': 'Alto',
+        'areas': ['Todo el país', 'Especialmente áreas urbanas'],
+        'habitat': 'Calles, mercados, zonas urbanas',
+        'behavior': 'Territorial, ataca en grupo, especialmente nocturno'
+    },
+    {
+        'name': 'Murciélago Vampiro',
+        'thai_name': 'ค้างคาวแวมไพร์ (Kang Kao Vampire)',
+        'image': 'murcielago_vampiro.jpg',
+        'description': 'Puede transmitir rabia y otros virus. Su mordedura es casi imperceptible y puede infectar mientras duermes.',
+        'danger_level': 'Moderado',
+        'areas': ['Cuevas', 'Edificios abandonados', 'Áticos'],
+        'habitat': 'Cuevas, techos, espacios oscuros',
+        'behavior': 'Nocturno, se alimenta de sangre mientras duermes'
+    },
+    {
+        'name': 'Leopardo Nebuloso',
+        'thai_name': 'เสือดาวเมฆ (Suea Dao Megh)',
+        'image': 'leopardo_nebuloso.jpg',
+        'description': 'Felino salvaje altamente territorial. Excelente trepador, ataca desde los árboles. Muy sigiloso y peligroso.',
+        'danger_level': 'Extremo',
+        'areas': ['Parques nacionales', 'Selvas remotas'],
+        'habitat': 'Copas de árboles, selva densa',
+        'behavior': 'Embosca desde árboles, cazador solitario'
+    }
+]
+
+# Animales acuáticos peligrosos de Tailandia
+DANGEROUS_AQUATIC = [
+    {
+        'name': 'Medusa Caja',
+        'thai_name': 'แมงกะพรุนกล่อง (Maeng Kaprun Klong)',
+        'image': 'medusa_caja.jpg',
+        'description': 'Una de las criaturas más venenosas del mundo. Su picadura puede matar en minutos causando paro cardíaco.',
+        'danger_level': 'Extremo',
+        'areas': ['Phuket', 'Krabi', 'Koh Samui', 'Koh Phangan', 'Costas del sur'],
+        'habitat': 'Aguas costeras tropicales, especialmente en temporada de lluvias',
+        'behavior': 'Transparente, casi invisible, tentáculos de hasta 3 metros'
+    },
+    {
+        'name': 'Pez Piedra',
+        'thai_name': 'ปลาหิน (Pla Hin)',
+        'image': 'pez_piedra.jpg',
+        'description': 'El pez más venenoso del mundo. Se camufla perfectamente como una roca. Su espina inyecta veneno mortal.',
+        'danger_level': 'Extremo',
+        'areas': ['Todas las costas', 'Arrecifes de coral'],
+        'habitat': 'Fondos rocosos, arrecifes, aguas poco profundas',
+        'behavior': 'Inmóvil, se camufla perfectamente, ataque defensivo'
+    },
+    {
+        'name': 'Serpiente Marina',
+        'thai_name': 'งูทะเล (Ngu Talay)',
+        'image': 'serpiente_marina.jpg',
+        'description': 'Altamente venenosa, su veneno es 10 veces más potente que el de la cobra. Respira aire pero vive en el mar.',
+        'danger_level': 'Extremo',
+        'areas': ['Golfo de Tailandia', 'Mar de Andamán'],
+        'habitat': 'Aguas costeras, arrecifes, estuarios',
+        'behavior': 'Generalmente dócil pero mortal si se manipula'
+    },
+    {
+        'name': 'Tiburón Toro',
+        'thai_name': 'ฉลามกระทิง (Chalam Krathing)',
+        'image': 'tiburon_toro.jpg',
+        'description': 'Uno de los tiburones más agresivos. Puede remontar ríos de agua dulce. Responsable de muchos ataques fatales.',
+        'danger_level': 'Extremo',
+        'areas': ['Costas del sur', 'Estuarios', 'Algunos ríos'],
+        'habitat': 'Aguas costeras, estuarios, puede entrar en ríos',
+        'behavior': 'Muy territorial y agresivo, ataca sin provocación'
+    },
+    {
+        'name': 'Raya Venenosa',
+        'thai_name': 'ปลากระเบนพิษ (Pla Kraben Pit)',
+        'image': 'raya_venenosa.jpg',
+        'description': 'Su aguijón venenoso puede atravesar el pecho. El veneno causa dolor extremo y puede ser mortal.',
+        'danger_level': 'Alto',
+        'areas': ['Todas las costas', 'Bahías poco profundas'],
+        'habitat': 'Fondos arenosos, aguas poco profundas',
+        'behavior': 'Se entierra en arena, ataque defensivo con la cola'
+    },
+    {
+        'name': 'Pulpo de Anillos Azules',
+        'thai_name': 'ปลาหมึกวงแหวนน้ำเงิน (Pla Muek Wong Waen Nam Ngern)',
+        'image': 'pulpo_anillos_azules.jpg',
+        'description': 'Pequeño pero extremadamente venenoso. Su mordedura puede causar parálisis y muerte por asfixia en minutos.',
+        'danger_level': 'Extremo',
+        'areas': ['Pozas de marea', 'Arrecifes', 'Costas rocosas'],
+        'habitat': 'Grietas en rocas, pozas de marea',
+        'behavior': 'Muestra anillos azules cuando se ve amenazado'
+    },
+    {
+        'name': 'Pez León',
+        'thai_name': 'ปลาสิงโต (Pla Sing To)',
+        'image': 'pez_leon.jpg',
+        'description': 'Sus espinas contienen veneno que causa dolor extremo, náuseas y puede causar problemas cardíacos.',
+        'danger_level': 'Alto',
+        'areas': ['Arrecifes de coral', 'Aguas tropicales'],
+        'habitat': 'Arrecifes, grietas en rocas',
+        'behavior': 'Territorial, despliega aletas cuando se siente amenazado'
+    },
+    {
+        'name': 'Medusa Irukandji',
+        'thai_name': 'แมงกะพรุนอิรุกันดจิ (Maeng Kaprun Irukandji)',
+        'image': 'medusa_irukandji.jpg',
+        'description': 'Diminuta pero letal. Su picadura causa el síndrome de Irukandji: dolor extremo, hipertensión y muerte.',
+        'danger_level': 'Extremo',
+        'areas': ['Aguas tropicales del sur'],
+        'habitat': 'Aguas abiertas, cerca de la superficie',
+        'behavior': 'Casi invisible, tentáculos muy finos'
+    },
+    {
+        'name': 'Barracuda Gigante',
+        'thai_name': 'ปลาบาราคูด้ายักษ์ (Pla Barracuda Yak)',
+        'image': 'barracuda_gigante.jpg',
+        'description': 'Predador agresivo con dientes afilados como navajas. Puede confundir objetos brillantes con presas.',
+        'danger_level': 'Alto',
+        'areas': ['Aguas costeras', 'Arrecifes'],
+        'habitat': 'Aguas abiertas, cerca de arrecifes',
+        'behavior': 'Ataca objetos brillantes, cazador oportunista'
+    }
+]
+
+# Combinar todas las categorías (mantener compatibilidad con código existente)
+DANGEROUS_ANIMALS = DANGEROUS_REPTILES + DANGEROUS_INSECTS + DANGEROUS_MAMMALS + DANGEROUS_AQUATIC
 
 # Comida tailandesa organizada por categorías
 THAI_MAIN_DISHES = [
@@ -808,90 +1106,104 @@ DANGEROUS_PLACES = [
 # Resumen por regiones basado en tu itinerario
 REGIONAL_SUMMARY = {
     'Bangkok': {
-        'dangerous_animals': ['Escorpión Negro', 'Araña de Saco Amarillo', 'Ciempiés Gigante'],
+        'dangerous_animals': [
+            'Cobra Siamés', 'Escorpión Negro Asiático', 'Araña de Saco Amarillo', 
+            'Ciempiés Gigante', 'Gecko Tokay', 'Mono Macaco', 'Perro Callejero',
+            'Mosquito Dengue', 'Araña Lobo'
+        ],
         'dangerous_plants': ['Dieffenbachia', 'Anturio', 'Lirio de Cala', 'Flor de Oleandro'],
         'food_specialties': [
-            # Platos principales
             'Pad Thai', 'Tom Yum Goong', 'Massaman Curry', 'Pad Krapow', 'Green Curry', 'Pad See Ew', 'Tom Kha Gai', 'Khao Pad',
-            # Postres
             'Mango Sticky Rice', 'Thai Coconut Ice Cream', 'Tub Tim Grob', 'Thong Yip', 'Foi Thong',
-            # Bebidas
             'Thai Iced Tea', 'Thai Iced Coffee', 'Fresh Coconut Water', 'Singha Beer', 'Chang Beer'
         ],
         'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Cabeza y Pies', 'La Monarquía'],
         'dangerous_places': ['Patpong Night Market', 'Soi Cowboy', 'Khaosan Road de madrugada', 'Nana Plaza', 'Khlong Toei Slum', 'Callejones de Chinatown de noche']
     },
     'Chiang Mai': {
-        'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
+        'dangerous_animals': [
+            'Cobra Rey', 'Escorpión Negro Asiático', 'Mono Macaco', 'Ciempiés Gigante',
+            'Elefante Asiático', 'Avispa Gigante Asiática', 'Jabalí', 'Oso Malayo',
+            'Leopardo Nebuloso'
+        ],
         'dangerous_plants': ['Ricino', 'Flor de Oleandro', 'Dieffenbachia'],
         'food_specialties': [
             'Khao Soi', 'Larb', 'Sai Oua (salchicha norteña)', 'Nam Prik Ong', 'Gaeng Hang Lay',
-            # Postres locales
             'Khanom Krok', 'Banana in Coconut Milk',
-            # Bebidas
             'Lemon Grass Tea', 'Fresh Coconut Water', 'Thai Iced Coffee'
         ],
         'cultural_traditions': ['Loy Krathong', 'Wai', 'Respeto a Buda y Monjes', 'Songkran'],
         'dangerous_places': ['Mercados nocturnos ilegales']
     },
     'Khao Sok': {
-        'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Ciempiés Gigante', 'Araña de Saco Amarillo'],
+        'dangerous_animals': [
+            'Cobra Rey', 'Escorpión Negro Asiático', 'Ciempiés Gigante', 'Araña de Saco Amarillo',
+            'Pitón Reticulada', 'Elefante Asiático', 'Jabalí', 'Oso Malayo',
+            'Leopardo Nebuloso', 'Hormiga Bala'
+        ],
         'dangerous_plants': ['Ricino', 'Flor de Oleandro'],
         'food_specialties': [
             'Pescados de río', 'Curry selvático', 'Vegetales locales', 'Tom Yum con hierbas silvestres',
-            # Bebidas naturales
             'Fresh Coconut Water', 'Lemon Grass Tea', 'Sugarcane Juice'
         ],
         'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes'],
         'dangerous_places': []
     },
     'Krabi': {
-        'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
+        'dangerous_animals': [
+            'Medusa Caja', 'Escorpión Negro Asiático', 'Mono Macaco', 'Ciempiés Gigante',
+            'Cocodrilo de Agua Salada', 'Pez Piedra', 'Serpiente Marina', 'Raya Venenosa',
+            'Pulpo de Anillos Azules'
+        ],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Anturio'],
         'food_specialties': [
             'Mariscos frescos', 'Tom Yum Goong', 'Pescado a la parrilla', 'Gaeng Som', 'Curry de cangrejo',
-            # Postres costeros
             'Thai Coconut Ice Cream', 'Mango Sticky Rice',
-            # Bebidas
             'Fresh Coconut Water', 'Watermelon Juice', 'Thai Basil Seed Drink'
         ],
         'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Songkran'],
         'dangerous_places': []
     },
     'Phuket': {
-        'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
+        'dangerous_animals': [
+            'Medusa Caja', 'Escorpión Negro Asiático', 'Ciempiés Gigante',
+            'Pez Piedra', 'Serpiente Marina', 'Tiburón Toro', 'Raya Venenosa',
+            'Medusa Irukandji', 'Barracuda Gigante'
+        ],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Lirio de Cala'],
         'food_specialties': [
             'Mariscos', 'Hokkien Mee', 'Oh Tao (tortilla de ostras)', 'Mee Hokkien', 'Curry Phuket',
-            # Postres
             'Thai Coconut Ice Cream', 'Tub Tim Grob',
-            # Bebidas de playa
             'Fresh Coconut Water', 'Singha Beer', 'Chang Beer', 'Thai Rum (Sang Som)'
         ],
         'cultural_traditions': ['Wai', 'Songkran', 'La Monarquía'],
         'dangerous_places': []
     },
     'Koh Phangan': {
-        'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
+        'dangerous_animals': [
+            'Medusa Caja', 'Escorpión Negro Asiático', 'Ciempiés Gigante',
+            'Pez Piedra', 'Serpiente Marina', 'Raya Venenosa', 'Pez León',
+            'Medusa Irukandji'
+        ],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro'],
         'food_specialties': [
             'Pescado fresco', 'Curries de mariscos', 'Frutas tropicales', 'Pad Thai playero',
-            # Postres tropicales
             'Mango Sticky Rice', 'Banana in Coconut Milk',
-            # Bebidas de fiesta
             'Fresh Coconut Water', 'Thai Rum (Sang Som)', 'Chang Beer', 'Watermelon Juice'
         ],
         'cultural_traditions': ['Full Moon Party', 'Wai', 'Respeto a Buda y Monjes'],
         'dangerous_places': ['Playas solitarias de Koh Phangan']
     },
     'Koh Samui': {
-        'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante', 'Mono Macaco'],
+        'dangerous_animals': [
+            'Medusa Caja', 'Escorpión Negro Asiático', 'Ciempiés Gigante', 'Mono Macaco',
+            'Pez Piedra', 'Serpiente Marina', 'Raya Venenosa', 'Pez León',
+            'Barracuda Gigante'
+        ],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Dieffenbachia'],
         'food_specialties': [
             'Mariscos', 'Som Tam', 'Coconut ice cream', 'Pescado al coco', 'Curry verde con mariscos',
-            # Postres de coco
             'Thai Coconut Ice Cream', 'Khanom Krok',
-            # Bebidas tropicales
             'Fresh Coconut Water', 'Thai Basil Seed Drink', 'Sugarcane Juice', 'Singha Beer'
         ],
         'cultural_traditions': ['Wai', 'Songkran', 'Respeto a Buda y Monjes'],

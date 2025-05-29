@@ -2,15 +2,22 @@
 from flask import Blueprint, render_template
 from flask_login import login_required
 from config import (
-    DANGEROUS_ANIMALS,
-    THAI_MAIN_DISHES,  # Nueva importación
-    THAI_DESSERTS,     # Nueva importación  
-    THAI_BEVERAGES,    # Nueva importación
+    # Importaciones existentes
+    THAI_MAIN_DISHES,
+    THAI_DESSERTS,     
+    THAI_BEVERAGES,
     THAI_FOOD,         # Mantener para compatibilidad
     DANGEROUS_PLANTS,
     THAI_TRADITIONS,
     DANGEROUS_PLACES,
-    REGIONAL_SUMMARY
+    REGIONAL_SUMMARY,
+    
+    # Nuevas importaciones para animales por categorías
+    DANGEROUS_REPTILES,
+    DANGEROUS_INSECTS,
+    DANGEROUS_MAMMALS,
+    DANGEROUS_AQUATIC,
+    DANGEROUS_ANIMALS  # Mantener para compatibilidad
 )
 
 guides = Blueprint('guides', __name__)
@@ -25,9 +32,13 @@ def index():
 @guides.route('/guias/animales-peligrosos')
 @login_required
 def dangerous_animals():
-    """Guía de animales peligrosos"""
+    """Guía de animales peligrosos con secciones separadas"""
     return render_template('guides/dangerous_animals.html', 
-                          animals=DANGEROUS_ANIMALS,
+                          reptiles=DANGEROUS_REPTILES,
+                          insects=DANGEROUS_INSECTS,
+                          mammals=DANGEROUS_MAMMALS,
+                          aquatic=DANGEROUS_AQUATIC,
+                          animals=DANGEROUS_ANIMALS,  # Para compatibilidad con código existente
                           regional_summary=REGIONAL_SUMMARY)
 
 @guides.route('/guias/comida-tailandesa')
