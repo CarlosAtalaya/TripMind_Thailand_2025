@@ -201,3 +201,18 @@ class ChecklistItem(db.Model):
     
     def __repr__(self):
         return f'<ChecklistItem {self.user.name} - {self.item_id}: {self.is_checked}>'
+    
+class CustomChecklistItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    category_id = db.Column(db.String(50), nullable=False)  # categoría (documentos, ropa, etc.)
+    item_text = db.Column(db.String(200), nullable=False)  # texto del elemento personalizado
+    is_checked = db.Column(db.Boolean, default=False)
+    checked_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relación con el usuario
+    user = db.relationship('User', backref=db.backref('custom_checklist_items', lazy=True))
+    
+    def __repr__(self):
+        return f'<CustomChecklistItem {self.user.name} - {self.category_id}: {self.item_text[:30]}...>'

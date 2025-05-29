@@ -68,6 +68,7 @@
                     <div class="list-group list-group-flush">
                         {% for item_id, item_name in category['items'].items() %}
                             {% set is_checked = checked_items.get(item_id) and checked_items.get(item_id).is_checked %}
+                            {% set is_custom = item_id.startswith('custom_') %}
                             <div class="list-group-item checklist-item" data-item-id="{{ item_id }}"
                                  data-category="{{ category_id }}">
                                 <div class="form-check d-flex align-items-center">
@@ -80,15 +81,43 @@
                                            for="check-{{ item_id }}"
                                            id="label-{{ item_id }}">
                                         {{ item_name }}
+                                        {% if is_custom %}
+                                            <small class="badge bg-secondary ms-2">Personalizado</small>
+                                        {% endif %}
                                     </label>
-                                    {% if is_checked %}
-                                        <small class="text-success ms-2">
-                                            <i class="fas fa-check-circle"></i>
-                                        </small>
-                                    {% endif %}
+                                    <div class="d-flex align-items-center">
+                                        {% if is_checked %}
+                                            <small class="text-success me-2">
+                                                <i class="fas fa-check-circle"></i>
+                                            </small>
+                                        {% endif %}
+                                        {% if is_custom %}
+                                            <button class="btn btn-outline-danger btn-sm" 
+                                                    onclick="removeCustomItem('{{ item_id }}', '{{ category_id }}')"
+                                                    title="Eliminar elemento personalizado">
+                                                <i class="fas fa-trash fa-xs"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
+                        
+                        <!-- Botón para añadir elemento personalizado -->
+                        <div class="list-group-item bg-light">
+                            <div class="d-flex align-items-center">
+                                <input type="text" 
+                                       class="form-control form-control-sm me-2" 
+                                       id="new-item-{{ category_id }}" 
+                                       placeholder="Añadir elemento personalizado..."
+                                       maxlength="200">
+                                <button class="btn btn-outline-primary btn-sm" 
+                                        onclick="addCustomItem('{{ category_id }}')"
+                                        title="Añadir elemento">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -151,7 +180,15 @@
                 
                 if (data.is_checked) {
                     label.classList.add('text-decoration-line-through', 'text-muted');
-                    listItem.innerHTML += '<small class="text-success ms-2"><i class="fas fa-check-circle"></i></small>';
+                    
+                    // Solo añadir el ícono si no existe ya
+                    if (!listItem.querySelector('.text-success')) {
+                        const checkDiv = listItem.querySelector('.d-flex.align-items-center');
+                        const checkIcon = document.createElement('small');
+                        checkIcon.className = 'text-success me-2';
+                        checkIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                        checkDiv.insertBefore(checkIcon, checkDiv.firstChild);
+                    }
                     
                     // Animación de éxito
                     listItem.style.backgroundColor = '#d4edda';
@@ -181,6 +218,87 @@
             checkbox.checked = !checkbox.checked;
         });
     }
+    
+    function addCustomItem(categoryId) {
+        const input = document.getElementById(`new-item-${categoryId}`);
+        const itemText = input.value.trim();
+        
+        if (!itemText) {
+            alert('Por favor, escribe el texto del elemento');
+            return;
+        }
+        
+        if (itemText.length > 200) {
+            alert('El texto es demasiado largo (máximo 200 caracteres)');
+            return;
+        }
+        
+        fetch('/checklist/api/checklist/add-custom', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                category_id: categoryId,
+                item_text: itemText
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Recargar la página para mostrar el nuevo elemento
+                location.reload();
+            } else {
+                alert('Error al añadir elemento: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión');
+        });
+    }
+    
+    function removeCustomItem(itemId, categoryId) {
+        if (!confirm('¿Estás seguro de que quieres eliminar este elemento personalizado?')) {
+            return;
+        }
+        
+        fetch('/checklist/api/checklist/remove-custom', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Recargar la página para actualizar la vista
+                location.reload();
+            } else {
+                alert('Error al eliminar elemento: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión');
+        });
+    }
+    
+    // Permitir añadir elemento con Enter
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input[id^="new-item-"]');
+        inputs.forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const categoryId = this.id.replace('new-item-', '');
+                    addCustomItem(categoryId);
+                }
+            });
+        });
+    });
     
     function updateProgress(checkedCount, totalItems, percentage) {
         const progressBar = document.getElementById('progressBar');
@@ -213,10 +331,13 @@
         let totalCount = 0;
         
         categoryItems.forEach(item => {
-            totalCount++;
+            // Solo contar elementos reales, no el campo de input
             const checkbox = item.querySelector('input[type="checkbox"]');
-            if (checkbox && checkbox.checked) {
-                checkedCount++;
+            if (checkbox) {
+                totalCount++;
+                if (checkbox.checked) {
+                    checkedCount++;
+                }
             }
         });
         
@@ -225,7 +346,7 @@
     
     // Botón de reset
     document.getElementById('resetBtn').addEventListener('click', function() {
-        if (confirm('¿Estás seguro de que quieres resetear todo tu checklist? Esta acción no se puede deshacer.')) {
+        if (confirm('¿Estás seguro de que quieres resetear todo tu checklist? Esto eliminará todos tus elementos personalizados y desmarcará todos los elementos. Esta acción no se puede deshacer.')) {
             fetch('/checklist/api/checklist/reset', {
                 method: 'POST',
                 headers: {
@@ -278,8 +399,15 @@
             <li>Marca los elementos que ya tienes preparados</li>
             <li>El progreso se guarda automáticamente</li>
             <li>Cada categoría tiene su propio contador</li>
+            <li><strong>Añade elementos personalizados</strong> usando el campo de texto en cada categoría</li>
+            <li>Elimina elementos personalizados con el botón de papelera</li>
             <li>Puedes resetear todo si es necesario</li>
         </ul>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-plus-circle me-2"></i>
+            <strong>Personalización:</strong> Cada usuario puede añadir sus propios elementos a cualquier categoría. Los elementos personalizados se marcan con una etiqueta especial.
+        </div>
         
         <div class="alert alert-warning mt-3">
             <i class="fas fa-exclamation-triangle me-2"></i>
