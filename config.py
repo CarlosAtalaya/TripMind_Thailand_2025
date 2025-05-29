@@ -303,7 +303,8 @@ DANGEROUS_ANIMALS = [
     }
 ]
 
-THAI_FOOD = [
+# Comida tailandesa organizada por categorías
+THAI_MAIN_DISHES = [
     {
         'name': 'Pad Thai',
         'thai_name': 'ผัดไทย',
@@ -341,6 +342,81 @@ THAI_FOOD = [
         'price_range': '50-100 THB'
     },
     {
+        'name': 'Massaman Curry',
+        'thai_name': 'แกงมัสมั่น',
+        'image': 'massaman.jpg',
+        'description': 'Curry suave con influencia india, con carne, patatas, cacahuetes y especias aromáticas.',
+        'spicy_level': 'Suave',
+        'areas': ['Sur de Tailandia', 'Bangkok'],
+        'price_range': '60-120 THB'
+    },
+    {
+        'name': 'Pad Krapow',
+        'thai_name': 'ผัดกะเพรา',
+        'image': 'pad_krapow.jpg',
+        'description': 'Carne picada salteada con albahaca sagrada, chiles y ajo. Servido con huevo frito encima.',
+        'spicy_level': 'Muy picante',
+        'areas': ['Todo el país'],
+        'price_range': '35-70 THB'
+    },
+    {
+        'name': 'Green Curry',
+        'thai_name': 'แกงเขียวหวาน',
+        'image': 'green_curry.jpg',
+        'description': 'Curry verde intenso con leche de coco, carne, berenjenas tailandesas y albahaca.',
+        'spicy_level': 'Muy picante',
+        'areas': ['Todo el país'],
+        'price_range': '70-120 THB'
+    },
+    {
+        'name': 'Pad See Ew',
+        'thai_name': 'ผัดซีอิ๊ว',
+        'image': 'pad_see_ew.jpg',
+        'description': 'Fideos anchos salteados con salsa de soja oscura, verduras chinas y carne o tofu.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '40-80 THB'
+    },
+    {
+        'name': 'Tom Kha Gai',
+        'thai_name': 'ต้มข่าไก่',
+        'image': 'tom_kha_gai.jpg',
+        'description': 'Sopa cremosa de pollo con leche de coco, galanga, limoncillo y hojas de lima.',
+        'spicy_level': 'Suave',
+        'areas': ['Todo el país'],
+        'price_range': '60-100 THB'
+    },
+    {
+        'name': 'Larb',
+        'thai_name': 'ลาบ',
+        'image': 'larb.jpg',
+        'description': 'Ensalada de carne picada con hierbas frescas, chile y jugo de lima. Especialidad del noreste.',
+        'spicy_level': 'Picante',
+        'areas': ['Isaan', 'Norte de Tailandia'],
+        'price_range': '50-90 THB'
+    },
+    {
+        'name': 'Gaeng Som',
+        'thai_name': 'แกงส้ม',
+        'image': 'gaeng_som.jpg',
+        'description': 'Curry agrio del sur con pescado, verduras y pasta de tamarindo.',
+        'spicy_level': 'Picante',
+        'areas': ['Sur de Tailandia'],
+        'price_range': '60-100 THB'
+    },
+    {
+        'name': 'Khao Pad',
+        'thai_name': 'ข้าวผัด',
+        'image': 'khao_pad.jpg',
+        'description': 'Arroz frito tailandés con verduras, huevo y tu elección de carne o mariscos.',
+        'spicy_level': 'Suave',
+        'areas': ['Todo el país'],
+        'price_range': '35-80 THB'
+    }
+]
+
+THAI_DESSERTS = [
+    {
         'name': 'Mango Sticky Rice',
         'thai_name': 'ข้าวเหนียวมะม่วง',
         'image': 'mango_sticky_rice.jpg',
@@ -350,15 +426,165 @@ THAI_FOOD = [
         'price_range': '50-100 THB'
     },
     {
-        'name': 'Massaman Curry',
-        'thai_name': 'แกงมัสมั่น',
-        'image': 'massaman.jpg',
-        'description': 'Curry suave con influencia india, con carne, patatas, cacahuetes y especias aromáticas.',
-        'spicy_level': 'Suave',
-        'areas': ['Sur de Tailandia', 'Bangkok'],
+        'name': 'Thai Coconut Ice Cream',
+        'thai_name': 'ไอศกรีมมะพร้าว',
+        'image': 'coconut_ice_cream.jpg',
+        'description': 'Helado cremoso de coco servido en el propio coco con toppings como maíz, cacahuetes y pan tostado.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '30-60 THB'
+    },
+    {
+        'name': 'Tub Tim Grob',
+        'thai_name': 'ทับทิมกรอบ',
+        'image': 'tub_tim_grob.jpg',
+        'description': 'Postre refrescante con castañas de agua en jarabe, leche de coco y hielo picado.',
+        'spicy_level': 'No picante',
+        'areas': ['Bangkok', 'Centro de Tailandia'],
+        'price_range': '25-50 THB'
+    },
+    {
+        'name': 'Khanom Krok',
+        'thai_name': 'ขนมครก',
+        'image': 'khanom_krok.jpg',
+        'description': 'Pequeños pancakes de coco cocidos en molde especial, crujientes por fuera y cremosos por dentro.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '20-40 THB'
+    },
+    {
+        'name': 'Thong Yip',
+        'thai_name': 'ทองหยิบ',
+        'image': 'thong_yip.jpg',
+        'description': 'Postre real tailandés hecho con yema de huevo y jarabe de azúcar, con forma de flor.',
+        'spicy_level': 'No picante',
+        'areas': ['Bangkok', 'Ayutthaya'],
+        'price_range': '15-30 THB por pieza'
+    },
+    {
+        'name': 'Banana in Coconut Milk',
+        'thai_name': 'กล้วยบวชชี',
+        'image': 'banana_coconut.jpg',
+        'description': 'Plátanos cocidos en leche de coco dulce con un toque de sal. Postre casero tradicional.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '30-50 THB'
+    },
+    {
+        'name': 'Mango with Sweet Sticky Rice',
+        'thai_name': 'มะม่วงข้าวเหนียว',
+        'image': 'mango_black_rice.jpg',
+        'description': 'Variante con arroz negro glutinoso, rico en antioxidantes y con sabor a nuez.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
         'price_range': '60-120 THB'
+    },
+    {
+        'name': 'Foi Thong',
+        'thai_name': 'ฝอยทอง',
+        'image': 'foi_thong.jpg',
+        'description': 'Hilos dorados hechos de huevo batido en jarabe de azúcar. Parece pasta de cabello de ángel.',
+        'spicy_level': 'No picante',
+        'areas': ['Bangkok', 'Centro de Tailandia'],
+        'price_range': '20-40 THB'
     }
 ]
+
+THAI_BEVERAGES = [
+    {
+        'name': 'Thai Iced Tea',
+        'thai_name': 'ชาเย็น',
+        'image': 'thai_iced_tea.jpg',
+        'description': 'Té negro fuerte con especias, leche condensada y hielo. Color naranja característico.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '20-40 THB'
+    },
+    {
+        'name': 'Thai Iced Coffee',
+        'thai_name': 'กาแฟเย็น',
+        'image': 'thai_iced_coffee.jpg',
+        'description': 'Café fuerte con leche condensada dulce servido con hielo. Energizante y refrescante.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '25-45 THB'
+    },
+    {
+        'name': 'Fresh Coconut Water',
+        'thai_name': 'น้ำมะพร้าวสด',
+        'image': 'coconut_water.jpg',
+        'description': 'Agua de coco fresca directamente del coco joven. Hidratante natural perfecto.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '30-60 THB'
+    },
+    {
+        'name': 'Sugarcane Juice',
+        'thai_name': 'น้ำอ้อย',
+        'image': 'sugarcane_juice.jpg',
+        'description': 'Jugo fresco de caña extraído al momento. Dulce natural y muy refrescante.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '15-30 THB'
+    },
+    {
+        'name': 'Thai Basil Seed Drink',
+        'thai_name': 'น้ำเมล็ดแมงลัก',
+        'image': 'basil_seed_drink.jpg',
+        'description': 'Bebida refrescante con semillas de albahaca que se hinchan, mezclada con jarabe y hielo.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '20-35 THB'
+    },
+    {
+        'name': 'Lemon Grass Tea',
+        'thai_name': 'ชาตะไคร้',
+        'image': 'lemongrass_tea.jpg',
+        'description': 'Infusión caliente o fría de hierba limón. Digestiva y aromática.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '25-40 THB'
+    },
+    {
+        'name': 'Watermelon Juice',
+        'thai_name': 'น้ำแตงโม',
+        'image': 'watermelon_juice.jpg',
+        'description': 'Jugo fresco de sandía, perfecto para el calor tropical. A veces con sal y chile.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '20-40 THB'
+    },
+    {
+        'name': 'Singha Beer',
+        'thai_name': 'เบียร์สิงห์',
+        'image': 'singha_beer.jpg',
+        'description': 'Cerveza lager tailandesa clásica. Refrescante y ligera, perfecta con comida picante.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '60-120 THB'
+    },
+    {
+        'name': 'Chang Beer',
+        'thai_name': 'เบียร์ช้าง',
+        'image': 'chang_beer.jpg',
+        'description': 'Cerveza tailandesa popular con más alcohol. Símbolo del elefante en la etiqueta.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '50-100 THB'
+    },
+    {
+        'name': 'Thai Rum (Sang Som)',
+        'thai_name': 'แสงโสม',
+        'image': 'sang_som.jpg',
+        'description': 'Ron tailandés popular, a menudo mezclado con Coca-Cola y hielo.',
+        'spicy_level': 'No picante',
+        'areas': ['Todo el país'],
+        'price_range': '80-150 THB'
+    }
+]
+
+# Mantener la compatibilidad con el código existente
+THAI_FOOD = THAI_MAIN_DISHES + THAI_DESSERTS + THAI_BEVERAGES
 
 DANGEROUS_PLANTS = [
     {
@@ -584,49 +810,90 @@ REGIONAL_SUMMARY = {
     'Bangkok': {
         'dangerous_animals': ['Escorpión Negro', 'Araña de Saco Amarillo', 'Ciempiés Gigante'],
         'dangerous_plants': ['Dieffenbachia', 'Anturio', 'Lirio de Cala', 'Flor de Oleandro'],
-        'food_specialties': ['Pad Thai', 'Tom Yum Goong', 'Massaman Curry', 'Mango Sticky Rice'],
+        'food_specialties': [
+            # Platos principales
+            'Pad Thai', 'Tom Yum Goong', 'Massaman Curry', 'Pad Krapow', 'Green Curry', 'Pad See Ew', 'Tom Kha Gai', 'Khao Pad',
+            # Postres
+            'Mango Sticky Rice', 'Thai Coconut Ice Cream', 'Tub Tim Grob', 'Thong Yip', 'Foi Thong',
+            # Bebidas
+            'Thai Iced Tea', 'Thai Iced Coffee', 'Fresh Coconut Water', 'Singha Beer', 'Chang Beer'
+        ],
         'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Cabeza y Pies', 'La Monarquía'],
         'dangerous_places': ['Patpong Night Market', 'Soi Cowboy', 'Khaosan Road de madrugada', 'Nana Plaza', 'Khlong Toei Slum', 'Callejones de Chinatown de noche']
     },
     'Chiang Mai': {
         'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
         'dangerous_plants': ['Ricino', 'Flor de Oleandro', 'Dieffenbachia'],
-        'food_specialties': ['Khao Soi', 'Sai Oua (salchicha norteña)', 'Nam Prik Ong'],
+        'food_specialties': [
+            'Khao Soi', 'Larb', 'Sai Oua (salchicha norteña)', 'Nam Prik Ong', 'Gaeng Hang Lay',
+            # Postres locales
+            'Khanom Krok', 'Banana in Coconut Milk',
+            # Bebidas
+            'Lemon Grass Tea', 'Fresh Coconut Water', 'Thai Iced Coffee'
+        ],
         'cultural_traditions': ['Loy Krathong', 'Wai', 'Respeto a Buda y Monjes', 'Songkran'],
         'dangerous_places': ['Mercados nocturnos ilegales']
     },
     'Khao Sok': {
         'dangerous_animals': ['Cobra Rey', 'Escorpión Negro', 'Ciempiés Gigante', 'Araña de Saco Amarillo'],
         'dangerous_plants': ['Ricino', 'Flor de Oleandro'],
-        'food_specialties': ['Pescados de río', 'Curry selvático', 'Vegetales locales'],
+        'food_specialties': [
+            'Pescados de río', 'Curry selvático', 'Vegetales locales', 'Tom Yum con hierbas silvestres',
+            # Bebidas naturales
+            'Fresh Coconut Water', 'Lemon Grass Tea', 'Sugarcane Juice'
+        ],
         'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes'],
         'dangerous_places': []
     },
     'Krabi': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Mono Macaco', 'Ciempiés Gigante'],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Anturio'],
-        'food_specialties': ['Mariscos frescos', 'Tom Yum Goong', 'Pescado a la parrilla'],
+        'food_specialties': [
+            'Mariscos frescos', 'Tom Yum Goong', 'Pescado a la parrilla', 'Gaeng Som', 'Curry de cangrejo',
+            # Postres costeros
+            'Thai Coconut Ice Cream', 'Mango Sticky Rice',
+            # Bebidas
+            'Fresh Coconut Water', 'Watermelon Juice', 'Thai Basil Seed Drink'
+        ],
         'cultural_traditions': ['Wai', 'Respeto a Buda y Monjes', 'Songkran'],
         'dangerous_places': []
     },
     'Phuket': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Lirio de Cala'],
-        'food_specialties': ['Mariscos', 'Hokkien Mee', 'Oh Tao (tortilla de ostras)'],
+        'food_specialties': [
+            'Mariscos', 'Hokkien Mee', 'Oh Tao (tortilla de ostras)', 'Mee Hokkien', 'Curry Phuket',
+            # Postres
+            'Thai Coconut Ice Cream', 'Tub Tim Grob',
+            # Bebidas de playa
+            'Fresh Coconut Water', 'Singha Beer', 'Chang Beer', 'Thai Rum (Sang Som)'
+        ],
         'cultural_traditions': ['Wai', 'Songkran', 'La Monarquía'],
         'dangerous_places': []
     },
     'Koh Phangan': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante'],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro'],
-        'food_specialties': ['Pescado fresco', 'Curries de mariscos', 'Frutas tropicales'],
+        'food_specialties': [
+            'Pescado fresco', 'Curries de mariscos', 'Frutas tropicales', 'Pad Thai playero',
+            # Postres tropicales
+            'Mango Sticky Rice', 'Banana in Coconut Milk',
+            # Bebidas de fiesta
+            'Fresh Coconut Water', 'Thai Rum (Sang Som)', 'Chang Beer', 'Watermelon Juice'
+        ],
         'cultural_traditions': ['Full Moon Party', 'Wai', 'Respeto a Buda y Monjes'],
         'dangerous_places': ['Playas solitarias de Koh Phangan']
     },
     'Koh Samui': {
         'dangerous_animals': ['Medusa Caja', 'Escorpión Negro', 'Ciempiés Gigante', 'Mono Macaco'],
         'dangerous_plants': ['Fruto del Manzanillo', 'Flor de Oleandro', 'Dieffenbachia'],
-        'food_specialties': ['Mariscos', 'Som Tam', 'Coconut ice cream'],
+        'food_specialties': [
+            'Mariscos', 'Som Tam', 'Coconut ice cream', 'Pescado al coco', 'Curry verde con mariscos',
+            # Postres de coco
+            'Thai Coconut Ice Cream', 'Khanom Krok',
+            # Bebidas tropicales
+            'Fresh Coconut Water', 'Thai Basil Seed Drink', 'Sugarcane Juice', 'Singha Beer'
+        ],
         'cultural_traditions': ['Wai', 'Songkran', 'Respeto a Buda y Monjes'],
         'dangerous_places': []
     }

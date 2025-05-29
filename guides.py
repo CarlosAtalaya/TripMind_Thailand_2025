@@ -3,7 +3,10 @@ from flask import Blueprint, render_template
 from flask_login import login_required
 from config import (
     DANGEROUS_ANIMALS,
-    THAI_FOOD,
+    THAI_MAIN_DISHES,  # Nueva importación
+    THAI_DESSERTS,     # Nueva importación  
+    THAI_BEVERAGES,    # Nueva importación
+    THAI_FOOD,         # Mantener para compatibilidad
     DANGEROUS_PLANTS,
     THAI_TRADITIONS,
     DANGEROUS_PLACES,
@@ -30,9 +33,12 @@ def dangerous_animals():
 @guides.route('/guias/comida-tailandesa')
 @login_required
 def thai_food():
-    """Guía de comida tailandesa"""
+    """Guía de comida tailandesa con secciones separadas"""
     return render_template('guides/thai_food.html', 
-                          foods=THAI_FOOD,
+                          main_dishes=THAI_MAIN_DISHES,
+                          desserts=THAI_DESSERTS,
+                          beverages=THAI_BEVERAGES,
+                          foods=THAI_FOOD,  # Para compatibilidad con código existente
                           regional_summary=REGIONAL_SUMMARY)
 
 @guides.route('/guias/plantas-peligrosas')

@@ -74,6 +74,127 @@
         flex-shrink: 0;
     }
 
+    /* Estilos para las secciones desplegables */
+    .food-section-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+    }
+
+    .section-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .section-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .section-btn.active {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(238, 90, 36, 0.3);
+    }
+
+    .section-btn.main-dishes {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    }
+
+    .section-btn.desserts {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    }
+
+    .section-btn.beverages {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    }
+
+    .food-section {
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
+    }
+
+    .food-section.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+        animation: fadeInUp 0.4s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .section-title {
+        text-align: center;
+        margin: 30px 0;
+        position: relative;
+    }
+
+    .section-title h2 {
+        background: white;
+        padding: 0 20px;
+        display: inline-block;
+        color: #333;
+        margin: 0;
+    }
+
+    .section-title::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #ddd, transparent);
+        z-index: -1;
+    }
+
+    /* Mejoras para las cards de comida */
+    .food-card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .food-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .spicy-badge.bg-danger {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24) !important;
+    }
+
+    .spicy-badge.bg-warning {
+        background: linear-gradient(45deg, #feca57, #ff9ff3) !important;
+    }
+
+    .spicy-badge.bg-success {
+        background: linear-gradient(45deg, #48cab2, #2ed573) !important;
+    }
+
     @media (max-width: 768px) {
         .compact-converter {
             padding: 10px 12px;
@@ -94,6 +215,15 @@
             text-align: center;
             margin-top: 5px;
         }
+
+        .food-section-buttons {
+            gap: 10px;
+        }
+
+        .section-btn {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
     }
 </style>
 {% endblock %}
@@ -105,6 +235,7 @@
         <i class="fas fa-arrow-left me-2"></i> Volver
     </a>
 </div>
+
 <!-- Mini Calculadora de Divisas -->
 <div class="compact-converter">
     <div class="currency-group">
@@ -133,39 +264,140 @@
     <strong>Consejo:</strong> Si no toleras bien el picante, di "Mai phet" (ไม่เผ็ด) que significa "no picante".
 </div>
 
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
-    {% for food in foods %}
-    <div class="col">
-        <div class="card h-100">
-            <img src="{{ url_for('static', filename='img/food/' + food.image) }}" 
-                 class="card-img-top" 
-                 alt="{{ food.name }}"
-                 style="height: 200px; object-fit: cover;"
-                 onerror="this.src='{{ url_for('static', filename='img/placeholder-food.jpg') }}'">
-            <div class="card-body">
-                <h5 class="card-title">{{ food.name }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ food.thai_name }}</h6>
-                <p class="card-text">{{ food.description }}</p>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <span class="badge bg-{{ 'danger' if food.spicy_level == 'Muy picante' else 'warning' if food.spicy_level == 'Picante' else 'success' }}">
-                        <i class="fas fa-pepper-hot me-1"></i>
-                        {{ food.spicy_level }}
-                    </span>
-                    <span class="text-muted">
-                        <i class="fas fa-coins me-1"></i>
-                        {{ food.price_range }}
-                    </span>
+<!-- Botones de secciones -->
+<div class="food-section-buttons">
+    <button class="section-btn main-dishes active" data-section="main-dishes">
+        <i class="fas fa-utensils me-2"></i>Platos Principales
+    </button>
+    <button class="section-btn desserts" data-section="desserts">
+        <i class="fas fa-ice-cream me-2"></i>Postres
+    </button>
+    <button class="section-btn beverages" data-section="beverages">
+        <i class="fas fa-cocktail me-2"></i>Bebidas
+    </button>
+</div>
+
+<!-- Sección de Platos Principales -->
+<div id="main-dishes" class="food-section active">
+    <div class="section-title">
+        <h2><i class="fas fa-utensils me-2"></i>Platos Principales Tailandeses</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for food in main_dishes %}
+        <div class="col">
+            <div class="card food-card h-100">
+                <img src="{{ url_for('static', filename='img/food/' + food.image) }}" 
+                     class="card-img-top" 
+                     alt="{{ food.name }}"
+                     style="height: 200px; object-fit: cover;"
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder-food.jpg') }}'">
+                <div class="card-body">
+                    <h5 class="card-title">{{ food.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ food.thai_name }}</h6>
+                    <p class="card-text">{{ food.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge spicy-badge bg-{{ 'danger' if food.spicy_level == 'Muy picante' else 'warning' if food.spicy_level == 'Picante' else 'success' }}">
+                            <i class="fas fa-pepper-hot me-1"></i>
+                            {{ food.spicy_level }}
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-coins me-1"></i>
+                            {{ food.price_range }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ food.areas|join(', ') }}
+                    </small>
                 </div>
             </div>
-            <div class="card-footer">
-                <small class="text-muted">
-                    <i class="fas fa-map-marker-alt me-1"></i>
-                    {{ food.areas|join(', ') }}
-                </small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Sección de Postres -->
+<div id="desserts" class="food-section">
+    <div class="section-title">
+        <h2><i class="fas fa-ice-cream me-2"></i>Postres Tailandeses</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for dessert in desserts %}
+        <div class="col">
+            <div class="card food-card h-100">
+                <img src="{{ url_for('static', filename='img/food/' + dessert.image) }}" 
+                     class="card-img-top" 
+                     alt="{{ dessert.name }}"
+                     style="height: 200px; object-fit: cover;"
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder-food.jpg') }}'">
+                <div class="card-body">
+                    <h5 class="card-title">{{ dessert.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ dessert.thai_name }}</h6>
+                    <p class="card-text">{{ dessert.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge bg-info">
+                            <i class="fas fa-heart me-1"></i>
+                            Dulce
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-coins me-1"></i>
+                            {{ dessert.price_range }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ dessert.areas|join(', ') }}
+                    </small>
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
+</div>
+
+<!-- Sección de Bebidas -->
+<div id="beverages" class="food-section">
+    <div class="section-title">
+        <h2><i class="fas fa-cocktail me-2"></i>Bebidas Tailandesas</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for beverage in beverages %}
+        <div class="col">
+            <div class="card food-card h-100">
+                <img src="{{ url_for('static', filename='img/food/' + beverage.image) }}" 
+                     class="card-img-top" 
+                     alt="{{ beverage.name }}"
+                     style="height: 200px; object-fit: cover;"
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder-food.jpg') }}'">
+                <div class="card-body">
+                    <h5 class="card-title">{{ beverage.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ beverage.thai_name }}</h6>
+                    <p class="card-text">{{ beverage.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge bg-primary">
+                            <i class="fas fa-glass-cheers me-1"></i>
+                            Refrescante
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-coins me-1"></i>
+                            {{ beverage.price_range }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ beverage.areas|join(', ') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
 <!-- Sección de especialidades por región -->
@@ -185,11 +417,13 @@
             <div class="accordion-body">
                 {% if info.food_specialties %}
                     <h6>Especialidades gastronómicas de esta región:</h6>
-                    <ul>
+                    <div class="row">
                         {% for food_name in info.food_specialties %}
-                            <li>{{ food_name }}</li>
+                            <div class="col-md-6">
+                                <span class="badge bg-secondary me-1 mb-1">{{ food_name }}</span>
+                            </div>
                         {% endfor %}
-                    </ul>
+                    </div>
                 {% else %}
                     <p>No hay información específica de comida para esta región.</p>
                 {% endif %}
@@ -387,9 +621,64 @@ class CompactCurrencyConverter {
     }
 }
 
+// Gestión de secciones de comida
+class FoodSectionManager {
+    constructor() {
+        this.currentSection = 'main-dishes';
+        this.init();
+    }
+    
+    init() {
+        // Configurar event listeners para los botones
+        const sectionButtons = document.querySelectorAll('.section-btn');
+        sectionButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const section = e.target.dataset.section;
+                this.showSection(section);
+            });
+        });
+    }
+    
+    showSection(sectionId) {
+        // Ocultar todas las secciones
+        const allSections = document.querySelectorAll('.food-section');
+        allSections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Desactivar todos los botones
+        const allButtons = document.querySelectorAll('.section-btn');
+        allButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+        
+        // Activar la sección seleccionada
+        setTimeout(() => {
+            const targetSection = document.getElementById(sectionId);
+            const targetButton = document.querySelector(`[data-section="${sectionId}"]`);
+            
+            if (targetSection && targetButton) {
+                targetSection.classList.add('active');
+                targetButton.classList.add('active');
+                this.currentSection = sectionId;
+                
+                // Smooth scroll hacia la sección
+                targetSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }
+        }, 150);
+    }
+}
+
 // Inicializar cuando se carga la página
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar conversor de divisas
     new CompactCurrencyConverter();
+    
+    // Inicializar gestor de secciones
+    new FoodSectionManager();
 });
 </script>
 {% endblock %}
