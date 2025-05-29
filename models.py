@@ -216,3 +216,18 @@ class CustomChecklistItem(db.Model):
     
     def __repr__(self):
         return f'<CustomChecklistItem {self.user.name} - {self.category_id}: {self.item_text[:30]}...>'
+    
+class HiddenChecklistItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    item_id = db.Column(db.String(50), nullable=False)  # ID del elemento predeterminado a ocultar
+    hidden_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relación con el usuario
+    user = db.relationship('User', backref=db.backref('hidden_checklist_items', lazy=True))
+    
+    # Constraint para evitar duplicados
+    __table_args__ = (db.UniqueConstraint('user_id', 'item_id'),)
+    
+    def __repr__(self):
+        return f'<HiddenChecklistItem {self.user.name} - {self.item_id}>'

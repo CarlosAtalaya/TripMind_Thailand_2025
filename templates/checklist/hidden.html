@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Elementos Ocultos - TravelBoard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5">
+        <i class="fas fa-eye-slash me-2"></i>Elementos Ocultos
+    </h1>
+    <a href="{{ url_for('checklist.index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i> Volver al Checklist
+    </a>
+</div>
+
+{% if hidden_by_category %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Elementos que has ocultado:</strong> Estos elementos no aparecen en tu checklist principal. Puedes restaurarlos cuando quieras.
+    </div>
+
+    <div class="row g-4">
+        {% for category_id, category in hidden_by_category.items() %}
+            <div class="col-12 col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-{{ category.color }} text-white">
+                        <h5 class="mb-0">
+                            <i class="{{ category.icon }} me-2"></i>
+                            {{ category.name }}
+                            <span class="badge bg-light text-dark ms-2">
+                                {{ category.items | length }} oculto{{ 's' if category.items | length != 1 else '' }}
+                            </span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for item in category.items %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <span class="text-muted">{{ item.text }}</span>
+                                        <small class="d-block text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Ocultado el {{ item.hidden_at.strftime('%d/%m/%Y a las %H:%M') }}
+                                        </small>
+                                    </div>
+                                    <button class="btn btn-outline-success btn-sm" 
+                                            onclick="showDefaultItem('{{ item.id }}')"
+                                            title="Restaurar elemento al checklist">
+                                        <i class="fas fa-eye me-1"></i> Restaurar
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-4">
+        <button id="restoreAllBtn" class="btn btn-success">
+            <i class="fas fa-eye me-2"></i> Restaurar Todos los Elementos
+        </button>
+    </div>
+
+{% else %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>¡Perfecto!</strong> No tienes ningún elemento oculto. Todos los elementos del checklist están visibles.
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('checklist.index') }}" class="btn btn-primary">
+            <i class="fas fa-clipboard-check me-2"></i> Ir al Checklist
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showDefaultItem(itemId) {
+        if (!confirm('¿Restaurar este elemento al checklist?')) {
+            return;
+        }
+        
+        fetch('/checklist/api/checklist/show-default', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al restaurar elemento: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión');
+        });
+    }
+    
+    // Restaurar todos los elementos
+    document.getElementById('restoreAllBtn')?.addEventListener('click', function() {
+        if (!confirm('¿Estás seguro de que quieres restaurar TODOS los elementos ocultos al checklist?')) {
+            return;
+        }
+        
+        // Obtener todos los IDs de elementos ocultos
+        const hiddenItems = [];
+        document.querySelectorAll('[onclick^="showDefaultItem("]').forEach(button => {
+            const onclick = button.getAttribute('onclick');
+            const itemId = onclick.match(/showDefaultItem\('([^']+)'\)/)[1];
+            hiddenItems.push(itemId);
+        });
+        
+        // Restaurar uno por uno
+        let restored = 0;
+        const total = hiddenItems.length;
+        
+        function restoreNext() {
+            if (restored >= total) {
+                location.reload();
+                return;
+            }
+            
+            fetch('/checklist/api/checklist/show-default', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    item_id: hiddenItems[restored]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                restored++;
+                if (data.success) {
+                    restoreNext();
+                } else {
+                    console.error('Error restaurando:', data.error);
+                    restoreNext(); // Continuar con el siguiente
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                restored++;
+                restoreNext(); // Continuar con el siguiente
+            });
+        }
+        
+        restoreNext();
+    });
+</script>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información</h5>
+    </div>
+    <div class="card-body">
+        <p>Aquí puedes gestionar los elementos que has ocultado de tu checklist.</p>
+        
+        <h6 class="mt-3">¿Qué son los elementos ocultos?</h6>
+        <ul>
+            <li>Son elementos predeterminados que has decidido no necesitar</li>
+            <li>No aparecen en tu checklist principal</li>
+            <li>Puedes restaurarlos cuando quieras</li>
+            <li>No afectan tu progreso del checklist</li>
+        </ul>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Consejo:</strong> Oculta elementos que sepas que no vas a necesitar para personalizar tu checklist y hacerlo más relevante para ti.
+        </div>
+    </div>
+</div>
+{% endblock %}

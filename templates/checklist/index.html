@@ -92,10 +92,16 @@
                                             </small>
                                         {% endif %}
                                         {% if is_custom %}
-                                            <button class="btn btn-outline-danger btn-sm" 
+                                            <button class="btn btn-outline-danger btn-sm me-1" 
                                                     onclick="removeCustomItem('{{ item_id }}', '{{ category_id }}')"
                                                     title="Eliminar elemento personalizado">
                                                 <i class="fas fa-trash fa-xs"></i>
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-outline-warning btn-sm me-1" 
+                                                    onclick="hideDefaultItem('{{ item_id }}', '{{ category_id }}')"
+                                                    title="Ocultar elemento (no lo necesito)">
+                                                <i class="fas fa-eye-slash fa-xs"></i>
                                             </button>
                                         {% endif %}
                                     </div>
@@ -287,6 +293,35 @@
         });
     }
     
+    function hideDefaultItem(itemId, categoryId) {
+        if (!confirm('¿Estás seguro de que quieres ocultar este elemento? Se eliminará de tu checklist.')) {
+            return;
+        }
+        
+        fetch('/checklist/api/checklist/hide-default', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Recargar la página para actualizar la vista
+                location.reload();
+            } else {
+                alert('Error al ocultar elemento: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión');
+        });
+    }
+    
     // Permitir añadir elemento con Enter
     document.addEventListener('DOMContentLoaded', function() {
         const inputs = document.querySelectorAll('input[id^="new-item-"]');
@@ -346,7 +381,7 @@
     
     // Botón de reset
     document.getElementById('resetBtn').addEventListener('click', function() {
-        if (confirm('¿Estás seguro de que quieres resetear todo tu checklist? Esto eliminará todos tus elementos personalizados y desmarcará todos los elementos. Esta acción no se puede deshacer.')) {
+        if (confirm('¿Estás seguro de que quieres resetear todo tu checklist? Esto eliminará todos tus elementos personalizados, desmarcará todos los elementos y restaurará los elementos ocultos. Esta acción no se puede deshacer.')) {
             fetch('/checklist/api/checklist/reset', {
                 method: 'POST',
                 headers: {
@@ -400,8 +435,9 @@
             <li>El progreso se guarda automáticamente</li>
             <li>Cada categoría tiene su propio contador</li>
             <li><strong>Añade elementos personalizados</strong> usando el campo de texto en cada categoría</li>
+            <li><strong>Oculta elementos predeterminados</strong> que no necesites con el botón del ojo</li>
             <li>Elimina elementos personalizados con el botón de papelera</li>
-            <li>Puedes resetear todo si es necesario</li>
+            <li>Usa "Resetear Todo" para volver al checklist original</li>
         </ul>
         
         <div class="alert alert-info mt-3">

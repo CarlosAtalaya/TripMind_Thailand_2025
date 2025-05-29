@@ -1,7 +1,7 @@
 # checklist.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from models import db, ChecklistItem, CustomChecklistItem
+from models import db, ChecklistItem, CustomChecklistItem, HiddenChecklistItem
 from datetime import datetime
 
 checklist = Blueprint('checklist', __name__)
@@ -145,6 +145,10 @@ def index():
     # Obtener items personalizados del usuario
     custom_items = CustomChecklistItem.query.filter_by(user_id=current_user.id).all()
     
+    # Obtener items ocultos por el usuario
+    hidden_items = HiddenChecklistItem.query.filter_by(user_id=current_user.id).all()
+    hidden_item_ids = {item.item_id for item in hidden_items}
+    
     # Organizar items personalizados por categoría
     custom_items_by_category = {}
     for item in custom_items:
@@ -157,8 +161,15 @@ def index():
     for category_id, category_data in CHECKLIST_ITEMS.items():
         enhanced_category = category_data.copy()
         
-        # Crear una copia de los items predeterminados
-        combined_items = category_data['items'].copy()
+        # Filtrar elementos predeterminados que NO están ocultos
+        filtered_predefined_items = {
+            item_id: item_text 
+            for item_id, item_text in category_data['items'].items()
+            if item_id not in hidden_item_ids
+        }
+        
+        # Empezar con los elementos predeterminados filtrados
+        combined_items = filtered_predefined_items.copy()
         
         # Añadir items personalizados
         if category_id in custom_items_by_category:
@@ -282,7 +293,7 @@ def toggle_item():
 @checklist.route('/api/checklist/reset', methods=['POST'])
 @login_required
 def reset_checklist():
-    """Resetear todo el checklist del usuario (predeterminados y personalizados)"""
+    """Resetear todo el checklist del usuario (predeterminados, personalizados y ocultos)"""
     try:
         # Eliminar elementos predeterminados marcados
         ChecklistItem.query.filter_by(user_id=current_user.id).delete()
@@ -290,11 +301,14 @@ def reset_checklist():
         # Eliminar elementos personalizados
         CustomChecklistItem.query.filter_by(user_id=current_user.id).delete()
         
+        # Eliminar elementos ocultos (restaurarlos)
+        HiddenChecklistItem.query.filter_by(user_id=current_user.id).delete()
+        
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'Checklist reseteado correctamente'
+            'message': 'Checklist reseteado correctamente (incluyendo elementos ocultos restaurados)'
         })
     except Exception as e:
         db.session.rollback()
@@ -372,6 +386,96 @@ def remove_custom_item():
         
     except ValueError:
         return jsonify({'success': False, 'error': 'ID de elemento no válido'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+@checklist.route('/api/checklist/show-default', methods=['POST'])
+@login_required
+def show_default_item():
+    """Mostrar un elemento predeterminado que estaba oculto"""
+    data = request.get_json()
+    item_id = data.get('item_id')
+    
+    if not item_id:
+        return jsonify({'success': False, 'error': 'ID de elemento requerido'}), 400
+    
+    try:
+        # Buscar y eliminar el registro de elemento oculto
+        hidden_item = HiddenChecklistItem.query.filter_by(
+            user_id=current_user.id,
+            item_id=item_id
+        ).first()
+        
+        if not hidden_item:
+            return jsonify({'success': False, 'error': 'Elemento no encontrado en la lista de ocultos'}), 404
+        
+        db.session.delete(hidden_item)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Elemento restaurado correctamente'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+@checklist.route('/api/checklist/hide-default', methods=['POST'])
+@login_required
+def hide_default_item():
+    """Ocultar un elemento predeterminado"""
+    data = request.get_json()
+    item_id = data.get('item_id')
+    
+    if not item_id or item_id.startswith('custom_'):
+        return jsonify({'success': False, 'error': 'ID de elemento no válido'}), 400
+    
+    # Verificar que el elemento existe en los elementos predeterminados
+    item_exists = False
+    for category in CHECKLIST_ITEMS.values():
+        if item_id in category['items']:
+            item_exists = True
+            break
+    
+    if not item_exists:
+        return jsonify({'success': False, 'error': 'Elemento predeterminado no encontrado'}), 400
+    
+    try:
+        # Verificar si ya está oculto
+        existing_hidden = HiddenChecklistItem.query.filter_by(
+            user_id=current_user.id,
+            item_id=item_id
+        ).first()
+        
+        if existing_hidden:
+            return jsonify({'success': False, 'error': 'El elemento ya está oculto'}), 400
+        
+        # Crear el registro de elemento oculto
+        hidden_item = HiddenChecklistItem(
+            user_id=current_user.id,
+            item_id=item_id
+        )
+        
+        db.session.add(hidden_item)
+        
+        # También eliminar el registro de ChecklistItem si existe (ya que no se puede marcar algo oculto)
+        existing_checklist_item = ChecklistItem.query.filter_by(
+            user_id=current_user.id,
+            item_id=item_id
+        ).first()
+        
+        if existing_checklist_item:
+            db.session.delete(existing_checklist_item)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Elemento ocultado correctamente'
+        })
+        
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
