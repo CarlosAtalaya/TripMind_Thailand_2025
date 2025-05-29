@@ -2,6 +2,322 @@
 
 {% block title %}Animales Peligrosos de Tailandia - TravelBoard{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Estilo agresivo y peligroso para animales */
+    :root {
+        --danger-red: #dc2626;
+        --danger-orange: #ea580c;
+        --danger-yellow: #d97706;
+        --danger-dark: #1f2937;
+        --danger-blood: #7f1d1d;
+    }
+
+    /* Botones de secciones con estilo agresivo */
+    .animal-section-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+    }
+
+    .section-btn {
+        background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%);
+        border: none;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 0;
+        font-weight: bold;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid transparent;
+    }
+
+    .section-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.5);
+        border-color: #fbbf24;
+    }
+
+    .section-btn.active {
+        background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(234, 88, 12, 0.6);
+        border-color: #fbbf24;
+    }
+
+    .section-btn.reptiles {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+
+    .section-btn.reptiles:hover,
+    .section-btn.reptiles.active {
+        background: linear-gradient(135deg, #10b981 0%, #059569 100%);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+    }
+
+    .section-btn.insects {
+        background: linear-gradient(135deg, #7c2d12 0%, #451a03 100%);
+    }
+
+    .section-btn.insects:hover,
+    .section-btn.insects.active {
+        background: linear-gradient(135deg, #9a3412 0%, #7c2d12 100%);
+        box-shadow: 0 8px 25px rgba(154, 52, 18, 0.6);
+    }
+
+    .section-btn.mammals {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    }
+
+    .section-btn.mammals:hover,
+    .section-btn.mammals.active {
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+    }
+
+    .section-btn.aquatic {
+        background: linear-gradient(135deg, #0e7490 0%, #155e75 100%);
+    }
+
+    .section-btn.aquatic:hover,
+    .section-btn.aquatic.active {
+        background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+        box-shadow: 0 8px 25px rgba(8, 145, 178, 0.6);
+    }
+
+    /* Animaciones de secciones */
+    .animal-section {
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.5s ease;
+    }
+
+    .animal-section.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+        animation: dangerousAppear 0.5s ease forwards;
+    }
+
+    @keyframes dangerousAppear {
+        from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Títulos de secciones con estilo agresivo */
+    .section-title {
+        text-align: center;
+        margin: 40px 0;
+        position: relative;
+    }
+
+    .section-title h2 {
+        background: white;
+        padding: 0 25px;
+        display: inline-block;
+        color: #1f2937;
+        margin: 0;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .section-title::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #dc2626, #ea580c, #dc2626, transparent);
+        z-index: -1;
+    }
+
+    /* Cards de animales con estilo más agresivo */
+    .animal-card {
+        transition: all 0.4s ease;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        overflow: hidden;
+        position: relative;
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .animal-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(220, 38, 38, 0.25);
+    }
+
+    .animal-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #dc2626, #ea580c, #f59e0b);
+        z-index: 1;
+    }
+
+    .animal-card .card-img-top {
+        transition: all 0.4s ease;
+        filter: grayscale(20%);
+    }
+
+    .animal-card:hover .card-img-top {
+        filter: grayscale(0%) contrast(110%) saturate(120%);
+        transform: scale(1.05);
+    }
+
+    /* Badges de nivel de peligro más dramáticos */
+    .danger-badge {
+        font-weight: bold;
+        font-size: 0.9rem;
+        padding: 8px 16px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid transparent;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .danger-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .danger-badge:hover::before {
+        left: 100%;
+    }
+
+    .danger-badge.bg-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%) !important;
+        border-color: #fbbf24;
+        animation: dangerPulse 2s infinite alternate;
+    }
+
+    .danger-badge.bg-warning {
+        background: linear-gradient(135deg, #ea580c 0%, #d97706 100%) !important;
+        color: white !important;
+        border-color: #fbbf24;
+    }
+
+    .danger-badge.bg-secondary {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+        border-color: #9ca3af;
+    }
+
+    @keyframes dangerPulse {
+        from { 
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+        }
+        to { 
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.8);
+        }
+    }
+
+    /* Información adicional con estilo temático */
+    .animal-info {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-left: 4px solid #dc2626;
+        padding: 12px;
+        margin-top: 15px;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .animal-info strong {
+        color: #1f2937;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* Alerta principal más dramática */
+    .danger-alert {
+        background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%);
+        border: none;
+        color: white;
+        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .danger-alert::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="stripes" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)"><rect width="5" height="10" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23stripes)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .danger-alert .alert-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .animal-section-buttons {
+            gap: 10px;
+        }
+        
+        .section-btn {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+
+        .animal-card:hover {
+            transform: translateY(-4px) scale(1.01);
+        }
+    }
+
+    /* Efectos especiales para cada categoría */
+    .reptiles-section .animal-card:hover {
+        box-shadow: 0 12px 30px rgba(16, 185, 129, 0.25);
+    }
+
+    .insects-section .animal-card:hover {
+        box-shadow: 0 12px 30px rgba(154, 52, 18, 0.25);
+    }
+
+    .mammals-section .animal-card:hover {
+        box-shadow: 0 12px 30px rgba(59, 130, 246, 0.25);
+    }
+
+    .aquatic-section .animal-card:hover {
+        box-shadow: 0 12px 30px rgba(8, 145, 178, 0.25);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="display-5">Animales Peligrosos de Tailandia</h1>
@@ -10,42 +326,230 @@
     </a>
 </div>
 
-<div class="alert alert-danger mb-4">
-    <i class="fas fa-exclamation-triangle me-2"></i>
-    <strong>¡Precaución!</strong> Si encuentras alguno de estos animales, mantén la calma y aléjate lentamente. No intentes tocarlos o fotografiarlos de cerca.
+<div class="alert danger-alert mb-4">
+    <div class="alert-content">
+        <i class="fas fa-skull-crossbones me-2"></i>
+        <strong>¡PELIGRO EXTREMO!</strong> Si encuentras alguno de estos animales, mantén la calma y aléjate lentamente. No intentes tocarlos o fotografiarlos de cerca. Tu vida puede depender de ello.
+    </div>
 </div>
 
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
-    {% for animal in animals %}
-    <div class="col">
-        <div class="card h-100">
-            <img src="{{ url_for('static', filename='img/animals/' + animal.image) }}" 
-                 class="card-img-top" 
-                 alt="{{ animal.name }}"
-                 style="height: 200px; object-fit: cover;"
-                 onerror="this.src='{{ url_for('static', filename='img/placeholder-animal.jpg') }}'">
-            <div class="card-body">
-                <h5 class="card-title">{{ animal.name }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ animal.thai_name }}</h6>
-                <p class="card-text">{{ animal.description }}</p>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <span class="badge bg-{{ 'danger' if animal.danger_level == 'Extremo' else 'warning' if animal.danger_level == 'Alto' else 'secondary' }}">
-                        Peligro: {{ animal.danger_level }}
-                    </span>
+<!-- Botones de secciones con estilo agresivo -->
+<div class="animal-section-buttons">
+    <button class="section-btn reptiles active" data-section="reptiles">
+        <i class="fas fa-dragon me-2"></i>Reptiles Mortales
+    </button>
+    <button class="section-btn insects" data-section="insects">
+        <i class="fas fa-spider me-2"></i>Insectos Venenosos
+    </button>
+    <button class="section-btn mammals" data-section="mammals">
+        <i class="fas fa-paw me-2"></i>Mamíferos Salvajes
+    </button>
+    <button class="section-btn aquatic" data-section="aquatic">
+        <i class="fas fa-fish me-2"></i>Depredadores Acuáticos
+    </button>
+</div>
+
+<!-- Sección de Reptiles -->
+<div id="reptiles" class="animal-section reptiles-section active">
+    <div class="section-title">
+        <h2><i class="fas fa-dragon me-2"></i>Reptiles Mortales de Tailandia</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for animal in reptiles %}
+        <div class="col">
+            <div class="card animal-card h-100">
+                <img src="{{ url_for('static', filename='img/animals/' + animal.image) }}" 
+                     class="card-img-top" 
+                     alt="{{ animal.name }}"
+                     style="height: 200px; object-fit: cover;"
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder-animal.jpg') }}'">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ animal.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ animal.thai_name }}</h6>
+                    <p class="card-text">{{ animal.description }}</p>
+                    
+                    {% if animal.habitat %}
+                    <div class="animal-info mb-2">
+                        <strong>Hábitat:</strong> {{ animal.habitat }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if animal.behavior %}
+                    <div class="animal-info mb-3">
+                        <strong>Comportamiento:</strong> {{ animal.behavior }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge danger-badge bg-{{ 'danger' if animal.danger_level == 'Extremo' else 'warning' if animal.danger_level == 'Alto' else 'secondary' }}">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            {{ animal.danger_level }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ animal.areas|join(', ') }}
+                    </small>
                 </div>
             </div>
-            <div class="card-footer">
-                <small class="text-muted">
-                    <i class="fas fa-map-marker-alt me-1"></i>
-                    {{ animal.areas|join(', ') }}
-                </small>
-            </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 
-<!-- Sección de información por región -->
+<!-- Sección de Insectos -->
+<div id="insects" class="animal-section insects-section">
+    <div class="section-title">
+        <h2><i class="fas fa-spider me-2"></i>Insectos Venenosos de Tailandia</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for animal in insects %}
+        <div class="col">
+            <div class="card animal-card h-100">
+                <img src="{{ url_for('static', filename='img/animals/' + animal.image) }}" 
+                     class="card-img-top" 
+                     alt="{{ animal.name }}"
+                     style="height: 200px; object-fit: cover;"
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder-animal.jpg') }}'">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ animal.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ animal.thai_name }}</h6>
+                    <p class="card-text">{{ animal.description }}</p>
+                    
+                    {% if animal.habitat %}
+                    <div class="animal-info mb-2">
+                        <strong>Hábitat:</strong> {{ animal.habitat }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if animal.behavior %}
+                    <div class="animal-info mb-3">
+                        <strong>Comportamiento:</strong> {{ animal.behavior }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge danger-badge bg-{{ 'danger' if animal.danger_level == 'Extremo' else 'warning' if animal.danger_level == 'Alto' else 'secondary' }}">
+                            <i class="fas fa-skull me-1"></i>
+                            {{ animal.danger_level }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ animal.areas|join(', ') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Sección de Mamíferos -->
+<div id="mammals" class="animal-section mammals-section">
+    <div class="section-title">
+        <h2><i class="fas fa-paw me-2"></i>Mamíferos Salvajes de Tailandia</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for animal in mammals %}
+        <div class="col">
+            <div class="card animal-card h-100">
+                <img src="{{ url_for('static', filename='img/animals/' + animal.image) }}" 
+                     class="card-img-top" 
+                     alt="{{ animal.name }}"
+                     style="height: 200px; object-fit: cover;"
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder-animal.jpg') }}'">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ animal.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ animal.thai_name }}</h6>
+                    <p class="card-text">{{ animal.description }}</p>
+                    
+                    {% if animal.habitat %}
+                    <div class="animal-info mb-2">
+                        <strong>Hábitat:</strong> {{ animal.habitat }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if animal.behavior %}
+                    <div class="animal-info mb-3">
+                        <strong>Comportamiento:</strong> {{ animal.behavior }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge danger-badge bg-{{ 'danger' if animal.danger_level == 'Extremo' else 'warning' if animal.danger_level == 'Alto' else 'secondary' }}">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            {{ animal.danger_level }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ animal.areas|join(', ') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Sección de Animales Acuáticos -->
+<div id="aquatic" class="animal-section aquatic-section">
+    <div class="section-title">
+        <h2><i class="fas fa-fish me-2"></i>Depredadores Acuáticos de Tailandia</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for animal in aquatic %}
+        <div class="col">
+            <div class="card animal-card h-100">
+                <img src="{{ url_for('static', filename='img/animals/' + animal.image) }}" 
+                     class="card-img-top" 
+                     alt="{{ animal.name }}"
+                     style="height: 200px; object-fit: cover;"
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder-animal.jpg') }}'">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ animal.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ animal.thai_name }}</h6>
+                    <p class="card-text">{{ animal.description }}</p>
+                    
+                    {% if animal.habitat %}
+                    <div class="animal-info mb-2">
+                        <strong>Hábitat:</strong> {{ animal.habitat }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if animal.behavior %}
+                    <div class="animal-info mb-3">
+                        <strong>Comportamiento:</strong> {{ animal.behavior }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge danger-badge bg-{{ 'danger' if animal.danger_level == 'Extremo' else 'warning' if animal.danger_level == 'Alto' else 'secondary' }}">
+                            <i class="fas fa-water me-1"></i>
+                            {{ animal.danger_level }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ animal.areas|join(', ') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Sección de información por región (mantener la existente) -->
 <h2 class="mb-4">Animales Peligrosos por Región</h2>
 <div class="accordion mb-5" id="regionAccordion">
     {% for region, info in regional_summary.items() %}
@@ -62,11 +566,13 @@
             <div class="accordion-body">
                 {% if info.dangerous_animals %}
                     <h6>Animales peligrosos en esta región:</h6>
-                    <ul>
+                    <div class="row">
                         {% for animal_name in info.dangerous_animals %}
-                            <li>{{ animal_name }}</li>
+                            <div class="col-md-6">
+                                <span class="badge bg-danger me-1 mb-1">{{ animal_name }}</span>
+                            </div>
                         {% endfor %}
-                    </ul>
+                    </div>
                 {% else %}
                     <p>No hay información específica de animales peligrosos para esta región.</p>
                 {% endif %}
@@ -85,7 +591,7 @@
         <div class="card-body">
             <h6>En caso de mordedura o picadura:</h6>
             <ol>
-                <li>Mantén la calma</li>
+                <li>Mantén la calma y no corras</li>
                 <li>Identifica el animal si es posible (foto a distancia)</li>
                 <li>Limpia la herida con agua y jabón</li>
                 <li>Busca atención médica inmediata</li>
@@ -103,6 +609,83 @@
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+// Gestión de secciones de animales peligrosos
+class DangerousAnimalSectionManager {
+    constructor() {
+        this.currentSection = 'reptiles';
+        this.init();
+    }
+    
+    init() {
+        // Configurar event listeners para los botones
+        const sectionButtons = document.querySelectorAll('.section-btn');
+        sectionButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const section = e.currentTarget.dataset.section;
+                this.showSection(section);
+            });
+        });
+    }
+    
+    showSection(sectionId) {
+        // Ocultar todas las secciones con efecto
+        const allSections = document.querySelectorAll('.animal-section');
+        allSections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Desactivar todos los botones
+        const allButtons = document.querySelectorAll('.section-btn');
+        allButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+        
+        // Activar la sección seleccionada con delay para la transición
+        setTimeout(() => {
+            const targetSection = document.getElementById(sectionId);
+            const targetButton = document.querySelector(`[data-section="${sectionId}"]`);
+            
+            if (targetSection && targetButton) {
+                targetSection.classList.add('active');
+                targetButton.classList.add('active');
+                this.currentSection = sectionId;
+                
+                // Smooth scroll hacia la sección con offset para el header fijo
+                const headerOffset = 100;
+                const elementPosition = targetSection.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    behavior: 'smooth',
+                    top: offsetPosition
+                });
+            }
+        }, 150);
+    }
+}
+
+// Inicializar cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar gestor de secciones de animales
+    new DangerousAnimalSectionManager();
+    
+    // Efectos adicionales para las cards
+    const animalCards = document.querySelectorAll('.animal-card');
+    animalCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.zIndex = '10';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.zIndex = '1';
+        });
+    });
+});
+</script>
+{% endblock %}
+
 {% block sidebar %}
 <div class="card">
     <div class="card-header bg-danger text-white">
@@ -111,7 +694,7 @@
     <div class="card-body">
         <h6>En caso de mordedura o picadura:</h6>
         <ol>
-            <li>Mantén la calma</li>
+            <li>Mantén la calma y no corras</li>
             <li>Identifica el animal si es posible (foto a distancia)</li>
             <li>Limpia la herida con agua y jabón</li>
             <li>Busca atención médica inmediata</li>
@@ -124,6 +707,11 @@
             <li><strong>Ambulancia:</strong> 1669</li>
             <li><strong>Policía turística:</strong> 1155</li>
         </ul>
+        
+        <div class="alert alert-danger mt-3">
+            <i class="fas fa-skull-crossbones me-2"></i>
+            <strong>Recuerda:</strong> En caso de mordedura de serpiente, NO succiones el veneno, NO hagas torniquetes, NO uses hielo.
+        </div>
     </div>
 </div>
 {% endblock %}
