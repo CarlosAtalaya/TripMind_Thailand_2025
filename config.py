@@ -127,6 +127,130 @@ NEWS_RSS_FEEDS = [
     'https://www.channelnewsasia.com/api/v1/rss-outbound-feed/latest_news'
 ]
 
+# Elementos del checklist organizados por categorías
+CHECKLIST_ITEMS = {
+    'documentos': {
+        'name': 'Documentación',
+        'icon': 'fas fa-passport',
+        'color': 'danger',
+        'items': {
+            'pasaporte': 'Pasaporte (válido mín. 6 meses)',
+            'identificador': 'DNI',
+            'carnet_internacional': 'Carnet conducir internacional',
+            'seguro_viaje': 'Seguro de viaje',
+            'tarjetas': 'Tarjetas de crédito/débito',
+            'efectivo': 'Efectivo (euros para cambiar)',
+            'fotocopias': 'Fotocopias de documentos (puretas)',
+            'tarjeta_embarque': 'Tarjetas de embarque (móvil)',
+            'reservas_hoteles': 'Confirmaciones de hoteles',
+            'itinerario': 'Itinerario impreso (pagina web de 1 mes de trabajo en su defecto)'
+        }
+    },
+    'ropa': {
+        'name': 'Ropa y Calzado',
+        'icon': 'fas fa-tshirt',
+        'color': 'primary',
+        'items': {
+            'camisetas_ligeras': 'Camisetas de manga corta (5-7)',
+            'pantalones_cortos': 'Pantalones cortos (3-4)',
+            'pantalones_largos': 'Pantalones largos (2-3) - templos',
+            'vestidos': 'Vestidos/faldas largas - templos',
+            'ropa_interior': 'Ropa interior (7-10 mudas)',
+            'calcetines': 'Calcetines (7-10 pares)',
+            'ropa_interior': 'Calzones/Bragas/Tangas mercadillo (8)',
+            'pijama': 'Pijama/ropa de dormir',
+            'chanclas': 'Chanclas para la ducha',
+            'zapatillas_comodas': 'Zapatillas cómodas para caminar',
+            'sandalias': 'Sandalias',
+            'ropa_lluvia': 'Chubasquero/poncho',
+            'bañador': 'Bañador/bikini (2)',
+            'gorra': 'Gorra/sombrero'
+        }
+    },
+    'higiene': {
+        'name': 'Higiene y Cuidado',
+        'icon': 'fas fa-pump-soap',
+        'color': 'info',
+        'items': {
+            'cepillo_dientes': 'Cepillo de dientes',
+            'pasta_dientes': 'Pasta de dientes',
+            'champu': 'Champú',
+            'desodorante': 'Desodorante',
+            'protector_solar': 'Protector solar (SPF 50+)',
+            'after_sun': 'After sun/aloe vera',
+            'repelente': 'Repelente de mosquitos (DEET)',
+            'toallas': 'Toallas de microfibra (1)',
+            'productos_femeninos': 'Productos de higiene femenina',
+            'afeitado': 'Kit de afeitado (se lo lleva Luis)',
+            'perfume': 'Perfume/colonia (se coge de Isisdro)'
+        }
+    },
+    'botiquin': {
+        'name': 'Botiquín y Salud',
+        'icon': 'fas fa-first-aid',
+        'color': 'success',
+        'items': {
+            'paracetamol': 'Paracetamol/ibuprofeno',
+            'antidiarreicos': 'Antidiarreicos (Fortasec)',
+            'probioticos': 'Probióticos',
+            'antihistaminicos': 'Antihistamínicos (picaduras)',
+            'antiseptico': 'Antiséptico/alcohol (por si pica un Ladyboy)',
+            'tiritas': 'Tiritas/vendas',
+            'termometro': 'Termómetro (rectal)',
+            'medicacion_personal': 'Medicación personal',
+            'gel_antibacterial': 'Gel antibacterial',
+            'rodillera': 'Rodillera (Isi)'
+        }
+    },
+    'tecnologia': {
+        'name': 'Tecnología',
+        'icon': 'fas fa-mobile-alt',
+        'color': 'warning',
+        'items': {
+            'movil': 'Teléfono móvil',
+            'cargador_movil': 'Cargador del móvil',
+            'power_bank': 'Power bank/batería externa',
+            'cable_usb': 'Cables USB extra',
+            'adaptador_corriente': 'Adaptador de corriente universal',
+            'camara': 'Cámara de fotos',
+            'cargador_camara': 'Cargador de cámara',
+            'tarjeta_memoria': 'Tarjetas de memoria extra',
+            'auriculares': 'Auriculares',
+            'funda_estanca': 'Funda estanca para móvil'
+        }
+    },
+    'viaje': {
+        'name': 'Accesorios de Viaje',
+        'icon': 'fas fa-suitcase',
+        'color': 'secondary',
+        'items': {
+            'maleta': 'Mochila principal',
+            'candados': 'Candados para maletas',
+            'riñonera': 'Riñonera/bolso pequeño',
+            'mochila_dia': 'Mochila para excursiones',
+            'tapones_oidos': 'Tapones antironquidos de Alfon',
+            'bolsas_plastico': 'Bolsas de plástico(3)/zip'
+        }
+    },
+    'otros': {
+        'name': 'Otros Esenciales',
+        'icon': 'fas fa-plus-circle',
+        'color': 'dark',
+        'items': {
+            'agua_botella': 'Botella de agua reutilizable',
+            'snacks': 'Snacks para el vuelo',
+            'libro_guia': 'Guía de viaje',
+            'cuaderno': 'Cuaderno y bolígrafo (invente Román)',
+            'gafas_sol': 'Gafas de sol',
+            'linterna': 'Linterna pequeña/frontal',
+            'navaja_suiza': 'Navaja suiza (ojo no es mala)',
+            'papel_higienico': 'Clinex',
+            'toallitas_humedas': 'Toallitas húmedas',
+            'dinero_emergencia': 'Dinero de emergencia escondido'
+        }
+    }
+}
+
 # Configuracion para guías
 DANGEROUS_ANIMALS = [
     {
