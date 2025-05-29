@@ -231,7 +231,7 @@ regions:
         check_in: "2025-06-26"
         check_out: "2025-06-28"
         booking_ref: "KRABI01"
-        maps_url: "https://maps.google.com/?q=Klong+Hang+Soi+2+100/1+Moo+3,+81180+Ao+Nang+Beach,+Tailandia"
+        maps_url: "https://www.google.com/maps/place/Doo+Dee+Boutique+Resort+by+Swiss+Chalet/@8.0455314,98.810781,18.03z/data=!4m12!1m2!2m1!1sKlong+Hang+Soi+2+100%2F1+Moo+3,+81180+Ao+Nang+Beach,+Tailandia!3m8!1s0x3051bf63cbdbdbdf:0xc6f94cb3617ea7de!5m2!4m1!1i2!8m2!3d8.0458515!4d98.8125934!16s%2Fg%2F11rfc32b_c?entry=ttu&g_ep=EgoyMDI1MDUyNi4wIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D"
     activities:
       - date: "2025-06-26"
         time: "Mañana"
@@ -275,7 +275,7 @@ regions:
         check_in: "2025-06-28"
         check_out: "2025-06-29"
         booking_ref: "PHUKET01"
-        maps_url: "https://maps.google.com/?q=5/41-51+Patong+Beach+Road,+Patong+Beach,+83150+Patong+Beach,+Tailandia"
+        maps_url: "https://www.google.com/maps/place/Sunshine+Massage/@7.8943847,98.2934592,18z/data=!4m10!1m2!2m1!1smassage!3m6!1s0x30503abc8b8ffd67:0xbd473427d21aea76!8m2!3d7.8943847!4d98.2953902!15sCgdtYXNzYWdlWgkiB21hc3NhZ2WSARZ0aGFpX21hc3NhZ2VfdGhlcmFwaXN0qgE8EAEqCyIHbWFzc2FnZSgOMh4QASIaFZLTG_wp_SGTzP5RWK49cPo0mHBpNNfk8RgyCxACIgdtYXNzYWdl4AEA!16s%2Fg%2F11c29xp3wb?entry=ttu&g_ep=EgoyMDI1MDUyNi4wIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D"
     activities:
       - date: "2025-06-28"
         time: "Día completo"
@@ -301,7 +301,7 @@ regions:
     latitude: 9.7300
     longitude: 100.0300
     accommodations:
-      - name: "Hotel en Koh Phangan - Hinkong"
+      - name: "Hotel en Koh Phangan - Hinkong (Piscinita ojo)"
         address: "22/8 Moo 6, Baan Hin Kong, Koh Phangan, 84280 Hinkong, Tailandia"
         check_in: "2025-06-29"
         check_out: "2025-07-01"
@@ -343,7 +343,7 @@ regions:
         check_in: "2025-07-01"
         check_out: "2025-07-04"
         booking_ref: "SAMUI01"
-        maps_url: "https://maps.google.com/?q=Chaweng+Chaweng+Noi,+Ko+Samui+District,+Surat+Thani+84320,+Thailand"
+        maps_url: "https://www.google.com/maps/place/Best+World+Vision+Samui/@9.4915271,100.0483635,16z/data=!3m1!4b1!4m9!3m8!1s0x3054f189a807dd47:0x4ba22bfcc6d40e4c!5m2!4m1!1i2!8m2!3d9.4915218!4d100.0509384!16s%2Fg%2F11gvx_587m?entry=ttu&g_ep=EgoyMDI1MDUyNi4wIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D"
     activities:
       - date: "2025-07-01"
         time: "Día completo"
