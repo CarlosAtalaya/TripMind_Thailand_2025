@@ -182,7 +182,7 @@ CHECKLIST_ITEMS = {
             'toallas': 'Toallas de microfibra (1)',
             'productos_femeninos': 'Productos de higiene femenina',
             'afeitado': 'Kit de afeitado (se lo lleva Luis)',
-            'perfume': 'Perfume/colonia (se coge de Isisdro)'
+            'perfume': 'Perfume/colonia (se coge de Isidro)'
         }
     },
     'botiquin': {
