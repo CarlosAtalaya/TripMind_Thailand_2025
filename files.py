@@ -285,6 +285,7 @@ def download_multiple():
         current_app.logger.error(f"Error en descarga múltiple: {e}")
         return jsonify({'success': False, 'error': 'Error interno del servidor'}), 500
     
+
 @files.route('/compartir/download-all', methods=['GET'])
 @login_required
 def download_all():
@@ -374,6 +375,69 @@ def download_by_date(date):
         current_app.logger.error(f"Error en descarga por fecha: {e}")
         flash('Error al preparar la descarga', 'danger')
         return redirect(url_for('files.index'))
+    
+@files.route('/api/files-info')
+@login_required
+def files_info():
+    """API para obtener información de archivos (tamaño, cantidad, etc.)"""
+    try:
+        file_ids = request.args.get('file_ids')
+        date = request.args.get('date')
+        
+        query = SharedFile.query
+        
+        if file_ids:
+            # Archivos específicos por IDs
+            import json
+            ids = json.loads(file_ids)
+            query = query.filter(SharedFile.id.in_(ids))
+        elif date:
+            # Archivos por fecha
+            try:
+                date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+                query = query.filter(db.func.date(SharedFile.upload_date) == date_obj)
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Formato de fecha inválido'}), 400
+        # Si no se especifica nada, obtener todos los archivos
+        
+        files = query.all()
+        
+        if not files:
+            return jsonify({
+                'success': True,
+                'count': 0,
+                'total_size': 0,
+                'files': []
+            })
+        
+        total_size = 0
+        file_details = []
+        
+        for file in files:
+            file_path = os.path.join(MULTIMEDIA_BASE_PATH, file.path)
+            if os.path.exists(file_path):
+                file_size = os.path.getsize(file_path)
+                total_size += file_size
+                
+                file_details.append({
+                    'id': file.id,
+                    'name': file.original_filename,
+                    'size': file_size,
+                    'user': file.user.name,
+                    'date': file.upload_date.strftime('%Y-%m-%d')
+                })
+        
+        return jsonify({
+            'success': True,
+            'count': len(file_details),
+            'total_size': total_size,
+            'files': file_details
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error en files_info: {e}")
+        return jsonify({'success': False, 'error': 'Error interno del servidor'}), 500
+
 
 @files.route('/compartir/eliminar/<int:file_id>', methods=['POST'])
 @login_required
