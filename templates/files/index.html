@@ -29,6 +29,19 @@
     </div>
 </div>
 
+<!-- Botones de descarga masiva - NUEVOS Y ELEGANTES -->
+{% if shared_files %}
+<div class="text-center mb-4">
+    <div class="btn-group download-buttons" role="group" aria-label="Opciones de descarga">
+        <button type="button" class="btn btn-outline-success btn-download-all" onclick="downloadAllFiles()">
+            <i class="fas fa-download me-2"></i>
+            <span class="btn-text">Descargar todos los archivos</span>
+            <span class="btn-text-mobile">Todos</span>
+        </button>
+    </div>
+</div>
+{% endif %}
+
 <!-- Barra de acciones flotante para archivos seleccionados -->
 <div id="bulk-actions" class="selection-toolbar" style="display: none;">
     <div class="d-flex justify-content-between align-items-center">
@@ -38,7 +51,7 @@
         </span>
         <div>
             <button class="btn btn-sm btn-light me-2" onclick="downloadSelected()" id="download-btn">
-                <i class="fas fa-download me-1"></i> Descargar
+                <i class="fas fa-download me-1"></i> Descargar ZIP
             </button>
             <button class="btn btn-sm btn-danger me-2" onclick="deleteSelected()" id="delete-btn">
                 <i class="fas fa-trash me-1"></i> Eliminar
@@ -65,18 +78,21 @@
     {% for date, files in files_by_date.items() | sort(reverse=true) %}
         <div class="card mb-4">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">
-                    <i class="fas fa-calendar me-2"></i>
-                    {{ date }}
-                </h6>
                 <div>
-                    {% if loop.first %}
-                        <button class="btn btn-sm btn-outline-secondary me-2" onclick="toggleSelectionMode()" id="selection-mode-btn">
-                            <i class="fas fa-check-square me-1"></i> Seleccionar
-                        </button>
-                    {% endif %}
-                    <button class="btn btn-sm btn-outline-primary" onclick="downloadByDate('{{ date }}')">
-                        <i class="fas fa-download me-1"></i> Descargar todos de este día
+                    <h6 class="mb-0">
+                        <i class="fas fa-calendar me-2"></i>
+                        {{ date }}
+                        <span class="badge bg-secondary ms-2">{{ files|length }} archivos</span>
+                    </h6>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary btn-download-date" 
+                            onclick="downloadByDate('{{ date }}')" 
+                            data-date="{{ date }}"
+                            title="Descargar archivos del {{ date }}">
+                        <i class="fas fa-download me-1"></i>
+                        <span class="btn-text">Descargar del día</span>
+                        <span class="btn-text-mobile">Día</span>
                     </button>
                 </div>
             </div>
@@ -86,6 +102,7 @@
                         <div class="col">
                             <div class="card h-100 file-card" data-file-id="{{ file.id }}" data-date="{{ date }}">
                                 <div class="position-relative">
+                                    <!-- Overlay de selección múltiple -->
                                     <div class="selection-overlay" style="display: none;">
                                         <div class="form-check position-absolute top-0 start-0 m-2">
                                             <input type="checkbox" class="form-check-input file-select" 
@@ -94,6 +111,23 @@
                                                    {% if current_user.id == file.user_id or current_user.is_admin %}data-can-delete="true"{% else %}data-can-delete="false"{% endif %}>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Botón de descarga individual en hover -->
+                                    <div class="download-overlay">
+                                        <button class="btn btn-sm btn-primary download-single-btn" 
+                                                onclick="downloadSingleFile({{ file.id }})" 
+                                                title="Descargar {{ file.original_filename }}">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        {% if current_user.id == file.user_id or current_user.is_admin %}
+                                        <button class="btn btn-sm btn-danger delete-single-btn" 
+                                                onclick="deleteSingleFile({{ file.id }}, '{{ file.original_filename }}')" 
+                                                title="Eliminar {{ file.original_filename }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                    
                                     {% if file.mimetype.startswith('image/') %}
                                         <img src="{{ url_for('files.preview', file_id=file.id) }}" 
                                             class="card-img-top" 
@@ -148,6 +182,26 @@
         </a>
     </div>
 {% endif %}
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el archivo <strong id="deleteFileName"></strong>?</p>
+                <p class="text-danger">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block sidebar %}
@@ -158,17 +212,16 @@
     <div class="card-body">
         <p>En esta sección puedes compartir y descargar fotos, videos y otros archivos relacionados con el viaje.</p>
         
-        <h6 class="mt-3">Cómo seleccionar archivos:</h6>
+        <h6 class="mt-3">Opciones de descarga:</h6>
         <ul>
-            <li><strong>Mantén presionado</strong> sobre cualquier archivo para activar el modo selección</li>
-            <li>O usa el botón "Seleccionar" en la primera fecha</li>
-            <li>En modo selección, toca los archivos para seleccionarlos</li>
-            <li>Usa la barra flotante para las acciones</li>
+            <li><strong>Archivo individual:</strong> Pasa el cursor sobre el archivo y haz clic en descargar</li>
+            <li><strong>Todos los archivos:</strong> Usa el botón verde para descargar todo en ZIP</li>
+            <li><strong>Por fecha:</strong> Usa el botón azul junto a cada fecha</li>
         </ul>
         
         <div class="alert alert-info mt-3">
             <i class="fas fa-lightbulb me-2"></i>
-            <strong>Consejo:</strong> Solo puedes eliminar archivos que hayas subido tú o si eres administrador.
+            <strong>Consejo:</strong> Las descargas múltiples se comprimen en ZIP automáticamente para mayor comodidad.
         </div>
     </div>
 </div>
@@ -190,16 +243,13 @@
 
 {% block extra_css %}
 <style>
+    /* Estilos para las tarjetas de archivos */
     .file-card {
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         position: relative;
         user-select: none;
-    }
-    
-    .file-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border: 1px solid #dee2e6;
     }
     
     .file-card.selected {
@@ -207,6 +257,7 @@
         box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
     }
     
+    /* Overlay para selección múltiple */
     .selection-overlay {
         position: absolute;
         top: 0;
@@ -214,7 +265,7 @@
         right: 0;
         bottom: 0;
         background: rgba(255, 255, 255, 0.8);
-        z-index: 5;
+        z-index: 8;
     }
     
     .form-check-input.file-select {
@@ -237,6 +288,93 @@
         z-index: 1050;
         min-width: 300px;
         max-width: 90%;
+        animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            transform: translateX(-50%) translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Overlay para botones de acción individual */
+    .download-overlay {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 10;
+        display: flex;
+        gap: 4px;
+    }
+    
+    .file-card:hover .download-overlay {
+        opacity: 1;
+    }
+    
+    .download-single-btn,
+    .delete-single-btn {
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    /* Estilos para botones de descarga masiva */
+    .download-buttons {
+        margin: 0 auto;
+        max-width: 100%;
+    }
+    
+    .btn-download-all,
+    .btn-download-date {
+        border-radius: 25px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-download-all {
+        border: 2px solid #28a745;
+        color: #28a745;
+        background: white;
+    }
+    
+    .btn-download-all:hover {
+        background: #28a745;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-download-date {
+        border: 2px solid #007bff;
+        color: #007bff;
+        background: white;
+    }
+    
+    .btn-download-date:hover {
+        background: #007bff;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
+    }
+    
+    /* Responsive text - mostrar texto completo en desktop, abreviado en móvil */
+    .btn-text-mobile {
+        display: none;
     }
     
     @media (max-width: 768px) {
@@ -244,26 +382,123 @@
             bottom: 80px; /* Ajustar para la navegación móvil */
             min-width: 90%;
         }
+        
+        .btn-text {
+            display: none;
+        }
+        
+        .btn-text-mobile {
+            display: inline;
+        }
+        
+        .btn-download-all,
+        .btn-download-date {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+        
+        .download-buttons {
+            width: 100%;
+        }
+        
+        .btn-download-all {
+            flex: 1;
+        }
+        
+        /* Hacer los botones de día más pequeños en móvil */
+        .card-header .btn-download-date {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
+        
+        /* Ajustar overlay de botones individuales en móvil */
+        .download-overlay {
+            opacity: 1; /* Siempre visible en móvil */
+            top: 4px;
+            right: 4px;
+        }
+        
+        .download-single-btn,
+        .delete-single-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 0.8rem;
+        }
     }
     
-    /* Animación para presionar y mantener */
-    .file-card.pressing {
-        transform: scale(0.95);
-        transition: transform 0.2s ease;
+    /* Animaciones de carga */
+    .loading-btn {
+        position: relative;
+        pointer-events: none;
+    }
+    
+    .loading-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    
+    /* Mejorar el diseño de las tarjetas en diferentes tamaños */
+    @media (max-width: 576px) {
+        .row-cols-2 > * {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+    
+    /* Efectos visuales adicionales */
+    .btn-download-all::before,
+    .btn-download-date::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-download-all:hover::before,
+    .btn-download-date:hover::before {
+        left: 100%;
     }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    // Variables globales
+    let deleteModal;
+    let currentDeleteFileId = null;
     let selectionMode = false;
     let selectedFiles = new Map();
     
     // Función para mostrar notificaciones
-    function showAlert(message, type = 'info') {
+    function showAlert(message, type = 'info', duration = 4000) {
         const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-        alertDiv.style.zIndex = '9999';
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = `
+            top: 20px; 
+            right: 20px; 
+            z-index: 9999; 
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        `;
         alertDiv.innerHTML = `
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -272,29 +507,117 @@
         document.body.appendChild(alertDiv);
         
         setTimeout(() => {
-            alertDiv.remove();
-        }, 3000);
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, duration);
     }
     
-    // Función para cambiar el modo de selección
-    function toggleSelectionMode() {
-        selectionMode = !selectionMode;
-        
-        if (selectionMode) {
-            enterSelectionMode();
+    // Función para añadir estado de carga a un botón
+    function setButtonLoading(button, loading = true) {
+        if (loading) {
+            button.disabled = true;
+            button.classList.add('loading-btn');
+            button.dataset.originalText = button.innerHTML;
+            button.innerHTML = '<span style="opacity: 0;">' + button.dataset.originalText + '</span>';
         } else {
-            exitSelectionMode();
+            button.disabled = false;
+            button.classList.remove('loading-btn');
+            if (button.dataset.originalText) {
+                button.innerHTML = button.dataset.originalText;
+                delete button.dataset.originalText;
+            }
         }
     }
+    
+    // Función para descargar TODOS los archivos
+    function downloadAllFiles() {
+        const button = document.querySelector('.btn-download-all');
+        setButtonLoading(button, true);
+        
+        showAlert('Preparando descarga de todos los archivos...', 'info');
+        
+        // Redirigir a la nueva ruta de descarga total
+        window.location.href = '/files/compartir/download-all';
+        
+        // Restaurar botón después de un delay
+        setTimeout(() => {
+            setButtonLoading(button, false);
+        }, 2000);
+    }
+    
+    // Función para descargar archivos por fecha
+    function downloadByDate(date) {
+        const button = document.querySelector(`[data-date="${date}"]`);
+        setButtonLoading(button, true);
+        
+        showAlert(`Preparando descarga de archivos del ${date}...`, 'info');
+        
+        // Redirigir a la ruta de descarga por fecha
+        window.location.href = `/files/compartir/download-by-date/${date}`;
+        
+        // Restaurar botón después de un delay
+        setTimeout(() => {
+            setButtonLoading(button, false);
+        }, 2000);
+    }
+    
+    // Función para descargar un archivo individual
+    function downloadSingleFile(fileId) {
+        showAlert('Descargando archivo...', 'info', 2000);
+        window.open(`/files/compartir/descargar/${fileId}`, '_blank');
+    }
+    
+    // Función para eliminar un archivo individual
+    function deleteSingleFile(fileId, filename) {
+        currentDeleteFileId = fileId;
+        document.getElementById('deleteFileName').textContent = filename;
+        deleteModal.show();
+    }
+    
+    // Función para confirmar eliminación
+    function confirmDelete() {
+        if (!currentDeleteFileId) return;
+        
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        setButtonLoading(confirmBtn, true);
+        
+        fetch(`/files/compartir/eliminar/${currentDeleteFileId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            setButtonLoading(confirmBtn, false);
+            deleteModal.hide();
+            
+            if (data.success) {
+                showAlert('Archivo eliminado correctamente', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showAlert('Error: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            setButtonLoading(confirmBtn, false);
+            deleteModal.hide();
+            showAlert('Error al eliminar el archivo', 'danger');
+        });
+    }
+    
+    // ========= FUNCIONES DE SELECCIÓN MÚLTIPLE =========
     
     // Función para entrar en modo selección
     function enterSelectionMode() {
         selectionMode = true;
-        const btn = document.getElementById('selection-mode-btn');
         const overlays = document.querySelectorAll('.selection-overlay');
         const bulkActions = document.getElementById('bulk-actions');
         
-        // Mostrar overlays
+        // Mostrar overlays de selección
         overlays.forEach(overlay => {
             overlay.style.display = 'block';
         });
@@ -302,20 +625,12 @@
         // Mostrar barra de acciones
         bulkActions.style.display = 'block';
         
-        // Cambiar apariencia del botón
-        if (btn) {
-            btn.innerHTML = '<i class="fas fa-times me-1"></i> Cancelar Selección';
-            btn.classList.remove('btn-outline-secondary');
-            btn.classList.add('btn-outline-danger');
-        }
-        
         updateSelectedCount();
     }
     
     // Función para salir del modo selección
     function exitSelectionMode() {
         selectionMode = false;
-        const btn = document.getElementById('selection-mode-btn');
         const overlays = document.querySelectorAll('.selection-overlay');
         const bulkActions = document.getElementById('bulk-actions');
         
@@ -326,13 +641,6 @@
         
         // Ocultar barra de acciones
         bulkActions.style.display = 'none';
-        
-        // Restaurar botón
-        if (btn) {
-            btn.innerHTML = '<i class="fas fa-check-square me-1"></i> Seleccionar';
-            btn.classList.remove('btn-outline-danger');
-            btn.classList.add('btn-outline-secondary');
-        }
         
         // Limpiar selección
         clearSelection();
@@ -404,23 +712,64 @@
         updateSelectedCount();
     }
     
-    // Función para descargar archivos seleccionados
+    // Función para descargar archivos seleccionados via ZIP
     function downloadSelected() {
         if (selectedFiles.size === 0) {
             showAlert('No hay archivos seleccionados', 'warning');
             return;
         }
         
-        let downloaded = 0;
-        selectedFiles.forEach((data, fileId) => {
-            setTimeout(() => {
-                window.open(`/files/compartir/descargar/${fileId}`, '_blank');
-                downloaded++;
-                
-                if (downloaded === selectedFiles.size) {
-                    showAlert(`${downloaded} archivo(s) descargado(s)`, 'success');
-                }
-            }, downloaded * 100); // Pequeño delay entre descargas
+        const fileIds = Array.from(selectedFiles.keys());
+        
+        // Mostrar indicador de carga
+        const bulkActions = document.getElementById('bulk-actions');
+        const originalContent = bulkActions.innerHTML;
+        bulkActions.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border spinner-border-sm text-light me-2" role="status">
+                    <span class="visually-hidden">Preparando descarga...</span>
+                </div>
+                <span>Preparando descarga de ${fileIds.length} archivo(s)...</span>
+            </div>
+        `;
+        
+        // Realizar descarga múltiple mediante ZIP
+        fetch('/files/compartir/download-multiple', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ file_ids: fileIds })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
+            }
+            throw new Error('Error en la descarga');
+        })
+        .then(blob => {
+            // Crear URL temporal y descargar
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `archivos_seleccionados_${new Date().toISOString().slice(0, 10)}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showAlert(`ZIP con ${fileIds.length} archivo(s) descargado correctamente`, 'success');
+            
+            // Restaurar barra de acciones
+            bulkActions.innerHTML = originalContent;
+            updateSelectedCount();
+        })
+        .catch(error => {
+            console.error('Error en descarga:', error);
+            showAlert('Error al preparar la descarga', 'danger');
+            bulkActions.innerHTML = originalContent;
+            updateSelectedCount();
         });
     }
     
@@ -490,31 +839,36 @@
         .catch(error => ({success: false, error: error.message}));
     }
     
-    // Función para descargar archivos por fecha
-    function downloadByDate(date) {
-        const cards = document.querySelectorAll(`.file-card[data-date="${date}"]`);
-        
-        if (cards.length === 0) {
-            showAlert('No hay archivos para esta fecha', 'warning');
-            return;
-        }
-        
-        let downloaded = 0;
-        cards.forEach((card, index) => {
-            const fileId = card.dataset.fileId;
-            setTimeout(() => {
-                window.open(`/files/compartir/descargar/${fileId}`, '_blank');
-                downloaded++;
-                
-                if (downloaded === cards.length) {
-                    showAlert(`${downloaded} archivo(s) descargado(s)`, 'success');
-                }
-            }, index * 100);
-        });
-    }
-    
     // Inicialización cuando se carga el documento
     document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar modal de eliminación
+        const deleteModalElement = document.getElementById('deleteModal');
+        if (deleteModalElement) {
+            deleteModal = new bootstrap.Modal(deleteModalElement);
+            
+            // Configurar botón de confirmación
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', confirmDelete);
+            }
+        }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Shift+D para descargar todos
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                e.preventDefault();
+                downloadAllFiles();
+            }
+            
+            // Escape para salir del modo selección
+            if (e.key === 'Escape' && selectionMode) {
+                exitSelectionMode();
+            }
+        });
+        
+        // ========= GESTIÓN DE SELECCIÓN MÚLTIPLE =========
+        
         // Detectar pulsación larga en elementos
         let pressTimer;
         let isLongPress = false;
@@ -548,7 +902,7 @@
         // Event listeners para pulsación larga (táctil)
         document.addEventListener('touchstart', function(e) {
             const card = e.target.closest('.file-card');
-            if (card) {
+            if (card && !e.target.closest('.download-overlay')) {
                 startLongPress(card);
             }
         });
@@ -560,7 +914,7 @@
         document.addEventListener('mousedown', function(e) {
             if (e.button === 0) { // Solo botón izquierdo
                 const card = e.target.closest('.file-card');
-                if (card) {
+                if (card && !e.target.closest('.download-overlay')) {
                     startLongPress(card);
                 }
             }
@@ -575,8 +929,8 @@
             if (selectionMode) {
                 const card = e.target.closest('.file-card');
                 
-                // Si el click fue en la tarjeta pero no en el checkbox
-                if (card && !e.target.classList.contains('file-select')) {
+                // Si el click fue en la tarjeta pero no en el checkbox ni en los botones de acción
+                if (card && !e.target.classList.contains('file-select') && !e.target.closest('.download-overlay')) {
                     e.preventDefault();
                     e.stopPropagation();
                     
@@ -608,6 +962,14 @@
                 e.preventDefault();
             }
         });
+        
+        // Mejorar la experiencia táctil en móviles
+        if ('ontouchstart' in window) {
+            // En dispositivos táctiles, hacer que los overlays sean siempre visibles
+            document.querySelectorAll('.download-overlay').forEach(overlay => {
+                overlay.style.opacity = '1';
+            });
+        }
     });
-    </script>
+</script>
 {% endblock %}

@@ -1,11 +1,13 @@
 # files.py
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, send_from_directory, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, send_from_directory, send_file, jsonify
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from models import db, SharedFile
 from datetime import datetime
 import os
 import uuid
+import zipfile
+import io
 from config import MULTIMEDIA_BASE_PATH, MAX_FOLDER_SIZE, ALLOWED_EXTENSIONS
 
 files = Blueprint('files', __name__)
@@ -234,6 +236,144 @@ def download(file_id):
         as_attachment=True,
         download_name=shared_file.original_filename
     )
+
+@files.route('/compartir/download-multiple', methods=['POST'])
+@login_required
+def download_multiple():
+    """Crear un ZIP con múltiples archivos seleccionados"""
+    try:
+        data = request.get_json()
+        file_ids = data.get('file_ids', [])
+        
+        if not file_ids:
+            return jsonify({'success': False, 'error': 'No se seleccionaron archivos'}), 400
+        
+        # Obtener archivos de la base de datos
+        files = SharedFile.query.filter(SharedFile.id.in_(file_ids)).all()
+        
+        if not files:
+            return jsonify({'success': False, 'error': 'No se encontraron archivos'}), 404
+        
+        # Crear ZIP en memoria
+        memory_file = io.BytesIO()
+        
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for file in files:
+                file_path = os.path.join(MULTIMEDIA_BASE_PATH, file.path)
+                if os.path.exists(file_path):
+                    # Añadir archivo al ZIP con nombre único para evitar conflictos
+                    safe_username = file.user.username.replace(' ', '_')
+                    filename = f"{safe_username}_{file.original_filename}"
+                    zf.write(file_path, filename)
+        
+        memory_file.seek(0)
+        
+        # Crear nombre del ZIP
+        if len(files) == 1:
+            zip_name = f"{files[0].original_filename}.zip"
+        else:
+            zip_name = f"archivos_seleccionados_{datetime.now().strftime('%Y%m%d_%H%M')}.zip"
+        
+        return send_file(
+            memory_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=zip_name
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error en descarga múltiple: {e}")
+        return jsonify({'success': False, 'error': 'Error interno del servidor'}), 500
+    
+@files.route('/compartir/download-all', methods=['GET'])
+@login_required
+def download_all():
+    """Descargar TODOS los archivos en un ZIP"""
+    try:
+        # Obtener TODOS los archivos de la base de datos
+        files = SharedFile.query.order_by(SharedFile.upload_date.desc()).all()
+        
+        if not files:
+            flash('No hay archivos para descargar', 'warning')
+            return redirect(url_for('files.index'))
+        
+        # Crear ZIP en memoria
+        memory_file = io.BytesIO()
+        
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for file in files:
+                file_path = os.path.join(MULTIMEDIA_BASE_PATH, file.path)
+                if os.path.exists(file_path):
+                    # Crear nombre único: fecha_usuario_nombrearchivo
+                    date_str = file.upload_date.strftime('%Y-%m-%d')
+                    safe_username = file.user.username.replace(' ', '_')
+                    filename = f"{date_str}_{safe_username}_{file.original_filename}"
+                    zf.write(file_path, filename)
+        
+        memory_file.seek(0)
+        
+        zip_name = f"todos_los_archivos_{datetime.now().strftime('%Y%m%d_%H%M')}.zip"
+        
+        return send_file(
+            memory_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=zip_name
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error en descarga total: {e}")
+        flash('Error al preparar la descarga', 'danger')
+        return redirect(url_for('files.index'))
+
+@files.route('/compartir/download-by-date/<date>')
+@login_required
+def download_by_date(date):
+    """Descargar todos los archivos de una fecha específica en ZIP - VERSIÓN CORREGIDA"""
+    try:
+        # Validar formato de fecha
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Formato de fecha inválido', 'danger')
+            return redirect(url_for('files.index'))
+        
+        # Obtener archivos de esa fecha - CONSULTA CORREGIDA
+        files = SharedFile.query.filter(
+            db.func.date(SharedFile.upload_date) == date_obj
+        ).all()
+        
+        if not files:
+            flash(f'No hay archivos para la fecha {date}', 'warning')
+            return redirect(url_for('files.index'))
+        
+        # Crear ZIP en memoria
+        memory_file = io.BytesIO()
+        
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for file in files:
+                file_path = os.path.join(MULTIMEDIA_BASE_PATH, file.path)
+                if os.path.exists(file_path):
+                    # Crear nombre único para evitar conflictos
+                    safe_username = file.user.username.replace(' ', '_')
+                    filename = f"{safe_username}_{file.original_filename}"
+                    zf.write(file_path, filename)
+        
+        memory_file.seek(0)
+        
+        zip_name = f"archivos_{date}.zip"
+        
+        return send_file(
+            memory_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=zip_name
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error en descarga por fecha: {e}")
+        flash('Error al preparar la descarga', 'danger')
+        return redirect(url_for('files.index'))
 
 @files.route('/compartir/eliminar/<int:file_id>', methods=['POST'])
 @login_required

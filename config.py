@@ -24,7 +24,7 @@ CONFIG_FILE_PATH = os.path.abspath(__file__)
 PROJECT_ROOT = os.path.dirname(CONFIG_FILE_PATH)
 
 # La carpeta multimedia SIEMPRE estará en PROJECT_ROOT/MULTIMEDIA_FOLDER_NAME
-MULTIMEDIA_BASE_PATH = '/opt/tripboard/storage/Multimedia_Tailandia2025'
+MULTIMEDIA_BASE_PATH = '/home/carlos/Escritorio/Proyectos_Personales/TripMind_Thailand_2025/Multimedia_Tailandia2025'
 
 # Verificación para asegurar que la ruta es correcta
 print(f"Raíz del proyecto: {PROJECT_ROOT}")
